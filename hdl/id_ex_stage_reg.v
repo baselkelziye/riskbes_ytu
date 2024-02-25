@@ -7,9 +7,12 @@ module id_ex_stage_reg(
     input flush,
     
     input [31:0] pc_id_ex_i,
-    input [31:0] rs1_id_ex_i,
-    input [31:0] rs2_id_ex_i,
-    input [31:0] imm_id_ex_i,
+    
+    input [31:0] rs1_value_id_ex_i,
+    input [31:0] rs2_value_id_ex_i,
+    
+    input [31:0] imm_value_id_ex_i,
+    
     input [2:0] imm_sel_id_ex_i,
     input alu_op1_sel_id_ex_i,
     input alu_op2_sel_id_ex_i,
@@ -26,9 +29,12 @@ module id_ex_stage_reg(
     input is_load_instruction_id_ex_i,
 
     output reg [31:0] pc_id_ex_o,
-    output reg [31:0] rs1_id_ex_o,
-    output reg [31:0] rs2_id_ex_o,  
-    output reg [31:0] imm_id_ex_o,  
+    
+    output reg [31:0] rs1_value_id_ex_o,
+    output reg [31:0] rs2_value_id_ex_o,  
+    
+    output reg [31:0] imm_value_id_ex_o,  
+    
     output reg [2:0] imm_sel_id_ex_o,
     output reg alu_op1_sel_id_ex_o,
     output reg alu_op2_sel_id_ex_o,
@@ -49,9 +55,9 @@ module id_ex_stage_reg(
         if(rst_i || flush) begin
             #0.1;
             pc_id_ex_o <= 32'd0;
-            rs1_id_ex_o <= 32'd0;
-            rs2_id_ex_o <= 32'd0;
-            imm_id_ex_o <= 32'd0;
+            rs1_value_id_ex_o <= 32'd0;
+            rs2_value_id_ex_o <= 32'd0;
+            imm_value_id_ex_o <= 32'd0;
             imm_sel_id_ex_o <= 3'd0;
             alu_op1_sel_id_ex_o <= 0;
             alu_op2_sel_id_ex_o <= 0;
@@ -74,9 +80,9 @@ module id_ex_stage_reg(
             #0;
               if(!busywait)begin
             pc_id_ex_o  <= pc_id_ex_i;
-            rs1_id_ex_o <= rs1_id_ex_i;
-            rs2_id_ex_o <= rs2_id_ex_i;
-            imm_id_ex_o <= imm_id_ex_i; 
+            rs1_value_id_ex_o <= rs1_value_id_ex_i;
+            rs2_value_id_ex_o <= rs2_value_id_ex_i;
+            imm_value_id_ex_o <= imm_value_id_ex_i; 
             imm_sel_id_ex_o <= imm_sel_id_ex_i;
             alu_op1_sel_id_ex_o <= alu_op1_sel_id_ex_i;
             alu_op2_sel_id_ex_o <= alu_op2_sel_id_ex_i;

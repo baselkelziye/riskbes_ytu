@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="cpu_tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="cpu_tb" />
+            <top_module name="glbl" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="999,995 ps"></ZoomStartTime>
+      <ZoomEndTime time="1,000,001 ps"></ZoomEndTime>
+      <Cursor1Time time="1,000,000 ps"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="276"></NameColumnWidth>
+      <ValueColumnWidth column_width="120"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="12" />
+   <wvobject type="logic" fp_name="/cpu_tb/CLK">
+      <obj_property name="ElementShortName">CLK</obj_property>
+      <obj_property name="ObjectShortName">CLK</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/cpu_tb/RESET">
+      <obj_property name="ElementShortName">RESET</obj_property>
+      <obj_property name="ObjectShortName">RESET</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/cpu_tb/u_cpu/c_data_cache/cache_r[256]">
+      <obj_property name="ElementShortName">[256][7:0]</obj_property>
+      <obj_property name="ObjectShortName">[256][7:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/cpu_tb/u_cpu/c_data_cache/cache_r[257]">
+      <obj_property name="ElementShortName">[257][7:0]</obj_property>
+      <obj_property name="ObjectShortName">[257][7:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/cpu_tb/u_cpu/c_data_cache/cache_r[258]">
+      <obj_property name="ElementShortName">[258][7:0]</obj_property>
+      <obj_property name="ObjectShortName">[258][7:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/cpu_tb/u_cpu/c_data_cache/cache_r[259]">
+      <obj_property name="ElementShortName">[259][7:0]</obj_property>
+      <obj_property name="ObjectShortName">[259][7:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/cpu_tb/u_cpu/c_data_cache/cache_r[260]">
+      <obj_property name="ElementShortName">[260][7:0]</obj_property>
+      <obj_property name="ObjectShortName">[260][7:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/cpu_tb/u_cpu/c_data_cache/cache_r[261]">
+      <obj_property name="ElementShortName">[261][7:0]</obj_property>
+      <obj_property name="ObjectShortName">[261][7:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/cpu_tb/u_cpu/c_data_cache/cache_r[262]">
+      <obj_property name="ElementShortName">[262][7:0]</obj_property>
+      <obj_property name="ObjectShortName">[262][7:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/cpu_tb/u_cpu/c_data_cache/cache_r[263]">
+      <obj_property name="ElementShortName">[263][7:0]</obj_property>
+      <obj_property name="ObjectShortName">[263][7:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/cpu_tb/u_cpu/c_data_cache/cache_r[264]">
+      <obj_property name="ElementShortName">[264][7:0]</obj_property>
+      <obj_property name="ObjectShortName">[264][7:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/cpu_tb/u_cpu/c_data_cache/cache_r[265]">
+      <obj_property name="ElementShortName">[265][7:0]</obj_property>
+      <obj_property name="ObjectShortName">[265][7:0]</obj_property>
+   </wvobject>
+</wave_config>
