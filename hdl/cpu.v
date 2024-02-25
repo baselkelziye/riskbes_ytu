@@ -2,15 +2,9 @@
 //TODO
 
 //6.01.2023
-//forwarding unitte is_memory_instruction ne ise yariyor?
-//store da yonlendirme ne isi yariyor?
-//data cache forward ne ayak?
 
-//if_id_o ve id_ex_o lari resetlemek lazim.
-//if_id_o icin addi x0,x0,0 i koyabiliriz muxla?
 
 //TEKNOFEST ICIN YAPILACAKLAR
-//koda yorum ekle, daha anlasilir yap. gereksiz sinyalleri sil.
 //otomatik bi sekilde OBJ KODLARI OKUYUP INSTURCTION CACHE'e YERLESTIR
 //memory erisiminde adres alignment bakilacak mi?
 //resetleri aktif 0 yap

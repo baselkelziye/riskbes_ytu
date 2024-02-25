@@ -1,0 +1,23 @@
+0.7
+2020.2
+Oct 13 2023
+20:21:30
+/home/basel/Desktop/riskbes_ytu/hdl/alu.v,1708454515,verilog,,/home/basel/Desktop/riskbes_ytu/hdl/branch_jump.v,,alu,,,,,,,,
+/home/basel/Desktop/riskbes_ytu/hdl/branch_jump.v,1708454515,verilog,,/home/basel/Desktop/riskbes_ytu/hdl/control_unit.v,,branch_jump,,,,,,,,
+/home/basel/Desktop/riskbes_ytu/hdl/control_unit.v,1708454515,verilog,,/home/basel/Desktop/riskbes_ytu/hdl/cpu.v,,control_unit,,,,,,,,
+/home/basel/Desktop/riskbes_ytu/hdl/cpu.v,1708454515,verilog,,/home/basel/Desktop/riskbes_ytu/hdl/data_cache.v,,cpu,,,,,,,,
+/home/basel/Desktop/riskbes_ytu/hdl/data_cache.v,1708454515,verilog,,/home/basel/Desktop/riskbes_ytu/hdl/ex_mem_stage_reg.v,,data_cache,,,,,,,,
+/home/basel/Desktop/riskbes_ytu/hdl/ex_mem_stage_reg.v,1708454515,verilog,,/home/basel/Desktop/riskbes_ytu/hdl/forwarding_unit.v,,ex_mem_stage_reg,,,,,,,,
+/home/basel/Desktop/riskbes_ytu/hdl/forwarding_unit.v,1708454515,verilog,,/home/basel/Desktop/riskbes_ytu/hdl/hazard_detection_unit.v,,forwarding_unit,,,,,,,,
+/home/basel/Desktop/riskbes_ytu/hdl/hazard_detection_unit.v,1708454515,verilog,,/home/basel/Desktop/riskbes_ytu/hdl/id_ex_stage_reg.v,,hazard_detection_unit,,,,,,,,
+/home/basel/Desktop/riskbes_ytu/hdl/id_ex_stage_reg.v,1708454515,verilog,,/home/basel/Desktop/riskbes_ytu/hdl/if_id_stage_reg.v,,id_ex_stage_reg,,,,,,,,
+/home/basel/Desktop/riskbes_ytu/hdl/if_id_stage_reg.v,1708454515,verilog,,/home/basel/Desktop/riskbes_ytu/hdl/imm_gen.v,,if_id_stage_reg,,,,,,,,
+/home/basel/Desktop/riskbes_ytu/hdl/imm_gen.v,1708454515,verilog,,/home/basel/Desktop/riskbes_ytu/hdl/instr_cache.v,,imm_gen,,,,,,,,
+/home/basel/Desktop/riskbes_ytu/hdl/instr_cache.v,1708454515,verilog,,/home/basel/Desktop/riskbes_ytu/hdl/mem_wb_stage_reg.v,,instr_cache,,,,,,,,
+/home/basel/Desktop/riskbes_ytu/hdl/mem_wb_stage_reg.v,1708454515,verilog,,/home/basel/Desktop/riskbes_ytu/hdl/mux.v,,mem_wb_stage_reg,,,,,,,,
+/home/basel/Desktop/riskbes_ytu/hdl/mux.v,1708454515,verilog,,/home/basel/Desktop/riskbes_ytu/hdl/pc_adder.v,,mux,,,,,,,,
+/home/basel/Desktop/riskbes_ytu/hdl/pc_adder.v,1708454515,verilog,,/home/basel/Desktop/riskbes_ytu/hdl/program_counter_reg.v,,pc_adder,,,,,,,,
+/home/basel/Desktop/riskbes_ytu/hdl/program_counter_reg.v,1708454515,verilog,,/home/basel/Desktop/riskbes_ytu/hdl/regfile.v,,pc_reg,,,,,,,,
+/home/basel/Desktop/riskbes_ytu/hdl/regfile.v,1708454515,verilog,,/home/basel/Desktop/riskbes_ytu/sim/cpu_tb.v,,regfile,,,,,,,,
+/home/basel/Desktop/riskbes_ytu/riscv32im_pipelined_cpu/riscv32im_pipelined_cpu.sim/sim_1/behav/xsim/glbl.v,1697210495,verilog,,,,glbl,,,,,,,,
+/home/basel/Desktop/riskbes_ytu/sim/cpu_tb.v,1708454515,verilog,,,,cpu_tb,,,,,,,,

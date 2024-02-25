@@ -1,0 +1,14 @@
+#-----------------------------------------------------------
+# Vivado v2023.2 (64-bit)
+# SW Build 4029153 on Fri Oct 13 20:13:54 MDT 2023
+# IP Build 4028589 on Sat Oct 14 00:45:43 MDT 2023
+# SharedData Build 4025554 on Tue Oct 10 17:18:54 MDT 2023
+# Start of session at: Sat Feb 24 16:56:32 2024
+# Process ID: 4434
+# Current directory: /home/basel/Desktop/riskbes_ytu/riscv32im_pipelined_cpu/riscv32im_pipelined_cpu.runs/synth_1
+# Command line: vivado -log cpu.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source cpu.tcl
+# Log file: /home/basel/Desktop/riskbes_ytu/riscv32im_pipelined_cpu/riscv32im_pipelined_cpu.runs/synth_1/cpu.vds
+# Journal file: /home/basel/Desktop/riskbes_ytu/riscv32im_pipelined_cpu/riscv32im_pipelined_cpu.runs/synth_1/vivado.jou
+# Running On: basel-HP-ProBook-450-15-6-inch-G9-Notebook-PC, OS: Linux, CPU Frequency: 653.609 MHz, CPU Physical cores: 10, Host memory: 16377 MB
+#-----------------------------------------------------------
+source cpu.tcl -notrace
