@@ -2,15 +2,9 @@
 //TODO
 
 //6.01.2023
-//forwarding unitte is_memory_instruction ne ise yariyor?
-//store da yonlendirme ne isi yariyor?
-//data cache forward ne ayak?
 
-//if_id_o ve id_ex_o lari resetlemek lazim.
-//if_id_o icin addi x0,x0,0 i koyabiliriz muxla?
 
 //TEKNOFEST ICIN YAPILACAKLAR
-//koda yorum ekle, daha anlasilir yap. gereksiz sinyalleri sil.
 //otomatik bi sekilde OBJ KODLARI OKUYUP INSTURCTION CACHE'e YERLESTIR
 //memory erisiminde adres alignment bakilacak mi?
 //resetleri aktif 0 yap
@@ -50,19 +44,21 @@ module cpu( input clk_i,
     wire [6:0] instruction_funct7_if_id_o = instruction_if_id_o[31:25];
     wire [24:0] instruction_payload_if_id_o = instruction_if_id_o[31:7];
     
+    
     //*******************ID-EX STAGE VARIABLES***********   
     wire is_long_id_ex_o;  
     
-    wire [31:0] rs1_id_ex_i; // pass rs1 register ID/EX stage
-    wire [31:0] rs1_id_ex_o;
+    wire [31:0] rs1_value_id_ex_i; // pass rs1 register ID/EX stage
+    wire [31:0] rs1_value_id_ex_o;
     
     wire [31:0] pc_id_ex_o; //pass PC to ID/EX stage
     
-    wire [31:0] rs2_id_ex_i; //pass rs2 to ID/EX stage
-    wire [31:0] rs2_id_ex_o;
     
-    wire [31:0] imm_id_ex_i; //pass imm to ID/EX stage
-    wire [31:0] imm_id_ex_o;
+    wire [31:0] rs2_value_id_ex_i; //pass rs2 to ID/EX stage
+    wire [31:0] rs2_value_id_ex_o;
+    
+    wire [31:0] imm_value_id_ex_i; //pass imm to ID/EX stage
+    wire [31:0] imm_value_id_ex_o;
     
     wire [2:0] imm_sel_id_ex_i; //control signal for imm
     wire [2:0] imm_sel_id_ex_o; 
@@ -118,8 +114,8 @@ module cpu( input clk_i,
     // forwarding unit                   
     wire [31:0] alu_in1_forwarded_input;
     wire [31:0] alu_in2_forwarded_input;
-    wire [1:0] forwardA;
-    wire [1:0] forwardB;
+    wire [1:0]  forwardA;
+    wire [1:0]  forwardB;
     
     //    *********** MEM-WB STAGE ***************
     wire is_long_mem_wb_o; 
@@ -235,8 +231,8 @@ module cpu( input clk_i,
         .rd_data_i(reg_wb_data_w      ),//rd yazmac degeri
         .rs1_i(rs1_if_id_o            ),//rs1 yazmac numarasi (okumak icin)
         .rs2_i(rs2_if_id_o            ),//rs2 yazmac numarasi (okumak icin)
-        .rs1_data_o(rs1_id_ex_i       ),//rs1 yazmac degeri (cikis)
-        .rs2_data_o(rs2_id_ex_i       )//rs2 yazmac degeri (cikis)
+        .rs1_data_o(rs1_value_id_ex_i       ),//rs1 yazmac degeri (cikis)
+        .rs2_data_o(rs2_value_id_ex_i       )//rs2 yazmac degeri (cikis)
     );
     
     
@@ -273,7 +269,7 @@ module cpu( input clk_i,
     imm_gen u_imm_gen(
         .instr_i(instruction_payload_if_id_o),
         .imm_sel_i(imm_sel_id_ex_i),
-        .imm_o(imm_id_ex_i) // ID-EX yazmacina imm-gen sonucu yaz
+        .imm_o(imm_value_id_ex_i) // ID-EX yazmacina imm-gen sonucu yaz
     );
                          
     //Dallanma birimi (umutuun raporuna bakilmali)
@@ -298,14 +294,14 @@ module cpu( input clk_i,
         .pc_id_ex_i({pc_if_id_o, 1'b0}),          //passing PC for the Branch UNIT
         .pc_id_ex_o(pc_id_ex_o),
         
-        .rs1_id_ex_i(rs1_id_ex_i),       // passing rs1 32 bit value
-        .rs1_id_ex_o(rs1_id_ex_o),
+        .rs1_value_id_ex_i(rs1_value_id_ex_i),       // passing rs1 32 bit value
+        .rs1_value_id_ex_o(rs1_value_id_ex_o),
         
-        .rs2_id_ex_i(rs2_id_ex_i),       //passinng rs2 32bit value
-        .rs2_id_ex_o(rs2_id_ex_o),
+        .rs2_value_id_ex_i(rs2_value_id_ex_i),       //passinng rs2 32bit value
+        .rs2_value_id_ex_o(rs2_value_id_ex_o),
         
-        .imm_id_ex_i(imm_id_ex_i),       // passing the 32bit imm result
-        .imm_id_ex_o(imm_id_ex_o),
+        .imm_value_id_ex_i(imm_value_id_ex_i),       // passing the 32bit imm result
+        .imm_value_id_ex_o(imm_value_id_ex_o),
         
         .imm_sel_id_ex_i(imm_sel_id_ex_i),//passing 3 bit selection for imm unit
         .imm_sel_id_ex_o(imm_sel_id_ex_o),
@@ -370,7 +366,7 @@ module cpu( input clk_i,
         {rd_data_mem_wb_o, // LOAD sonucu
          alu_out_ex_mem_o, // ex_mem deki ALU sonucu
          alu_out_mem_wb_o, // mem_wb deki ALU sonucu
-         rs1_id_ex_o}),    // reg file dan okunan rs1 degeri
+         rs1_value_id_ex_o}),    // reg file dan okunan rs1 degeri
         .select(forwardA), // Selection signal
         .out(alu_in1_w)    // Output of the MUX
     );
@@ -394,7 +390,7 @@ module cpu( input clk_i,
         .NUM_INPUTS(2)      
     ) imm_or_rs2_selector (
         .in_flat(
-        {imm_id_ex_o,                  //imm degeri
+        {imm_value_id_ex_o,                  //imm degeri
          alu_in2_w}),                  // en guncel rs2 degeri
         .select(alu_op2_sel_id_ex_o),  
         .out(alu_in2_forwarded_input)       
@@ -409,7 +405,7 @@ module cpu( input clk_i,
         {rd_data_mem_wb_o, 
          alu_out_ex_mem_o,
          alu_out_mem_wb_o,
-         rs2_id_ex_o}), 
+         rs2_value_id_ex_o}), 
         .select(forwardB),         
         .out(alu_in2_w) 
     );
@@ -439,7 +435,7 @@ module cpu( input clk_i,
         .pc_ex_mem_o(pc_ex_mem_o),
         .wb_sel_ex_mem_i(wb_sel_id_ex_o),
         .wb_sel_ex_mem_o(wb_sel_ex_mem_o),
-        .imm_ex_mem_i(imm_id_ex_o),
+        .imm_ex_mem_i(imm_value_id_ex_o),
         .imm_ex_mem_o(imm_ex_mem_o),
         .rs1_label_ex_mem_i(rs1_label_id_ex_o),
         .rs1_label_ex_mem_o(rs1_label_ex_mem_o),
