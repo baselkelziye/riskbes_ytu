@@ -31,19 +31,23 @@ module cpu( input clk_i,
     wire [31:0] data_data_w;
     
     //***********IF-ID STAGE VARIABLES************
-    wire [31:0] pc_if_id_o; //ID asamasina giren PC olduugu icin PC_ID_O isimlend
-    wire [31:0] instruction_if_id_o;     
+    wire is_long_if_id_o; 
+    
+    wire [31:1] pc_if_id_o; //ID asamasina giren PC olduugu icin PC_ID_O isimlend
+    wire [31:2] instruction_if_id_o;
     
     wire [4:0] rd_if_id_o  = instruction_if_id_o[11:7]; 
     wire [4:0] rs1_if_id_o = instruction_if_id_o[19:15]; 
     wire [4:0] rs2_if_id_o = instruction_if_id_o[24:20];
-    wire [6:0] instruction_opcode_if_id_o = instruction_if_id_o[6:0];
+    wire [6:0] instruction_opcode_if_id_o = {instruction_if_id_o[6:2], 2'b11};
     wire [2:0] instruction_funct3_if_id_o = instruction_if_id_o[14:12];
     wire [6:0] instruction_funct7_if_id_o = instruction_if_id_o[31:25];
     wire [24:0] instruction_payload_if_id_o = instruction_if_id_o[31:7];
     
     
     //*******************ID-EX STAGE VARIABLES***********   
+    wire is_long_id_ex_o;  
+    
     wire [31:0] rs1_value_id_ex_i; // pass rs1 register ID/EX stage
     wire [31:0] rs1_value_id_ex_o;
     
@@ -88,6 +92,8 @@ module cpu( input clk_i,
     wire is_memory_instruction_id_ex_o;
     
     //*****************EX-MEM******************
+    wire is_long_ex_mem_o; 
+    
     wire [31:0] alu_out_ex_mem_i; // for alu output
     wire [31:0] alu_out_ex_mem_o;
     wire [1:0] wb_sel_ex_mem_i;
@@ -112,6 +118,8 @@ module cpu( input clk_i,
     wire [1:0]  forwardB;
     
     //    *********** MEM-WB STAGE ***************
+    wire is_long_mem_wb_o; 
+    
     wire reg_wb_en_mem_wb_i;
     wire reg_wb_en_mem_wb_o;  
     wire [4:0] rd_mem_wb_o;  
@@ -149,55 +157,68 @@ module cpu( input clk_i,
     //in1: ALU Res
     //select ucu: ex_mem asamasinin cikisinda olan "Dallanma sinyali"
     //cikis: yeni PC                  
-    mux #(
-        .DATA_WIDTH(32), //each data is 32 wide
-        .NUM_INPUTS(2)   // 2x1 mux, each line is 32bit
-    ) u_PC_mux (
-        .in_flat(
-            {alu_out_ex_mem_o,   //ALU de hesaplanan dallanacak adres (in1)
-             PC_4_w              //normal PC degeri mi (in0)
-            }), 
-        .select(PC_sel_w_ex_mem_o), // jump biriminde tetiklenir
-        .out(PC_last_w)             // cikis: yeni PC
-    );
+//    mux #(
+//        .DATA_WIDTH(32), //each data is 32 wide
+//        .NUM_INPUTS(2)   // 2x1 mux, each line is 32bit
+//    ) u_PC_mux (
+//        .in_flat(
+//            {alu_out_ex_mem_o,   //ALU de hesaplanan dallanacak adres (in1)
+//             PC_4_w              //normal PC degeri mi (in0)
+//            }), 
+//        .select(PC_sel_w_ex_mem_o), // jump biriminde tetiklenir
+//        .out(PC_last_w)             // cikis: yeni PC
+//    );
     
-    //PC_reg basit bir flipflop gibi dusunulebilir, giristeki PC degeri cikisa aktarir
-    pc_reg r_pc_reg(
-        .clk_i(clk_i),     //saat derbesinde PC registerdeki degeri disariya verir
-        .rst_i(rst_i),
-        .busy_i(busy_w),   //PC i degistiginde 1 olur, ne zaman okunursa 0'a duser
-        .stall(stall),
-        .PC_i(PC_last_w),  // giris PC
-        .PC_o(PC_w)        // cikis PC
-    );
+//    //PC_reg basit bir flipflop gibi dusunulebilir, giristeki PC degeri cikisa aktarir
+//    pc_reg r_pc_reg(
+//        .clk_i(clk_i),     //saat derbesinde PC registerdeki degeri disariya verir
+//        .rst_i(rst_i),
+//        .busy_i(busy_w),   //PC i degistiginde 1 olur, ne zaman okunursa 0'a duser
+//        .stall(stall),
+//        .PC_i(PC_last_w),  // giris PC
+//        .PC_o(PC_w)        // cikis PC
+//    );
     
-    //Su an ki PC degerini 4 ile toplar
-    pc_adder u_pc_adder(
-        .in_i(PC_w),       //PC i 4 ile toplar
-        .out_o(PC_4_w)
-    );
+//    //Su an ki PC degerini 4 ile toplar
+//    pc_adder u_pc_adder(
+//        .in_i(PC_w),       //PC i 4 ile toplar
+//        .out_o(PC_4_w)
+//    );
     
-    //Komutlarin saklandigi hafiza                    
-    instr_cache c_instr_cache(
-        .clk_i(clk_i),
-        .rst_i(rst_i),
-        .address_i(PC_w),                     //PC i gir
-        .read_data_o(instruction_if_id_i),    // komut getir
-        .busy_o(ins_busy_w)
-    );
+//    //Komutlarin saklandigi hafiza                    
+//    instr_cache c_instr_cache(
+//        .clk_i(clk_i),
+//        .rst_i(rst_i),
+//        .address_i(PC_w),                     //PC i gir
+//        .read_data_o(instruction_if_id_i),    // komut getir
+//        .busy_o(ins_busy_w)
+//    );
 
     //******* IF-ID PIPELINE MODULE**********        
     // "_i" ile biten giris, "_o" ile biten cikistir          
-    if_id_stage_reg if_id(
+//    if_id_stage_reg if_id(
+//        .clk_i(clk_i),
+//        .rst_i(rst_i),
+//        .busywait(busy_w),
+//        .stall(stall),
+//        .flush(PC_sel_w_ex_mem_o),
+//        .instruction_if_id_i(instruction_if_id_i),
+//        .pc_if_id_i(PC_w),
+//        .instruction_if_id_o(instruction_if_id_o),
+//        .pc_if_id_o(pc_if_id_o)
+//    );
+
+    u_if u_if(
         .clk_i(clk_i),
         .rst_i(rst_i),
-        .busywait(busy_w),
+        .data_busywait_i(data_busy_w),
+        .ins_busywait_o(ins_busy_w),
         .stall(stall),
-        .flush(PC_sel_w_ex_mem_o),
-        .instruction_if_id_i(instruction_if_id_i),
-        .pc_if_id_i(PC_w),
-        .instruction_if_id_o(instruction_if_id_o),
-        .pc_if_id_o(pc_if_id_o)
+        .branching(PC_sel_w_ex_mem_o),
+        .branch_pc(alu_out_ex_mem_o[31:1]),
+        .instr_o(instruction_if_id_o),
+        .is_long_o(is_long_if_id_o),
+        .pc_o(pc_if_id_o)
     );
 
     //Yazmaclarin durdugu yer
@@ -266,7 +287,11 @@ module cpu( input clk_i,
         .rst_i(rst_i),
         .busywait(busy_w),
         .flush(PC_sel_w_ex_mem_o),
-        .pc_id_ex_i(pc_if_id_o),          //passing PC for the Branch UNIT
+        
+        .is_long_id_ex_i(is_long_if_id_o),
+        .is_long_id_ex_o(is_long_id_ex_o),
+        
+        .pc_id_ex_i({pc_if_id_o, 1'b0}),          //passing PC for the Branch UNIT
         .pc_id_ex_o(pc_id_ex_o),
         
         .rs1_value_id_ex_i(rs1_value_id_ex_i),       // passing rs1 32 bit value
@@ -398,6 +423,8 @@ module cpu( input clk_i,
         .clk_i(clk_i),
         .rst_i(rst_i),
         .busywait(busy_w),
+        .is_long_ex_mem_i(is_long_id_ex_o),
+        .is_long_ex_mem_o(is_long_ex_mem_o),
         .alu_out_ex_mem_i(alu_out_ex_mem_i),
         .alu_out_ex_mem_o(alu_out_ex_mem_o),
         .reg_wb_en_ex_mem_i(reg_wb_en_id_ex_o),
@@ -441,6 +468,8 @@ module cpu( input clk_i,
         .clk_i(clk_i),
         .rst_i(rst_i),
         .busywait(busy_w),
+        .is_long_mem_wb_i(is_long_ex_mem_o),
+        .is_long_mem_wb_o(is_long_mem_wb_o),
         .reg_wb_en_mem_wb_i(reg_wb_en_ex_mem_o),
         .reg_wb_en_mem_wb_o(reg_wb_en_mem_wb_o),
         .rd_mem_wb_i(rd_ex_mem_o),
@@ -463,7 +492,8 @@ module cpu( input clk_i,
 
     pc_adder u_pc_adder1(
         .in_i(pc_mem_wb_o), //PC i 4 ile toplar
-        .out_o(pc_mem_wb_o_4) // cunku son muxta PC+4 var, su ana kadar sadece PC i ilettik biz, 4 ile toplayip yollamamiz lazim.
+        .out_o(pc_mem_wb_o_4), // cunku son muxta PC+4 var, su ana kadar sadece PC i ilettik biz, 4 ile toplayip yollamamiz lazim.
+        .is_long(is_long_mem_wb_o)
     );
 
     mux #(

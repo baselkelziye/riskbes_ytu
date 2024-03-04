@@ -27,6 +27,7 @@ module id_ex_stage_reg(
     input [6:0] opcode_id_ex_i,
     input is_memory_instruction_id_ex_i,
     input is_load_instruction_id_ex_i,
+    input is_long_id_ex_i,
 
     output reg [31:0] pc_id_ex_o,
     
@@ -48,7 +49,8 @@ module id_ex_stage_reg(
     output reg [4:0] rs2_label_id_ex_o,   
     output reg [6:0] opcode_id_ex_o,  
     output reg is_memory_instruction_id_ex_o,
-    output reg is_load_instruction_id_ex_o
+    output reg is_load_instruction_id_ex_o,
+    output reg is_long_id_ex_o
     );
     
     always @(*) begin
@@ -71,14 +73,13 @@ module id_ex_stage_reg(
             opcode_id_ex_o <= 7'd0;
             is_memory_instruction_id_ex_o  <= 1'b0;
             is_load_instruction_id_ex_o <= 1'b0;
-
+            is_long_id_ex_o <= 1'b0;
         end
     
     end
     
     always @(posedge clk_i)begin
-            #0;
-              if(!busywait)begin
+        if(!busywait)begin
             pc_id_ex_o  <= pc_id_ex_i;
             rs1_value_id_ex_o <= rs1_value_id_ex_i;
             rs2_value_id_ex_o <= rs2_value_id_ex_i;
@@ -97,7 +98,7 @@ module id_ex_stage_reg(
             opcode_id_ex_o <= opcode_id_ex_i;
             is_memory_instruction_id_ex_o <= is_memory_instruction_id_ex_i;
             is_load_instruction_id_ex_o <= is_load_instruction_id_ex_i;
-            end
- 
+            is_long_id_ex_o <= is_long_id_ex_i;
+        end
     end
 endmodule

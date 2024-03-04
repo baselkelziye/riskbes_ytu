@@ -33,9 +33,9 @@ module branch_jump(
             equal_r = 1'b0;
         end 
         if($unsigned(in1_i) < $unsigned(in2_i)) begin 
-    
+            less_t_r = 1'b1;
         end else begin
-        
+            less_t_r = 1'b0;
         end
     end
     
