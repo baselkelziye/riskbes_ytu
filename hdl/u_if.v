@@ -44,7 +44,9 @@ assign ins_busywait_o = branching ^ branched;
 
 localparam [31:2] INSTR_NOP = 30'b000000000000000000000000000100;
 
-reg [29:0] fetch_address;
+reg [29:0] fetch_counter;
+wire [29:0] fetch_counter_next = fetch_counter + 1;
+wire [29:0] fetch_address = state_delayed_read ? fetch_counter_next : fetch_counter;
 
 wire [31:0] cache_data;
 
@@ -52,13 +54,8 @@ wire [31:2] aligned_instr = cache_data[31:2];
 wire is_long_a = cache_data[0] & cache_data[1];
 wire is_long_b = cache_data[16] & cache_data[17];
 
-wire [29:0] fetch_address_next = fetch_address + 1;
-wire [29:0] fetch_address_prev = fetch_address - 1;
-wire [29:0] fetch_address_upper = is_long_b ? fetch_address_next : fetch_address;
-
-wire [31:1] pc_aligned = {fetch_address, 1'b0};
-wire [31:1] pc_delayed = {fetch_address_prev, 1'b1};
-wire [31:1] pc_upper = {fetch_address, 1'b1};
+wire [31:1] pc_aligned = {fetch_counter, 1'b0};
+wire [31:1] pc_unaligned = {fetch_counter, 1'b1};
 
 reg [15:2] instr_save;
 wire [31:2] unaligned_instr = {cache_data[15:0], instr_save};
@@ -82,39 +79,47 @@ always @(posedge clk_i) begin
             if (branching) begin
                 instr_o <= INSTR_NOP;
                 //is_long_o <= 1'b0;
-                //pc_o <= pc_upper; 
+                //pc_o <= pc_unaligned; 
             
-                fetch_address <= branch_pc[31:2];
+                fetch_counter <= branch_pc[31:2];
                 state_upper_half <= branch_pc[1];
-                state_delayed_read <= 0;
+                state_delayed_read <= 1'b0;
             end else begin
                 if (state_upper_half) begin
-                    instr_o <= is_long_b ? INSTR_NOP : decompr_o; //Sadece dallanmadan sonra NOP olma ihtimali var.
                     is_long_o <= 1'b0;
-                    pc_o <= pc_upper;   
-                
-                    fetch_address <= fetch_address_next;       
+                    pc_o <= pc_unaligned;   
+                    
                     state_upper_half <= 1'b0;
-                    state_delayed_read <= is_long_b;
+
+                    if (is_long_b) begin //Sadece dallanmadan sonra
+                        instr_o <= INSTR_NOP;
+                        state_delayed_read <= 1'b1;
+                    end else begin //Normalde beklenen durum
+                        instr_o <= decompr_o;
+                        fetch_counter <= fetch_counter_next;
+                        state_delayed_read <= 1'b0;
+                    end
                 end else begin
                     if (state_delayed_read) begin
                         instr_o <= unaligned_instr;
                         is_long_o <= 1'b1;
-                        pc_o <= pc_delayed;      
+                        pc_o <= pc_unaligned;      
+                        fetch_counter <= fetch_counter_next;
                         
-                        state_upper_half <= ~is_long_b;
-                        fetch_address <= fetch_address_upper;
+                        if (!is_long_b) begin
+                            state_upper_half <= 1'b1;
+                            state_delayed_read <= 1'b0;
+                        end
                     end else begin
                         is_long_o <= is_long_a;
                         pc_o <= pc_aligned;
                         instr_o <= is_long_a ? aligned_instr : decompr_o;
                         
                         if (is_long_a) begin
-                            fetch_address <= fetch_address_next;
+                            fetch_counter <= fetch_counter_next;
                         end else begin
-                            state_delayed_read <= 1'b1;
+                            state_delayed_read <= is_long_b;
                             state_upper_half <= ~is_long_b;
-                            fetch_address <= fetch_address_upper;
                         end
                     end
                 end
@@ -123,7 +128,7 @@ always @(posedge clk_i) begin
             instr_o <= INSTR_NOP;
         end
     end else begin
-        fetch_address <= 30'b0;
+        fetch_counter <= 30'b0;
         state_upper_half <= 1'b0;
         state_delayed_read <= 1'b0;
         instr_o <= INSTR_NOP;
