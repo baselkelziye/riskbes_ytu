@@ -24,25 +24,25 @@ module cpu( input clk_i,
             output [31:0] data_addr_o,
             output [31:0] data_mem_w_data_o);
     
-    wire [31:0] PC_last_w;  
-    wire [31:0] PC_w;
-    wire [31:0] PC_4_w;
-    wire [31:0] instruction_if_id_i;
-    wire [31:0] data_data_w;
+   wire [31:0] PC_last_w;  
+   wire [31:0] PC_w;
+   wire [31:0] PC_4_w;
+   wire [31:0] instruction_if_id_i;
+   wire [31:0] data_data_w;
     
-    //***********IF-ID STAGE VARIABLES************
-    wire is_long_if_id_o; 
+   //***********IF-ID STAGE VARIABLES************
+   wire is_long_if_id_o; 
     
-    wire [31:1] pc_if_id_o; //ID asamasina giren PC olduugu icin PC_ID_O isimlend
-    wire [31:2] instruction_if_id_o;
+   wire [31:1] pc_if_id_o; //ID asamasina giren PC olduugu icin PC_ID_O isimlend
+   wire [31:2] instruction_if_id_o;
     
-    wire [4:0] rd_if_id_o  = instruction_if_id_o[11:7]; 
-    wire [4:0] rs1_if_id_o = instruction_if_id_o[19:15]; 
-    wire [4:0] rs2_if_id_o = instruction_if_id_o[24:20];
-    wire [6:0] instruction_opcode_if_id_o = {instruction_if_id_o[6:2], 2'b11};
-    wire [2:0] instruction_funct3_if_id_o = instruction_if_id_o[14:12];
-    wire [6:0] instruction_funct7_if_id_o = instruction_if_id_o[31:25];
-    wire [24:0] instruction_payload_if_id_o = instruction_if_id_o[31:7];
+   wire [4:0] rd_if_id_o  = instruction_if_id_o[11:7]; 
+   wire [4:0] rs1_if_id_o = instruction_if_id_o[19:15]; 
+   wire [4:0] rs2_if_id_o = instruction_if_id_o[24:20];
+   wire [6:0] instruction_opcode_if_id_o = {instruction_if_id_o[6:2], 2'b11};
+   wire [2:0] instruction_funct3_if_id_o = instruction_if_id_o[14:12];
+   wire [6:0] instruction_funct7_if_id_o = instruction_if_id_o[31:25];
+   wire [24:0] instruction_payload_if_id_o = instruction_if_id_o[31:7];
     
     
     //*******************ID-EX STAGE VARIABLES***********   
