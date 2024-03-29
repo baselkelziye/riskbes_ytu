@@ -1,128 +1,117 @@
 `timescale 1ns / 1ps
 module control_unit(
-   input [6:2] opcode_i,
-   input [2:0] funct3_i,
-   input [6:0] funct7_i
-);
-   wire uses_rd;
-   
-   wire uses_rd_tmp1 = opcode_i[3] | opcode_i[4] | !opcode_i[5];
-   wire uses_rd_tmp2 = opcode_i[2] & opcode_i[6];
-   assign uses_rd = uses_rd_tmp1 | uses_rd_tmp2;
-   
-   
-   wire uses_rs1, uses_rs2, uses_rs3;
-   
-   wire [1:0] rs_count;
-   
-   wire rs_count0_tmp1 = !opcode_i[4] & !opcode_i[5];
-   wire rs_count0_tmp2 = !opcode_i[2] & opcode_i[4] & !opcode_i[5] & !opcode_i[6];
-   wire rs_count0_tmp3 = opcode_i[2] & !opcode_i[3] & opcode_i[5] & opcode_i[6];
-   wire rs_count0_tmp4 = opcode_i[4] & opcode_i[5] & opcode_i[6] & !funct3_i[2];
-   assign rs_count[0] = rs_count0_tmp1 | rs_count0_tmp2 | rs_count0_tmp3 | rs_count0_tmp4;
-   
-   wire rs_count1_tmp1 = opcode_i[5] ^ opcode_i[6];
-   wire rs_count1_tmp2 = !opcode_i[2] | !opcode_i[4];
-   wire rs_count1_tmp3 = rs_count1_tmp1 & rs_count1_tmp2;
-   wire rs_count1_tmp4 = !opcode_i[2] & !opcode_i[3] & !opcode_i[4] & opcode_i[5] & opcode_i[6];
-   assign rs_count[1] = rs_count1_tmp3 | rs_count1_tmp4;
-   
-   assign uses_rs1 = rs_count[0] | rs_count[1];
-   assign uses_rs2 = rs_count[1];
-   assign uses_rs3 = rs_count[0] & rs_count[1];
-   
-   //imm_sel[2] -> shuffle bit
-   //000 -> I imm (except SYSTEM)
-   //001 -> U imm + SYSTEM
-   //010 -> S imm
-   //101 -> J imm (U imm + shuffle)
-   //110 -> B imm (S imm + shuffle)
-   //CSRI komutlarının uygulaması için SYSTEM komutları I yerine U olarak alındı
-   wire [2:0] imm_sel;
-   
-   wire imm_sel0_tmp1 = opcode_i[2] & opcode_i[4];
-   wire imm_sel0_tmp2 = opcode_i[2] & opcode_i[3];
-   wire imm_sel0_tmp3 = imm_sel0_tmp2 | opcode_i[4];
-   wire imm_sel0_tmp4 = opcode_i[5] & opcode_i[6] & imm_sel0_tmp3;
-   assign imm_sel[0] = imm_sel0_tmp1 | imm_sel0_tmp4;
-   
-   wire imm_sel1_tmp1 = !opcode_i[3] & !opcode_i[4] & opcode_i[5];
-   wire imm_sel1_tmp2 = !opcode_i[2] | !opcode_i[6];
-   assign imm_sel[1] = imm_sel1_tmp1 & imm_sel1_tmp2;
-   
-   assign imm_sel[2] = !opcode_i[4] & opcode_i[5] & opcode_i[6];
+input [6:0]opcode_i,
+input [2:0]funct3_i,
+input [6:0]funct7_i,
+output [2:0]imm_sel_o,
+output op1_sel_o,
+output op2_sel_o,
+output [4:0]alu_op_o,
+output [2:0]branch_sel_o,
+output [3:0]read_write_o,
+output [1:0]wb_sel_o,
+output reg_w_en_o,
+output is_memory_instruction_o,
+output is_load_instruction
 
-//   wire [2:0] opcode_low = opcode_i[4:2];
-//   wire [7:0] opcode_low_decoded;
-//   decoder #(
-//      .InputSize(3)
-//   ) decoder_low (
-//      .in_i(opcode_low),
-//      .out_o(opcode_low_decoded)
-//   );
-   
-//   wire [1:0] opcode_high = opcode_i[6:5];
-//   wire [3:0] opcode_high_decoded;
-//   decoder #(
-//      .InputSize(2)
-//   ) decoder_high (
-//      .in_i(opcode_high),
-//      .out_o(opcode_high_decoded)
-//   );
-   
-//   wire opcode_load;
-//   and(opcode_load, opcode_low_decoded[0], opcode_high_decoded[0]);
-   
-//   wire opcode_store;
-//   and(opcode_store, opcode_low_decoded[0], opcode_high_decoded[1]);
-   
-//   wire opcode_madd;
-//   and(opcode_madd, opcode_low_decoded[0], opcode_high_decoded[2]);
-   
-//   wire opcode_branch;
-//   and(opcode_branch, opcode_low_decoded[0], opcode_high_decoded[3]);
-   
-//   wire opcode_load_fp;
-//   and(opcode_load_fp, opcode_low_decoded[1], opcode_high_decoded[0]);
-   
-//   wire opcode_store_fp;
-//   and(opcode_store_fp, opcode_low_decoded[1], opcode_high_decoded[1]);
-   
-//   wire opcode_msub;
-//   and(opcode_msub, opcode_low_decoded[1], opcode_high_decoded[2]);
-   
-//   wire opcode_jalr;
-//   and(opcode_jalr, opcode_low_decoded[1], opcode_high_decoded[3]);
-   
-//   wire opcode_nmsub = opcode_low_decoded[2];
-   
-//   wire opcode_misc_mem;
-//   and(opcode_misc_mem, opcode_low_decoded[3], opcode_high_decoded[0]);
-   
-//   wire opcode_amo;
-//   and(opcode_amo, opcode_low_decoded[3], opcode_high_decoded[1]);
-   
-//   wire opcode_nmadd;
-//   and(opcode_nmadd, opcode_low_decoded[3], opcode_high_decoded[2]);
-   
-//   wire opcode_jal;
-//   and(opcode_jal, opcode_low_decoded[3], opcode_high_decoded[3]);
-   
-//   wire opcode_op_imm;
-//   and(opcode_op_imm, opcode_low_decoded[4], opcode_high_decoded[0]);
-   
-//   wire opcode_op;
-//   and(opcode_op, opcode_low_decoded[4], opcode_high_decoded[1]);
-   
-//   wire opcode_op_fp;
-//   and(opcode_op_fp, opcode_low_decoded[4], opcode_high_decoded[2]);
-   
-//   wire opcode_system;
-//   and(opcode_system, opcode_low_decoded[4], opcode_high_decoded[3]);
-   
-//   wire opcode_auipc;
-//   and(opcode_auipc, opcode_low_decoded[5], ~opcode_i[5]);
-   
-//   wire opcode_lui;
-//   and(opcode_lui, opcode_low_decoded[5], opcode_i[5]);
+);
+
+wire lui_w;
+assign lui_w = (!opcode_i[6] & opcode_i[5] & opcode_i[4] & !opcode_i[3] & opcode_i[2]);
+
+wire auipc_w;
+assign auipc_w = (!opcode_i[6] & !opcode_i[5] & opcode_i[4] & !opcode_i[3] & opcode_i[2]);
+
+wire jal_w;
+assign jal_w = (opcode_i[6] & opcode_i[5] & !opcode_i[4] & opcode_i[3] & opcode_i[2]);
+
+wire jalr_w;
+assign jalr_w = (opcode_i[6] & opcode_i[5] & !opcode_i[4] & !opcode_i[3] & opcode_i[2]);
+
+wire B_type_w;
+assign B_type_w = (opcode_i[6] & opcode_i[5] & !opcode_i[4] & !opcode_i[3] & !opcode_i[2]);
+
+wire load_w;
+assign load_w = (!opcode_i[6] & !opcode_i[5] & !opcode_i[4] & !opcode_i[3] & !opcode_i[2]);
+
+wire store_w;
+assign store_w = (!opcode_i[6] & opcode_i[5] & !opcode_i[4] & !opcode_i[3] & !opcode_i[2]);
+
+wire I_type_w;
+assign I_type_w = (!opcode_i[6] & !opcode_i[5] & opcode_i[4] & !opcode_i[3] & !opcode_i[2]);
+
+wire R_type_w;
+assign R_type_w = (!opcode_i[6] & opcode_i[5] & opcode_i[4] & !opcode_i[3] & !opcode_i[2]);
+
+
+assign op1_sel_o = (auipc_w | jal_w | B_type_w);
+
+assign op2_sel_o = (auipc_w | jal_w | jalr_w | B_type_w | load_w | store_w | I_type_w);
+
+assign reg_w_en_o = (lui_w | auipc_w | jal_w | jalr_w | load_w | I_type_w | R_type_w);
+
+assign wb_sel_o[1] = (lui_w | jal_w | jalr_w);
+
+assign wb_sel_o[0] = (jal_w | jalr_w | load_w);
+
+wire alu_op_type_w;
+assign alu_op_type_w = (I_type_w | R_type_w);
+
+wire bl_w;
+assign bl_w = (jal_w | jalr_w | B_type_w);
+
+wire [2:0]imm_type_w;
+assign imm_type_w[2] = (jalr_w | load_w | I_type_w);
+assign imm_type_w[1] = (B_type_w | store_w);
+assign imm_type_w[0] = (jal_w | B_type_w);
+
+
+
+assign imm_sel_o[2] = imm_type_w[2];
+assign imm_sel_o[1] = (!load_w & ((imm_type_w[2] & !funct3_i[2] & funct3_i[1] & funct3_i[0]) | (!imm_type_w[2] & imm_type_w[1]) ) );
+assign imm_sel_o[0] = (!load_w & (((!funct3_i[2] | !funct3_i[1]) & imm_type_w[2] & funct3_i[0]) | (!imm_type_w[2] & imm_type_w[0])));
+
+
+assign alu_op_o[4] = alu_op_type_w & funct3_i[2];
+assign alu_op_o[3] = alu_op_type_w & funct3_i[1];
+assign alu_op_o[2] = alu_op_type_w & funct3_i[0];
+
+wire imm_or_r_type_w;
+assign imm_or_r_type_w = ((imm_sel_o[2] & !imm_sel_o[1] & imm_sel_o[0]) | R_type_w);
+
+assign alu_op_o[1] = imm_or_r_type_w & funct7_i[5];
+assign alu_op_o[0] = imm_or_r_type_w & funct7_i[0];
+
+
+and (branch_sel_o[2], !opcode_i[2], bl_w, funct3_i[2]);
+or (branch_sel_o[1], opcode_i[2], !bl_w, funct3_i[1]);
+assign branch_sel_o[0] = (opcode_i[2] | funct3_i[0]) & bl_w;
+
+
+or (read_write_o[3], store_w, load_w);
+
+wire w_9, w_10, w_12, w_13, w_16, w_17, w_18;
+
+and(w_9, !store_w, load_w, !funct3_i[2], !funct3_i[1], funct3_i[0]);
+and(w_10, !store_w, load_w, !funct3_i[2], funct3_i[1], !funct3_i[0]);
+and(w_12, !store_w, load_w, funct3_i[2], !funct3_i[1], !funct3_i[0]);
+and(w_13, !store_w, load_w, funct3_i[2], !funct3_i[1], funct3_i[0]);
+and(w_16, store_w, !load_w, !funct3_i[2], !funct3_i[1], !funct3_i[0]);
+and(w_17, store_w, !load_w, !funct3_i[2], !funct3_i[1], funct3_i[0]);
+and(w_18, store_w, !load_w, !funct3_i[2], funct3_i[1], !funct3_i[0]);
+
+or(read_write_o[2], w_12, w_13, w_17, w_18);
+or(read_write_o[1], w_10, w_16, w_17, w_18);
+or(read_write_o[0], w_9, w_13, w_16, w_18);
+
+wire is_mem1;
+and (is_mem1, opcode_i[0],opcode_i[1]);//last 2 should be 11
+wire is_mem2;
+nor (is_mem2, opcode_i[2],opcode_i[3], opcode_i[4] ,opcode_i[6]); // opcode 3,4,5 should be 0
+and (is_memory_instruction_o,is_mem1,is_mem2);
+
+wire is_load_1;
+nor(is_load_1, opcode_i[6],opcode_i[5],opcode_i[4],opcode_i[3],opcode_i[2]);
+and(is_load_instruction,is_load_1,opcode_i[1],opcode_i[0]);
+
 endmodule
