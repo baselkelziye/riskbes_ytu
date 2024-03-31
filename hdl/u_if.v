@@ -31,107 +31,80 @@ module u_if(
     input branching,
     input [31:1] branch_pc,
     
-    output reg [31:2] instr_o,
-    output reg is_long_o,
+    output [31:2] instr_o,
+    output is_long_o,
     output reg [31:1] pc_o
     );
-    
-reg state_upper_half;
-reg state_delayed_read;
+
+reg state_loading_cache;
 reg branched;
 
-assign ins_busywait_o = branching ^ branched;
+assign ins_busywait_o = branched ^ branching;
 
-localparam [31:2] INSTR_NOP = 30'b000000000000000000000000000100;
+parameter FETCH_WIDTH = 30;
 
-reg [29:0] fetch_counter;
-wire [29:0] fetch_counter_next = fetch_counter + 1;
-wire [29:0] fetch_address = state_delayed_read ? fetch_counter_next : fetch_counter;
+reg [FETCH_WIDTH - 1:0] fetch_counter;
+wire [FETCH_WIDTH - 1:0] fetch_counter_next;
+wire fetch_counter_carry;
 
-wire [31:0] cache_data;
-
-wire [31:2] aligned_instr = cache_data[31:2];
-wire is_long_a = cache_data[0] & cache_data[1];
-wire is_long_b = cache_data[16] & cache_data[17];
+wire fetch_counter_sel, fetch_address_sel, pc_aligned_n_sel;
+wire [FETCH_WIDTH - 1:0] fetch_address = fetch_address_sel ? fetch_counter_next : fetch_counter;
 
 wire [31:1] pc_aligned = {fetch_counter, 1'b0};
 wire [31:1] pc_unaligned = {fetch_counter, 1'b1};
 
-reg [15:2] instr_save;
-wire [31:2] unaligned_instr = {cache_data[15:0], instr_save};
+wire [31:2] branch_fetch_counter = branch_pc[31:2];
+wire branch_aligned_n = branch_pc[1];
+
+wire [31:0] cache_data;
+
+increment #(.DATA_WIDTH(FETCH_WIDTH)) fetch_counter_inc
+(
+    .value_i(fetch_counter),
+    .value_o(fetch_counter_next),
+    .carry_o(fetch_counter_carry)
+);
 
 instr_cache cache(
     .address_i(fetch_address),
-    .read_data_o(cache_data));
+    .read_data_o(cache_data)
+ );
 
-wire [15:0] decompr_i = state_upper_half ? cache_data[31:16] : cache_data[15:0];
-wire [31:2] decompr_o;
-
-instr_decompression_unit decompr(decompr_o, decompr_i);
+u_fetch fetch(
+    .clk_i(clk_i),
+    .rst_i(rst_i),
+    
+    .data_busywait_i(data_busywait_i),
+    .stall(stall),
+    
+    .cache_data_i(cache_data),
+    
+    .branching(branching),
+    .branch_aligned_n_i(branch_aligned_n),
+    
+    .fetch_counter_sel_o(fetch_counter_sel),
+    .fetch_address_sel_o(fetch_address_sel),
+    .pc_aligned_n_sel_o(pc_aligned_n_sel),
+    
+    .instr_o(instr_o),
+    .is_long_o(is_long_o)
+);
 
 always @(posedge clk_i) begin
-    instr_save <= cache_data[31:18];
-
     if(!rst_i) begin
-        if(!data_busywait_i && !stall) begin
+        if(!data_busywait_i && !stall) begin 
             branched <= branching;
         
-            if (branching) begin
-                instr_o <= INSTR_NOP;
-                //is_long_o <= 1'b0;
-                //pc_o <= pc_unaligned; 
-            
-                fetch_counter <= branch_pc[31:2];
-                state_upper_half <= branch_pc[1];
-                state_delayed_read <= 1'b0;
-            end else begin
-                if (state_upper_half) begin
-                    is_long_o <= 1'b0;
-                    pc_o <= pc_unaligned;   
-                    
-                    state_upper_half <= 1'b0;
-
-                    if (is_long_b) begin //Sadece dallanmadan sonra
-                        instr_o <= INSTR_NOP;
-                        state_delayed_read <= 1'b1;
-                    end else begin //Normalde beklenen durum
-                        instr_o <= decompr_o;
-                        fetch_counter <= fetch_counter_next;
-                        state_delayed_read <= 1'b0;
-                    end
-                end else begin
-                    if (state_delayed_read) begin
-                        instr_o <= unaligned_instr;
-                        is_long_o <= 1'b1;
-                        pc_o <= pc_unaligned;      
-                        fetch_counter <= fetch_counter_next;
-                        
-                        if (!is_long_b) begin
-                            state_upper_half <= 1'b1;
-                            state_delayed_read <= 1'b0;
-                        end
-                    end else begin
-                        is_long_o <= is_long_a;
-                        pc_o <= pc_aligned;
-                        instr_o <= is_long_a ? aligned_instr : decompr_o;
-                        
-                        if (is_long_a) begin
-                            fetch_counter <= fetch_counter_next;
-                        end else begin
-                            state_delayed_read <= is_long_b;
-                            state_upper_half <= ~is_long_b;
-                        end
-                    end
-                end
+            if(branching) begin
+                fetch_counter <= branch_fetch_counter;
+            end else if(fetch_counter_sel) begin
+                fetch_counter <= fetch_counter_next;
             end
-        end else begin
-            instr_o <= INSTR_NOP;
+              
+            pc_o <= pc_aligned_n_sel ? pc_unaligned : pc_aligned;
         end
     end else begin
         fetch_counter <= 30'b0;
-        state_upper_half <= 1'b0;
-        state_delayed_read <= 1'b0;
-        instr_o <= INSTR_NOP;
     end
 end
     

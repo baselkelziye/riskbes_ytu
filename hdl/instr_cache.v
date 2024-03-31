@@ -14,19 +14,19 @@ module instr_cache(
     
     initial begin 
 
-        cache_r[0] = 32'h800004b7;
-        cache_r[1] = 32'h452d4101;
-        cache_r[2] = 32'h201145b5;
-        cache_r[3] = 32'hcd01a001;
-        cache_r[4] = 32'h450182aa;
-        cache_r[5] = 32'hf313c989;
+//        cache_r[0] = 32'h800004b7;
+//        cache_r[1] = 32'h452d4101;
+//        cache_r[2] = 32'h201145b5;
+//        cache_r[3] = 32'hcd01a001;
+//        cache_r[4] = 32'h450182aa;
+//        cache_r[5] = 32'hf313c989;
         
-        cache_r[6] = 32'h03630015;
-        cache_r[7] = 32'h95160003;
-        cache_r[8] = 32'h02868185;
-        cache_r[9] = 32'h8082f9ed;
-        cache_r[10] = 32'h10001;
-        cache_r[11] = 32'h10001;
+//        cache_r[6] = 32'h03630015;
+//        cache_r[7] = 32'h95160003;
+//        cache_r[8] = 32'h02868185;
+//        cache_r[9] = 32'h8082f9ed;
+//        cache_r[10] = 32'h10001;
+//        cache_r[11] = 32'h10001;
         
 //  ALU-TEST (umut ara proje raporundaki ALU TESTI)
 
@@ -98,52 +98,52 @@ module instr_cache(
 //************************* BUBBLE SORT
 //sonuclar bellegin 0x100  adresinden itibaren yazilmaya baslaniyor
 
-//cache_r[0] = 32'h00000093;  // addi x1 x0 0
-//cache_r[1] = 32'h10000113;  // addi x2 x0 256
-//cache_r[2] = 32'h00a00193;  // addi x3 x0 10
-//cache_r[3] = 32'h00900213;  // addi x4 x0 9
-//cache_r[4] = 32'h00200313;  // addi x6 x0 2
-//cache_r[5] = 32'h00610023;  // sb x6 0 x2
-//cache_r[6] = 32'h00100313;  // addi x6 x0 1
-//cache_r[7] = 32'h006100a3;  // sb x6 1 x2
-//cache_r[8] = 32'h00300313;  // addi x6 x0 3
-//cache_r[9] = 32'h00610123;  // sb x6 2 x2
-//cache_r[10] = 32'h00500313; // addi x6 x0 5
-//cache_r[11] = 32'h006101a3; // sb x6 3 x2
-//cache_r[12] = 32'h00400313; // addi x6 x0 4
-//cache_r[13] = 32'h00610223; // sb x6 4 x2
-//cache_r[14] = 32'h00700313; // addi x6 x0 7
-//cache_r[15] = 32'h006102a3; // sb x6 5 x2
-//cache_r[16] = 32'h00600313; // addi x6 x0 6
-//cache_r[17] = 32'h00610323; // sb x6 6 x2
-//cache_r[18] = 32'h00b00313; // addi x6 x0 11
-//cache_r[19] = 32'h006103a3; // sb x6 7 x2
-//cache_r[20] = 32'h00900313; // addi x6 x0 9
-//cache_r[21] = 32'h00610423; // sb x6 8 x2
-//cache_r[22] = 32'h00800313; // addi x6 x0 8
-//cache_r[23] = 32'h006104a3; // sb x6 9 x2
-//cache_r[24] = 32'h04328463; // beq x5 x3 72 <exit_start>
-//cache_r[25] = 32'h00000093; // addi x1 x0 0
-//cache_r[26] = 32'h02408c63; // beq x1 x4 56 <exit_loop>
-//cache_r[27] = 32'h002083b3; // add x7 x1 x2
-//cache_r[28] = 32'h00038403; // lb x8 0 x7
-//cache_r[29] = 32'h00138713; // addi x14 x7 1
-//cache_r[30] = 32'h00070483; // lb x9 0 x14
-//cache_r[31] = 32'h00945863; // bge x8 x9 16 <do_swap>
-//cache_r[32] = 32'h00838023; // sb x8 0 x7
-//cache_r[33] = 32'h00970023; // sb x9 0 x14
-//cache_r[34] = 32'h00000863; // beq x0 x0 16 <exit_swap>
-//cache_r[35] = 32'h00900533; // add x10 x0 x9
-//cache_r[36] = 32'h00870023; // sb x8 0 x14
-//cache_r[37] = 32'h00a38023; // sb x10 0 x7
-//cache_r[38] = 32'h00108093; // addi x1 x1 1
-//cache_r[39] = 32'hfc0006e3; // beq x0 x0 -52 <loop>
-//cache_r[40] = 32'h00128293; // addi x5 x5 1
-//cache_r[41] = 32'hfa000ee3; // beq x0 x0 -68 <start>
-//cache_r[42] = 32'h00000013; // NOP
-//cache_r[43] = 32'h00000013; // NOP
-//cache_r[44] = 32'h00000013;//NOP
-//cache_r[45] = 32'h00000013;//NOP
+cache_r[0] = 32'h00000093;  // addi x1 x0 0
+cache_r[1] = 32'h10000113;  // addi x2 x0 256
+cache_r[2] = 32'h00a00193;  // addi x3 x0 10
+cache_r[3] = 32'h00900213;  // addi x4 x0 9
+cache_r[4] = 32'h00200313;  // addi x6 x0 2
+cache_r[5] = 32'h00610023;  // sb x6 0 x2
+cache_r[6] = 32'h00100313;  // addi x6 x0 1
+cache_r[7] = 32'h006100a3;  // sb x6 1 x2
+cache_r[8] = 32'h00300313;  // addi x6 x0 3
+cache_r[9] = 32'h00610123;  // sb x6 2 x2
+cache_r[10] = 32'h00500313; // addi x6 x0 5
+cache_r[11] = 32'h006101a3; // sb x6 3 x2
+cache_r[12] = 32'h00400313; // addi x6 x0 4
+cache_r[13] = 32'h00610223; // sb x6 4 x2
+cache_r[14] = 32'h00700313; // addi x6 x0 7
+cache_r[15] = 32'h006102a3; // sb x6 5 x2
+cache_r[16] = 32'h00600313; // addi x6 x0 6
+cache_r[17] = 32'h00610323; // sb x6 6 x2
+cache_r[18] = 32'h00b00313; // addi x6 x0 11
+cache_r[19] = 32'h006103a3; // sb x6 7 x2
+cache_r[20] = 32'h00900313; // addi x6 x0 9
+cache_r[21] = 32'h00610423; // sb x6 8 x2
+cache_r[22] = 32'h00800313; // addi x6 x0 8
+cache_r[23] = 32'h006104a3; // sb x6 9 x2
+cache_r[24] = 32'h04328463; // beq x5 x3 72 <exit_start>
+cache_r[25] = 32'h00000093; // addi x1 x0 0
+cache_r[26] = 32'h02408c63; // beq x1 x4 56 <exit_loop>
+cache_r[27] = 32'h002083b3; // add x7 x1 x2
+cache_r[28] = 32'h00038403; // lb x8 0 x7
+cache_r[29] = 32'h00138713; // addi x14 x7 1
+cache_r[30] = 32'h00070483; // lb x9 0 x14
+cache_r[31] = 32'h00945863; // bge x8 x9 16 <do_swap>
+cache_r[32] = 32'h00838023; // sb x8 0 x7
+cache_r[33] = 32'h00970023; // sb x9 0 x14
+cache_r[34] = 32'h00000863; // beq x0 x0 16 <exit_swap>
+cache_r[35] = 32'h00900533; // add x10 x0 x9
+cache_r[36] = 32'h00870023; // sb x8 0 x14
+cache_r[37] = 32'h00a38023; // sb x10 0 x7
+cache_r[38] = 32'h00108093; // addi x1 x1 1
+cache_r[39] = 32'hfc0006e3; // beq x0 x0 -52 <loop>
+cache_r[40] = 32'h00128293; // addi x5 x5 1
+cache_r[41] = 32'hfa000ee3; // beq x0 x0 -68 <start>
+cache_r[42] = 32'h00000013; // NOP
+cache_r[43] = 32'h00000013; // NOP
+cache_r[44] = 32'h00000013;//NOP
+cache_r[45] = 32'h00000013;//NOP
 
 
 
