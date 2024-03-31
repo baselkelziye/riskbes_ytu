@@ -146,7 +146,33 @@ cache_r[44] = 32'h00000013;//NOP
 cache_r[45] = 32'h00000013;//NOP
 
 
-
+ //BUBBLESORT alternative
+// cache_r[0] = 32'h80000437;
+// cache_r[1] = 32'h832242d1;
+// cache_r[2] = 32'h00532023;
+// cache_r[3] = 32'h031112fd;
+// cache_r[4] = 32'hfe029ce3;
+// cache_r[5] = 32'h45d18522;
+// cache_r[6] = 32'h42d1200d;
+// cache_r[7] = 32'h43858322;
+// cache_r[8] = 32'h00032e03;
+// cache_r[9] = 32'h007e1963;
+// cache_r[10] = 32'h031112fd;
+// cache_r[11] = 32'h99e30385;
+// cache_r[12] = 32'h4f85fe02;
+// cache_r[13] = 32'h5ffda001;
+// cache_r[14] = 32'h4281a001;
+// cache_r[15] = 32'h8613832a;
+// cache_r[16] = 32'h2383fff5;
+// cache_r[17] = 32'h26830003;
+// cache_r[18] = 32'hd7630043;
+// cache_r[19] = 32'h22230076;
+// cache_r[20] = 32'h20230073;
+// cache_r[21] = 32'h428500d3;
+// cache_r[22] = 32'h167d0311;
+// cache_r[23] = 32'h9ee3f27d;
+// cache_r[24] = 32'h8082fc02;
+ 
 
     end
     

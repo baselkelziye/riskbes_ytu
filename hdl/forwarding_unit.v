@@ -18,7 +18,6 @@ module forwarding_unit(
     input reg_wb_en_ex_mem_o,
     input reg_wb_en_mem_wb_o,
     input is_memory_instruction_mem_wb_o,
-    input [6:0] opcode,
     output reg [1:0]  forwardA,
     output reg  [1:0]  forwardB
     );
