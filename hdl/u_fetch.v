@@ -106,9 +106,9 @@ module u_fetch(
                         end
                     end
                 end
-            end else begin
+            end /*else begin
                 instr_o <= INSTR_NOP;
-            end
+            end*/
         end else begin
             state_upper_half <= 1'b0;
             state_delayed_read <= 1'b0;
