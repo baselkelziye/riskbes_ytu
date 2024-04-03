@@ -1,0 +1,7 @@
+<testsuites name="results">
+  <testsuite name="all" package="all">
+    <property name="random_seed" value="1712099300" />
+    <testcase name="basel_bubblesort" classname="general_tests" file="/home/basel/riskbes_ytu/tests/cocotb/general_tests/general_tests.py" lineno="47" time="0.35569190979003906" sim_time_ns="4022.001" ratio_time="11307.541412381694" />
+    <testcase name="umut_cpu" classname="general_tests" file="/home/basel/riskbes_ytu/tests/cocotb/general_tests/general_tests.py" lineno="75" time="0.08592534065246582" sim_time_ns="822.0010000000002" ratio_time="9566.456108968723" />
+  </testsuite>
+</testsuites>
