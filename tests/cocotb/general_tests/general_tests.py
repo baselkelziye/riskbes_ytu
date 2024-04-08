@@ -94,3 +94,4 @@ async def umut_cpu(dut):
             dut._log.error(f"Mismatch at Register {i+1}: expected {expect_values[i]}, got {hex(dut_value)}")
         else:
             dut._log.info(f"Register {i+1} matches the expected value: {hex(dut_value)}")
+
