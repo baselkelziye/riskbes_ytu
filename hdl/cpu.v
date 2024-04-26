@@ -11,84 +11,54 @@
 //Hazard detection yapinca aradaki komutu NOP yapmamiz gerekir mi?
 
 module cpu( input clk_i,
-            input rst_i,
-            input [31:0] instr_mem_read_i,
-            input [31:0] data_mem_read_i,
-            input data_busy_i,
-            input inst_busy_i,
-            
-            output inst_mem_read_o,
-            output data_mem_read_o,
-            output data_mem_write_o,
-            output [31:0] instr_addr_o,
-            output [31:0] data_addr_o,
-            output [31:0] data_mem_w_data_o);
+            input rst_i);
     
-    wire [31:0] PC_last_w;  
-    wire [31:0] PC_w;
-    wire [31:0] PC_4_w;
-    wire [31:0] instruction_if_id_i;
-    wire [31:0] data_data_w;
+   //***********IF-ID STAGE VARIABLES************
+   wire is_long_if_id_o; 
     
-    //***********IF-ID STAGE VARIABLES************
-    wire is_long_if_id_o; 
+   wire [31:1] pc_if_id_o; //ID asamasina giren PC olduugu icin PC_ID_O isimlend
+   wire [31:2] instruction_if_id_o;
     
-    wire [31:1] pc_if_id_o; //ID asamasina giren PC olduugu icin PC_ID_O isimlend
-    wire [31:2] instruction_if_id_o;
-    
-    wire [4:0] rd_if_id_o  = instruction_if_id_o[11:7]; 
-    wire [4:0] rs1_if_id_o = instruction_if_id_o[19:15]; 
-    wire [4:0] rs2_if_id_o = instruction_if_id_o[24:20];
-    wire [6:0] instruction_opcode_if_id_o = {instruction_if_id_o[6:2], 2'b11};
-    wire [2:0] instruction_funct3_if_id_o = instruction_if_id_o[14:12];
-    wire [6:0] instruction_funct7_if_id_o = instruction_if_id_o[31:25];
-    wire [24:0] instruction_payload_if_id_o = instruction_if_id_o[31:7];
+   wire [4:0] rd_if_id_o  = instruction_if_id_o[11:7]; 
+   wire [4:0] rs1_if_id_o = instruction_if_id_o[19:15]; 
+   wire [4:0] rs2_if_id_o = instruction_if_id_o[24:20];
+   wire [6:0] instruction_opcode_if_id_o = {instruction_if_id_o[6:2], 2'b11};
+   wire [2:0] instruction_funct3_if_id_o = instruction_if_id_o[14:12];
+   wire [6:0] instruction_funct7_if_id_o = instruction_if_id_o[31:25];
+   wire [24:0] instruction_payload_if_id_o = instruction_if_id_o[31:7];
     
     
     //*******************ID-EX STAGE VARIABLES***********   
     wire is_long_id_ex_o;  
-    
-    wire [31:0] rs1_value_id_ex_i; // pass rs1 register ID/EX stage
+
     wire [31:0] rs1_value_id_ex_o;
     
     wire [31:0] pc_id_ex_o; //pass PC to ID/EX stage
-    
-    
-    wire [31:0] rs2_value_id_ex_i; //pass rs2 to ID/EX stage
+
     wire [31:0] rs2_value_id_ex_o;
-    
-    wire [31:0] imm_value_id_ex_i; //pass imm to ID/EX stage
+
     wire [31:0] imm_value_id_ex_o;
-    
-    wire [2:0] imm_sel_id_ex_i; //control signal for imm
+
     wire [2:0] imm_sel_id_ex_o; 
-     
-    wire alu_op1_sel_id_ex_i; //alu op1 control signal 
+
     wire alu_op1_sel_id_ex_o;
-       
-    wire alu_op2_sel_id_ex_i; //alu op2 control signal
+
     wire alu_op2_sel_id_ex_o; 
-    
-    wire [4:0] alu_op_id_ex_i; //alu operation selection signal
+
     wire [4:0] alu_op_id_ex_o; 
-    
-    wire [2:0] branch_sel_id_ex_i; //branch unit selection
+
     wire [2:0] branch_sel_id_ex_o;  
-    
-    wire [3:0] read_write_sel_id_ex_i; //read write to cache
+
     wire [3:0] read_write_sel_id_ex_o; 
-    
-    wire [1:0] wb_sel_id_ex_i; //which value to write back
+
     wire [1:0] wb_sel_id_ex_o;
-      
-    wire reg_wb_en_id_ex_i; //writeback signal
+
     wire reg_wb_en_id_ex_o;  
     
     wire [4:0] rd_id_ex_o; //pass rd label for the writeback   
     wire [4:0] rs1_label_id_ex_o; //forwarding unit
     
     wire [4:0] rs2_label_id_ex_o;    
-    wire [6:0] opcode_id_ex_o;
     wire is_memory_instruction_id_ex_o;
     
     //*****************EX-MEM******************
@@ -96,10 +66,7 @@ module cpu( input clk_i,
     
     wire [31:0] alu_out_ex_mem_i; // for alu output
     wire [31:0] alu_out_ex_mem_o;
-    wire [1:0] wb_sel_ex_mem_i;
-    wire reg_wb_en_ex_mem_i;
     wire reg_wb_en_ex_mem_o;
-    wire [4:0] rd_ex_mem_i;
     wire [4:0] rd_ex_mem_o;  
     wire [31:0] pc_ex_mem_o;  
     wire [1:0] wb_sel_ex_mem_o; // control signal to WB                              
@@ -119,17 +86,14 @@ module cpu( input clk_i,
     
     //    *********** MEM-WB STAGE ***************
     wire is_long_mem_wb_o; 
-    
-    wire reg_wb_en_mem_wb_i;
+
     wire reg_wb_en_mem_wb_o;  
     wire [4:0] rd_mem_wb_o;  
     wire [31:0] alu_out_mem_wb_o;  
     wire [1:0] wb_sel_mem_wb_o; // control signal to write back to reg file (which value) 
-    wire [31:0] rd_data_mem_wb_i;
     wire [31:0] rd_data_mem_wb_o; 
     wire [31:0] imm_mem_wb_o;
     wire [31:0] pc_mem_wb_o;
-    wire [3:0] read_write_sel_mem_wb_o;
     wire is_memory_instruction_mem_wb_o; 
     wire [31:0] rs2_mem_wb_o;   
     wire [31:0] pc_mem_wb_o_4; 
@@ -137,8 +101,6 @@ module cpu( input clk_i,
     //************ tmp values *******************\\
     
     //tmp control signals
-    wire is_memory_signal;
-    wire is_load_instruction_id_ex_i;
     wire stall;
     wire [31:0] alu_in1_w;
     wire [31:0] alu_in2_w; 
@@ -208,69 +170,108 @@ module cpu( input clk_i,
 //        .pc_if_id_o(pc_if_id_o)
 //    );
 
-    u_if u_if(
-        .clk_i(clk_i),
-        .rst_i(rst_i),
-        .data_busywait_i(data_busy_w),
-        .ins_busywait_o(ins_busy_w),
-        .stall(stall),
-        .branching(PC_sel_w_ex_mem_o),
-        .branch_pc(alu_out_ex_mem_o[31:1]),
-        .instr_o(instruction_if_id_o),
-        .is_long_o(is_long_if_id_o),
-        .pc_o(pc_if_id_o)
-    );
+   u_if u_if(
+     .clk_i(clk_i),
+     .rst_i(rst_i),
+     .data_busywait_i(data_busy_w),
+     .ins_busywait_o(ins_busy_w),
+     .stall(stall),
+     .branching(PC_sel_w_ex_mem_o),
+     .branch_pc(alu_out_ex_mem_o[31:1]),
+     .instr_o(instruction_if_id_o),
+     .is_long_o(is_long_if_id_o),
+     .pc_o(pc_if_id_o)
+   );
+    
+        
+   wire [31:1] u_id_pc_o;  
+   assign pc_id_ex_o = {u_id_pc_o, 1'b0};   
+   instruction_decode_stage u_id(
+      .clk_i(clk_i),
+      .rst_i(rst_i),
+      
+      .instr_i(instruction_if_id_o),
+      .busywait(busy_w),
+      .flush(PC_sel_w_ex_mem_o),
+      .stall(stall),
+      
+      .rd_label_i(rd_mem_wb_o),
+      .rd_data_i(reg_wb_data_w),
+      .rd_enable_i(reg_wb_en_mem_wb_o),
+      
+      .is_long_i(is_long_if_id_o),
+      .pc_i(pc_if_id_o),
+      .pc_id_ex_o(u_id_pc_o),
+        
+      .rs1_value_id_ex_o(rs1_value_id_ex_o),
+      .rs2_value_id_ex_o(rs2_value_id_ex_o),
+      .imm_value_id_ex_o(imm_value_id_ex_o),
+      .imm_sel_id_ex_o(imm_sel_id_ex_o),
+      .alu_op1_sel_id_ex_o(alu_op1_sel_id_ex_o),
+      .alu_op2_sel_id_ex_o(alu_op2_sel_id_ex_o),
+      .alu_op_id_ex_o(alu_op_id_ex_o),
+      .branch_sel_id_ex_o(branch_sel_id_ex_o),   //signal 3 bit
+      .read_write_sel_id_ex_o(read_write_sel_id_ex_o),
+      .wb_sel_id_ex_o(wb_sel_id_ex_o),
+      .reg_wb_en_id_ex_o(reg_wb_en_id_ex_o),
+      .rd_id_ex_o(rd_id_ex_o),
+      .rs1_label_id_ex_o(rs1_label_id_ex_o),
+      .rs2_label_id_ex_o(rs2_label_id_ex_o),
+      .is_memory_instruction_id_ex_o(is_memory_instruction_id_ex_o),
+      .is_load_instruction_id_ex_o(is_load_instruction_id_ex_o),
+      .is_long_id_ex_o(is_long_id_ex_o)
+   );
 
     //Yazmaclarin durdugu yer
-    regfile u_regfile
-    (
-        .clk_i(clk_i                  ),
-        .rst_i(rst_i                  ),
-        .write_en_i(reg_wb_en_mem_wb_o),//yazmaca yaz sinyali (mem/wb asamasindan gelir)
-        .rd_i(rd_mem_wb_o             ),//rd yazmac numarasi
-        .rd_data_i(reg_wb_data_w      ),//rd yazmac degeri
-        .rs1_i(rs1_if_id_o            ),//rs1 yazmac numarasi (okumak icin)
-        .rs2_i(rs2_if_id_o            ),//rs2 yazmac numarasi (okumak icin)
-        .rs1_data_o(rs1_value_id_ex_i       ),//rs1 yazmac degeri (cikis)
-        .rs2_data_o(rs2_value_id_ex_i       )//rs2 yazmac degeri (cikis)
-    );
+//    regfile u_regfile
+//    (
+//        .clk_i(clk_i                  ),
+//        .rst_i(rst_i                  ),
+//        .write_en_i(reg_wb_en_mem_wb_o),//yazmaca yaz sinyali (mem/wb asamasindan gelir)
+//        .rd_i(rd_mem_wb_o             ),//rd yazmac numarasi
+//        .rd_data_i(reg_wb_data_w      ),//rd yazmac degeri
+//        .rs1_i(rs1_if_id_o            ),//rs1 yazmac numarasi (okumak icin)
+//        .rs2_i(rs2_if_id_o            ),//rs2 yazmac numarasi (okumak icin)
+//        .rs1_data_o(rs1_value_id_ex_i       ),//rs1 yazmac degeri (cikis)
+//        .rs2_data_o(rs2_value_id_ex_i       )//rs2 yazmac degeri (cikis)
+//    );
     
     
-    // Load Data Hazard durumlarindaki Pipeline'i stall etmek icin
-    hazard_detection_unit hazard_detection_unit
-    (
-        .is_load_instruction(is_load_instruction_id_ex_o  ), // EX asamasinda LOAD islemi var
-        .rd_label_id_ex_o(rd_id_ex_o                      ), // EX asamasinda RD
-        .rs1_label_if_id_o(rs1_if_id_o                    ), // ID rs1 numarasi
-        .rs2_label_if_id_o(rs2_if_id_o                    ), // ID rs2 numarasi
-        .stall(stall                                      )  // cikis stall sinyali
-    );
+//    // Load Data Hazard durumlarindaki Pipeline'i stall etmek icin
+//    hazard_detection_unit hazard_detection_unit
+//    (
+//        .is_load_instruction(is_load_instruction_id_ex_o  ), // EX asamasinda LOAD islemi var
+//        .rd_label_id_ex_o(rd_id_ex_o                      ), // EX asamasinda RD
+//        .rs1_label_if_id_o(rs1_if_id_o                    ), // ID rs1 numarasi
+//        .rs2_label_if_id_o(rs2_if_id_o                    ), // ID rs2 numarasi
+//        .stall(stall                                      )  // cikis stall sinyali
+//    );
 
     
     
-    //Control Unit (umutun raporuna bakilmali)
-    control_unit u_control_unit(
-        .opcode_i(instruction_opcode_if_id_o),
-        .funct3_i(instruction_funct3_if_id_o),
-        .funct7_i(instruction_funct7_if_id_o),
-        .imm_sel_o(imm_sel_id_ex_i),
-        .op1_sel_o(alu_op1_sel_id_ex_i),
-        .op2_sel_o(alu_op2_sel_id_ex_i),
-        .alu_op_o(alu_op_id_ex_i),
-        .branch_sel_o(branch_sel_id_ex_i),
-        .read_write_o(read_write_sel_id_ex_i),
-        .wb_sel_o(wb_sel_id_ex_i),
-        .reg_w_en_o(reg_wb_en_id_ex_i),
-        .is_memory_instruction_o(is_memory_signal),
-        .is_load_instruction(is_load_instruction_id_ex_i)
-    );
+//    //Control Unit (umutun raporuna bakilmali)
+//    control_unit u_control_unit(
+//        .opcode_i(instruction_opcode_if_id_o),
+//        .funct3_i(instruction_funct3_if_id_o),
+//        .funct7_i(instruction_funct7_if_id_o),
+//        .imm_sel_o(imm_sel_id_ex_i),
+//        .op1_sel_o(alu_op1_sel_id_ex_i),
+//        .op2_sel_o(alu_op2_sel_id_ex_i),
+//        .alu_op_o(alu_op_id_ex_i),
+//        .branch_sel_o(branch_sel_id_ex_i),
+//        .read_write_o(read_write_sel_id_ex_i),
+//        .wb_sel_o(wb_sel_id_ex_i),
+//        .reg_w_en_o(reg_wb_en_id_ex_i),
+//        .is_memory_instruction_o(is_memory_signal),
+//        .is_load_instruction(is_load_instruction_id_ex_i)
+//    );
     
-    //Anlik genisletme birimi (umutun ara raporuna bakilmali)
-    imm_gen u_imm_gen(
-        .instr_i(instruction_payload_if_id_o),
-        .imm_sel_i(imm_sel_id_ex_i),
-        .imm_o(imm_value_id_ex_i) // ID-EX yazmacina imm-gen sonucu yaz
-    );
+//    //Anlik genisletme birimi (umutun ara raporuna bakilmali)
+//    imm_gen u_imm_gen(
+//        .instr_i(instruction_payload_if_id_o),
+//        .imm_sel_i(imm_sel_id_ex_i),
+//        .imm_o(imm_value_id_ex_i) // ID-EX yazmacina imm-gen sonucu yaz
+//    );
                          
     //Dallanma birimi (umutuun raporuna bakilmali)
     branch_jump u_branch_jump(
@@ -281,66 +282,66 @@ module cpu( input clk_i,
     );
         
     //****************ID-EX PIPELINE REGISTER**************
-    wire flush_id_ex_o;
-    id_ex_stage_reg id_ex(
-        .clk_i(clk_i),
-        .rst_i(rst_i),
-        .busywait(busy_w),
-        .flush(PC_sel_w_ex_mem_o),
+//    wire flush_id_ex_o;
+//    id_ex_stage_reg id_ex(
+//        .clk_i(clk_i),
+//        .rst_i(rst_i),
+//        .busywait(busy_w),
+//        .flush(PC_sel_w_ex_mem_o),
         
-        .is_long_id_ex_i(is_long_if_id_o),
-        .is_long_id_ex_o(is_long_id_ex_o),
+//        .is_long_id_ex_i(is_long_if_id_o),
+//        .is_long_id_ex_o(is_long_id_ex_o),
         
-        .pc_id_ex_i({pc_if_id_o, 1'b0}),          //passing PC for the Branch UNIT
-        .pc_id_ex_o(pc_id_ex_o),
+//        .pc_id_ex_i({pc_if_id_o, 1'b0}),          //passing PC for the Branch UNIT
+//        .pc_id_ex_o(pc_id_ex_o),
         
-        .rs1_value_id_ex_i(rs1_value_id_ex_i),       // passing rs1 32 bit value
-        .rs1_value_id_ex_o(rs1_value_id_ex_o),
+//        .rs1_value_id_ex_i(rs1_value_id_ex_i),       // passing rs1 32 bit value
+//        .rs1_value_id_ex_o(rs1_value_id_ex_o),
         
-        .rs2_value_id_ex_i(rs2_value_id_ex_i),       //passinng rs2 32bit value
-        .rs2_value_id_ex_o(rs2_value_id_ex_o),
+//        .rs2_value_id_ex_i(rs2_value_id_ex_i),       //passinng rs2 32bit value
+//        .rs2_value_id_ex_o(rs2_value_id_ex_o),
         
-        .imm_value_id_ex_i(imm_value_id_ex_i),       // passing the 32bit imm result
-        .imm_value_id_ex_o(imm_value_id_ex_o),
+//        .imm_value_id_ex_i(imm_value_id_ex_i),       // passing the 32bit imm result
+//        .imm_value_id_ex_o(imm_value_id_ex_o),
         
-        .imm_sel_id_ex_i(imm_sel_id_ex_i),//passing 3 bit selection for imm unit
-        .imm_sel_id_ex_o(imm_sel_id_ex_o),
+//        .imm_sel_id_ex_i(imm_sel_id_ex_i),//passing 3 bit selection for imm unit
+//        .imm_sel_id_ex_o(imm_sel_id_ex_o),
         
-        .alu_op1_sel_id_ex_i(alu_op1_sel_id_ex_i), //alu op1 1bitsignal
-        .alu_op1_sel_id_ex_o(alu_op1_sel_id_ex_o),
+//        .alu_op1_sel_id_ex_i(alu_op1_sel_id_ex_i), //alu op1 1bitsignal
+//        .alu_op1_sel_id_ex_o(alu_op1_sel_id_ex_o),
         
-        .alu_op2_sel_id_ex_i(alu_op2_sel_id_ex_i), //alu op2 1 bit signal
-        .alu_op2_sel_id_ex_o(alu_op2_sel_id_ex_o),
+//        .alu_op2_sel_id_ex_i(alu_op2_sel_id_ex_i), //alu op2 1 bit signal
+//        .alu_op2_sel_id_ex_o(alu_op2_sel_id_ex_o),
         
-        .alu_op_id_ex_i(alu_op_id_ex_i),   //alu operation signal 5bit
-        .alu_op_id_ex_o(alu_op_id_ex_o),
+//        .alu_op_id_ex_i(alu_op_id_ex_i),   //alu operation signal 5bit
+//        .alu_op_id_ex_o(alu_op_id_ex_o),
         
-        .branch_sel_id_ex_i(branch_sel_id_ex_i),   //branch unit select
-        .branch_sel_id_ex_o(branch_sel_id_ex_o),   //signal 3 bit
+//        .branch_sel_id_ex_i(branch_sel_id_ex_i),   //branch unit select
+//        .branch_sel_id_ex_o(branch_sel_id_ex_o),   //signal 3 bit
         
-        .read_write_sel_id_ex_i(read_write_sel_id_ex_i), //in case of stall, send 0
-        //else send old value
-        .read_write_sel_id_ex_o(read_write_sel_id_ex_o),
+//        .read_write_sel_id_ex_i(read_write_sel_id_ex_i), //in case of stall, send 0
+//        //else send old value
+//        .read_write_sel_id_ex_o(read_write_sel_id_ex_o),
         
-        .wb_sel_id_ex_i(wb_sel_id_ex_i),//
-        .wb_sel_id_ex_o(wb_sel_id_ex_o),
+//        .wb_sel_id_ex_i(wb_sel_id_ex_i),//
+//        .wb_sel_id_ex_o(wb_sel_id_ex_o),
         
-        .reg_wb_en_id_ex_i(reg_wb_en_id_ex_i),
-        .reg_wb_en_id_ex_o(reg_wb_en_id_ex_o),
+//        .reg_wb_en_id_ex_i(reg_wb_en_id_ex_i),
+//        .reg_wb_en_id_ex_o(reg_wb_en_id_ex_o),
         
-        .rd_id_ex_i(rd_if_id_o),
-        .rd_id_ex_o(rd_id_ex_o),
-        .rs1_label_id_ex_i(rs1_if_id_o),
-        .rs1_label_id_ex_o(rs1_label_id_ex_o),
-        .rs2_label_id_ex_i(rs2_if_id_o),
-        .rs2_label_id_ex_o(rs2_label_id_ex_o),
-        .opcode_id_ex_i(instruction_opcode_if_id_o),
-        .opcode_id_ex_o(opcode_id_ex_o),
-        .is_memory_instruction_id_ex_i(is_memory_signal),
-        .is_memory_instruction_id_ex_o(is_memory_instruction_id_ex_o),
-        .is_load_instruction_id_ex_i(is_load_instruction_id_ex_i),
-        .is_load_instruction_id_ex_o(is_load_instruction_id_ex_o)
-    );
+//        .rd_id_ex_i(rd_if_id_o),
+//        .rd_id_ex_o(rd_id_ex_o),
+//        .rs1_label_id_ex_i(rs1_if_id_o),
+//        .rs1_label_id_ex_o(rs1_label_id_ex_o),
+//        .rs2_label_id_ex_i(rs2_if_id_o),
+//        .rs2_label_id_ex_o(rs2_label_id_ex_o),
+//        .opcode_id_ex_i(instruction_opcode_if_id_o),
+//        .opcode_id_ex_o(opcode_id_ex_o),
+//        .is_memory_instruction_id_ex_i(is_memory_signal),
+//        .is_memory_instruction_id_ex_o(is_memory_instruction_id_ex_o),
+//        .is_load_instruction_id_ex_i(is_load_instruction_id_ex_i),
+//        .is_load_instruction_id_ex_o(is_load_instruction_id_ex_o)
+//    );
                          
      //Yonlendirma birimi, kendi dosyasinda aciklama yapildi
     forwarding_unit forwarding_unit(
@@ -352,8 +353,7 @@ module cpu( input clk_i,
         .reg_wb_en_mem_wb_o(reg_wb_en_mem_wb_o),
         .is_memory_instruction_mem_wb_o(is_memory_instruction_mem_wb_o),
         .forwardA(forwardA),
-        .forwardB(forwardB),
-        .opcode(opcode_id_ex_o)
+        .forwardB(forwardB)
     );
     
     
@@ -417,8 +417,6 @@ module cpu( input clk_i,
         .result_o(alu_out_ex_mem_i)
     );
 
-    wire [31:0] calculated_address;
-
     ex_mem_stage_reg ex_mem(
         .clk_i(clk_i),
         .rst_i(rst_i),
@@ -452,8 +450,7 @@ module cpu( input clk_i,
     );
                  
     wire [31:0] data_cache_data_out;
-    wire [31:0] data_address_forwarded_input;
-
+    
     data_cache c_data_cache(
         .clk_i(clk_i),
         .rst_i(rst_i),

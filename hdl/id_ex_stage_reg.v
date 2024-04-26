@@ -6,7 +6,7 @@ module id_ex_stage_reg(
     input busywait,
     input flush,
     
-    input [31:0] pc_id_ex_i,
+    input [31:1] pc_id_ex_i,
     
     input [31:0] rs1_value_id_ex_i,
     input [31:0] rs2_value_id_ex_i,
@@ -24,12 +24,12 @@ module id_ex_stage_reg(
     input [4:0] rd_id_ex_i,
     input [4:0] rs1_label_id_ex_i,
     input [4:0] rs2_label_id_ex_i,
-    input [6:0] opcode_id_ex_i,
+//    input [6:0] opcode_id_ex_i,
     input is_memory_instruction_id_ex_i,
     input is_load_instruction_id_ex_i,
     input is_long_id_ex_i,
 
-    output reg [31:0] pc_id_ex_o,
+    output reg [31:1] pc_id_ex_o,
     
     output reg [31:0] rs1_value_id_ex_o,
     output reg [31:0] rs2_value_id_ex_o,  
@@ -47,7 +47,7 @@ module id_ex_stage_reg(
     output reg [4:0] rd_id_ex_o,
     output reg [4:0] rs1_label_id_ex_o,
     output reg [4:0] rs2_label_id_ex_o,   
-    output reg [6:0] opcode_id_ex_o,  
+//    output reg [6:0] opcode_id_ex_o,  
     output reg is_memory_instruction_id_ex_o,
     output reg is_load_instruction_id_ex_o,
     output reg is_long_id_ex_o
@@ -56,7 +56,7 @@ module id_ex_stage_reg(
     always @(*) begin
         if(rst_i || flush) begin
             #0.1;
-            pc_id_ex_o <= 32'd0;
+            pc_id_ex_o <= 31'd0;
             rs1_value_id_ex_o <= 32'd0;
             rs2_value_id_ex_o <= 32'd0;
             imm_value_id_ex_o <= 32'd0;
@@ -70,7 +70,6 @@ module id_ex_stage_reg(
             reg_wb_en_id_ex_o <= 0;
             rd_id_ex_o <= 5'd0;
             rs1_label_id_ex_o <= 5'd0;
-            opcode_id_ex_o <= 7'd0;
             is_memory_instruction_id_ex_o  <= 1'b0;
             is_load_instruction_id_ex_o <= 1'b0;
             is_long_id_ex_o <= 1'b0;
@@ -95,7 +94,6 @@ module id_ex_stage_reg(
             rd_id_ex_o <= rd_id_ex_i;
             rs1_label_id_ex_o <= rs1_label_id_ex_i;
             rs2_label_id_ex_o <= rs2_label_id_ex_i;
-            opcode_id_ex_o <= opcode_id_ex_i;
             is_memory_instruction_id_ex_o <= is_memory_instruction_id_ex_i;
             is_load_instruction_id_ex_o <= is_load_instruction_id_ex_i;
             is_long_id_ex_o <= is_long_id_ex_i;
