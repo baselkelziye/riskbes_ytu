@@ -26,8 +26,8 @@ async def load_instruction_cache(dut, file_path):
     cache_size = 100  # Example size, adjust according to your actual cache size
     
     # Reset/Clear the instruction cache
-    for i in range(cache_size):
-        dut.u_if.cache.cache_r[i] = 0x13  # NOP
+    #for i in range(cache_size):
+     #   dut.u_if.cache.genblk1[i >> 5].cblock.cache[i & 31] = 0x13  # NOP
     
     # Minimal wait time after clearing the cache
     await Timer(1, units='ns')
@@ -38,7 +38,7 @@ async def load_instruction_cache(dut, file_path):
         for i, line in enumerate(lines):
             instruction = int(line.strip(), 16)
             # Assign the instruction to the cache
-            dut.u_if.cache.cache_r[i] = instruction
+            dut.u_if.cache.genblk1[i >> 5].cblock.cache[i & 31] = instruction
 
     # Wait time to ensure assignment is processed
     await Timer(1, units='ns')
@@ -90,6 +90,7 @@ async def umut_cpu(dut):
     for i in range(31):
         dut_value = register_file[i+1].value
         expected_value = int(expect_values[i], 16)
+        
         if dut_value != expected_value:
             dut._log.error(f"Mismatch at Register {i+1}: expected {expect_values[i]}, got {hex(dut_value)}")
         else:
@@ -114,6 +115,7 @@ async def zahid_bubblesort(dut):
     for i in range(45):
         dut_value = data_memory[i].value
         expected_value = int(expected_values[i], 16)
+        
         if dut_value != expected_value:
             dut._log.error(f"Mismatch at Data Memory {i}: expected {expected_values[i]}, got {hex(dut_value)}")
         else:
@@ -131,6 +133,7 @@ async def zahid_carpma(dut):
     await run_clock(dut, num_cycles, period_ns)
     expected_value = 143 #in decimal
     register_file = dut.u_id.u_regfile.registers
+    
     if(register_file[10] != expected_value):
         dut._log.error(f"Mismatch at Register 10: expected {expected_value}, got {register_file[10]}")
     else:

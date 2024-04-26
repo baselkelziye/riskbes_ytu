@@ -43,12 +43,12 @@ assign ins_busywait_o = branched ^ branching;
 
 parameter FETCH_WIDTH = 30;
 
-reg [FETCH_WIDTH - 1:0] fetch_counter;
-wire [FETCH_WIDTH - 1:0] fetch_counter_next;
+reg [FETCH_WIDTH + 1:2] fetch_counter;
+wire [FETCH_WIDTH + 1:2] fetch_counter_next;
 wire fetch_counter_carry;
 
 wire fetch_counter_sel, fetch_address_sel, pc_aligned_n_sel;
-wire [FETCH_WIDTH - 1:0] fetch_address = fetch_address_sel ? fetch_counter_next : fetch_counter;
+wire [FETCH_WIDTH + 1:2] fetch_address = fetch_address_sel ? fetch_counter_next : fetch_counter;
 
 wire [31:1] pc_aligned = {fetch_counter, 1'b0};
 wire [31:1] pc_unaligned = {fetch_counter, 1'b1};
@@ -104,7 +104,7 @@ always @(posedge clk_i) begin
             pc_o <= pc_aligned_n_sel ? pc_unaligned : pc_aligned;
         end
     end else begin
-        fetch_counter <= 30'b0;
+        fetch_counter <= 32'b0;
     end
 end
     
