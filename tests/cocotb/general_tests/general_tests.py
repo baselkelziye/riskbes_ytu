@@ -26,8 +26,8 @@ async def load_instruction_cache(dut, file_path):
     cache_size = 100  # Example size, adjust according to your actual cache size
     
     # Reset/Clear the instruction cache
-    #for i in range(cache_size):
-     #   dut.u_if.cache.genblk1[i >> 5].cblock.cache[i & 31] = 0x13  # NOP
+    for i in range(cache_size):
+        dut.icache.genblk1[i >> 5].cblock.cache[i & 31].value = 0x13  # NOP
     
     # Minimal wait time after clearing the cache
     await Timer(1, units='ns')
@@ -38,7 +38,7 @@ async def load_instruction_cache(dut, file_path):
         for i, line in enumerate(lines):
             instruction = int(line.strip(), 16)
             # Assign the instruction to the cache
-            dut.u_if.cache.genblk1[i >> 5].cblock.cache[i & 31] = instruction
+            dut.icache.genblk1[i >> 5].cblock.cache[i & 31].value = instruction
 
     # Wait time to ensure assignment is processed
     await Timer(1, units='ns')
@@ -54,7 +54,7 @@ async def basel_bubblesort(dut):
     num_cycles = 2000  # Define the number of cycles to run the clock
     await run_clock(dut, num_cycles, period_ns)
     # After the clock has been run for 400 cycles, you can add your comparison logic here.  
-    data_memory = dut.c_data_cache.cache_r
+    data_memory = dut.core.c_data_cache.cache_r
     expected_data_values = ["0x01", "0x02", "0x03", "0x04", "0x05", "0x06", "0x07", "0x08", "0x09", "0x0b"]
 
     for i in range(10):
@@ -86,7 +86,7 @@ async def umut_cpu(dut):
                       "0xa0b", "0x0b",  "0x1000", "0x1048", "0x00", "0x01", "0x01",
                         "0x01", "0x00", "0x00", "0x00", "0x00", "0x00", "0x00", "0x00", "0x02",
                         "0x50", "0xffff9b38", "0xffffff01", "0xffffffff", "0x00", "0x01", "0xff"]
-    register_file = dut.u_id.u_regfile.registers
+    register_file = dut.core.u_id.u_regfile.registers
     for i in range(31):
         dut_value = register_file[i+1].value
         expected_value = int(expect_values[i], 16)
@@ -107,7 +107,7 @@ async def zahid_bubblesort(dut):
     num_cycles = 2000  # Define the number of cycles to run the clock
     await run_clock(dut, num_cycles, period_ns)
     # After the clock has been run for 400 cycles, you can add your comparison logic here.  
-    data_memory = dut.c_data_cache.cache_r
+    data_memory = dut.core.c_data_cache.cache_r
     expected_values = ["0x14", "0x00", "0x00", "0x00", "0x13", "0x00", "0x00", "0x00", "0x12", "0x00", "0x00", "0x00",
                        "0x11", "0x00", "0x00", "0x00", "0x10", "0x00", "0x00", "0x00", "0x0f", "0x00", "0x00", "0x00",
                        "0x0e", "0x00", "0x00", "0x00", "0x0d", "0x00", "0x00", "0x00", "0x0c", "0x00", "0x00", "0x00",
@@ -132,7 +132,7 @@ async def zahid_carpma(dut):
     num_cycles = 1000
     await run_clock(dut, num_cycles, period_ns)
     expected_value = 143 #in decimal
-    register_file = dut.u_id.u_regfile.registers
+    register_file = dut.core.u_id.u_regfile.registers
     
     if(register_file[10] != expected_value):
         dut._log.error(f"Mismatch at Register 10: expected {expected_value}, got {register_file[10]}")

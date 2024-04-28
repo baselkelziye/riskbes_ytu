@@ -24,19 +24,23 @@ module u_if(
     input clk_i,
     input rst_i,
     
+    input [31:0] cache_data_i,
+    
     input data_busywait_i,
-    output ins_busywait_o,
     input stall,
     
     input branching,
     input [31:1] branch_pc,
     
+    output [31:2] cache_address_o,
+    
     output [31:2] instr_o,
     output is_long_o,
-    output reg [31:1] pc_o
+    output reg [31:1] pc_o,
+    
+    output ins_busywait_o
     );
 
-reg state_loading_cache;
 reg branched;
 
 assign ins_busywait_o = branched ^ branching;
@@ -65,10 +69,13 @@ increment #(.DATA_WIDTH(FETCH_WIDTH)) fetch_counter_inc
     .carry_o(fetch_counter_carry)
 );
 
-instr_cache cache(
-    .address_i(fetch_address),
-    .read_data_o(cache_data)
- );
+//instr_cache cache(
+//    .address_i(fetch_address),
+//    .read_data_o(cache_data)
+// );
+
+assign cache_address_o = fetch_address;
+assign cache_data = cache_data_i;
 
 u_fetch fetch(
     .clk_i(clk_i),
