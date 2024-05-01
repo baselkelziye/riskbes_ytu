@@ -1,6 +1,21 @@
 import cocotb
 from cocotb.triggers import Timer
 
+def extract_memory(dut):
+   result = []
+   
+   BLOCK_COUNT = 16
+   BLOCK_WORD_COUNT = 32
+   
+   for i in range(BLOCK_COUNT):
+      for j in range(BLOCK_WORD_COUNT):
+         result.append(dut.dcache.genblk1[i].cblock.bytes_a.bytes[j])
+         result.append(dut.dcache.genblk1[i].cblock.bytes_b.bytes[j])
+         result.append(dut.dcache.genblk1[i].cblock.bytes_c.bytes[j])
+         result.append(dut.dcache.genblk1[i].cblock.bytes_d.bytes[j])
+         
+   return result
+  
 @cocotb.coroutine
 async def run_clock(dut, num_cycles, period_ns):
     """
@@ -23,6 +38,8 @@ async def run_clock(dut, num_cycles, period_ns):
 filepath = "assembly_codes/"
 period_ns = 2
 async def load_instruction_cache(dut, file_path):
+    dut.instr_sel = 0; # Select cache, not internal rom;
+
     cache_size = 100  # Example size, adjust according to your actual cache size
     
     # Reset/Clear the instruction cache
@@ -54,7 +71,7 @@ async def basel_bubblesort(dut):
     num_cycles = 2000  # Define the number of cycles to run the clock
     await run_clock(dut, num_cycles, period_ns)
     # After the clock has been run for 400 cycles, you can add your comparison logic here.  
-    data_memory = dut.core.c_data_cache.cache_r
+    data_memory = extract_memory(dut)
     expected_data_values = ["0x01", "0x02", "0x03", "0x04", "0x05", "0x06", "0x07", "0x08", "0x09", "0x0b"]
 
     for i in range(10):
@@ -107,7 +124,7 @@ async def zahid_bubblesort(dut):
     num_cycles = 2000  # Define the number of cycles to run the clock
     await run_clock(dut, num_cycles, period_ns)
     # After the clock has been run for 400 cycles, you can add your comparison logic here.  
-    data_memory = dut.core.c_data_cache.cache_r
+    data_memory = extract_memory(dut)
     expected_values = ["0x14", "0x00", "0x00", "0x00", "0x13", "0x00", "0x00", "0x00", "0x12", "0x00", "0x00", "0x00",
                        "0x11", "0x00", "0x00", "0x00", "0x10", "0x00", "0x00", "0x00", "0x0f", "0x00", "0x00", "0x00",
                        "0x0e", "0x00", "0x00", "0x00", "0x0d", "0x00", "0x00", "0x00", "0x0c", "0x00", "0x00", "0x00",

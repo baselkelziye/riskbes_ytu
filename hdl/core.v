@@ -14,8 +14,12 @@ module core(
    input clk_i,
    input rst_i,
    input [31:0] instr_cache_data_i,
+   input [31:0] data_cache_data_i,
    
-   output [31:2] instr_cache_address_o
+   output [31:2] instr_cache_address_o,
+   output [31:2] data_cache_address_o,
+   output [3:0] data_cache_write_en_o,
+   output [31:0] data_cache_data_o
 );
     
    //***********IF-ID STAGE VARIABLES************
@@ -289,19 +293,35 @@ module core(
         .PC_sel_w_ex_mem_o(PC_sel_w_ex_mem_o)
     );
                  
-    wire [31:0] data_cache_data_out;
+   wire [31:0] data_cache_data_out;
     
-    data_cache c_data_cache(
-        .clk_i(clk_i),
-        .rst_i(rst_i),
-        .address_i(alu_out_ex_mem_o),
-        .write_data_i(rs2_ex_mem_o), //rs2 n�n de�erini ta�� yaz oraya
-        .read_write_sel_i(read_write_sel_ex_mem_o),
-        .read_data_o(data_cache_data_out),
-        .busy_o(data_busy_w)
-    );
+//    data_cache c_data_cache(
+//        .clk_i(clk_i),
+//        .rst_i(rst_i),
+//        .address_i(alu_out_ex_mem_o),
+//        .write_data_i(rs2_ex_mem_o), //rs2 n�n de�erini ta�� yaz oraya
+//        .read_write_sel_i(read_write_sel_ex_mem_o),
+//        .read_data_o(data_cache_data_out),
+//        .busy_o(data_busy_w)
+//    );
+
+   assign data_cache_address_o = alu_out_ex_mem_o[31:2];
+
+   cache_access_unit cache_access_unit(
+      .clk_i(clk_i),
+      .rst_i(rst_i),
+      .addr_align_i(alu_out_ex_mem_o[1:0]),
+      .core_raw_data_i(rs2_ex_mem_o),
+      .cache_raw_data_i(data_cache_data_i),
+      .op_type_i(read_write_sel_ex_mem_o),
+      .write_en_o(data_cache_write_en_o),
+      .core_normalized_data_o(data_cache_data_o),
+      .cache_normalized_data_o(data_cache_data_out),
+      .busy_o(data_busy_w)
+   );
+  
    
-    mem_wb_stage_reg mem_wb(
+   mem_wb_stage_reg mem_wb(
         .clk_i(clk_i),
         .rst_i(rst_i),
         .busywait(busy_w),

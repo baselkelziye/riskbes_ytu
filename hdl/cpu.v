@@ -15,19 +15,47 @@ module cpu(
    input rst_i
 );
     
+   reg instr_sel = 1'b1; //0 = I$, 1 = ROM 
+    
    wire [31:2] icache_address;
    wire [31:0] icache_data;
+   wire [31:0] rom_data;
+   
+   wire [31:0] icache_rom_data = instr_sel ? rom_data : icache_data;
+   
+   wire [31:2] dcache_address;
+   wire [31:0] dcache_rdata, dcache_wdata;
+   wire [3:0] dcache_write_en;
     
    core core(
       .clk_i(clk_i),
       .rst_i(rst_i),
-      .instr_cache_data_i(icache_data),
-      .instr_cache_address_o(icache_address)
+      
+      .instr_cache_data_i(icache_rom_data),
+      .instr_cache_address_o(icache_address),
+      
+      .data_cache_data_i(dcache_rdata),
+      .data_cache_data_o(dcache_wdata),
+      .data_cache_address_o(dcache_address),
+      .data_cache_write_en_o(dcache_write_en)
    );
    
    instr_cache icache(
       .address_i(icache_address),
       .read_data_o(icache_data)
+   );
+   
+   internal_rom rom(
+      .address_i(icache_address),
+      .data_o(rom_data)
+   );
+   
+   data_cache dcache(
+      .clk_i(clk_i),
+      .addr_i(dcache_address),
+      .data_i(dcache_wdata),
+      .write_en_i(dcache_write_en),
+      .data_o(dcache_rdata)
    );
      
 endmodule
