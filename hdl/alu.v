@@ -10,11 +10,24 @@ module alu (
    reg [31:0]result_r;
    
    assign result_o = result_r;
-            
-   always @(alu1_i or alu2_i or alu_op_i) begin
+
+
+//****** SUM Icin Sinyaller ve Module Tanimi
+   wire [31:0] sum_result;
+   wire sum_cout;
+
+   cla32 u_cla32(
+      .d1(alu1_i),
+      .d2(alu2_i),
+      .cin(1'b0),
+      .sum(sum_result),
+      .cout(sum_cout)
+   );
+   // Eklenen Module Sonucu sensitivity CASE e eklenmeli, Ilerde "*" yapilsin         
+   always @(alu1_i or alu2_i or alu_op_i or sum_result) begin
         
       case (alu_op_i)
-         5'b00000: result_r = alu1_i + alu2_i; //ADD
+         5'b00000: result_r = sum_result; //ADD
          5'b00010: result_r = alu1_i - alu2_i; //SUB     
          5'b00100: result_r = alu1_i << alu2_i; //SLL      
          5'b01000: result_r = $signed(alu1_i) < $signed(alu2_i) ? 1 : 0; //SLT

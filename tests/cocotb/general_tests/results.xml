@@ -1,9 +1,0 @@
-<testsuites name="results">
-  <testsuite name="all" package="all">
-    <property name="random_seed" value="1713106364" />
-    <testcase name="basel_bubblesort" classname="general_tests" file="/home/basel/Desktop/riskbes_ytu/tests/cocotb/general_tests/general_tests.py" lineno="47" time="0.18362808227539062" sim_time_ns="4022.001" ratio_time="21902.97339144525" />
-    <testcase name="umut_cpu" classname="general_tests" file="/home/basel/Desktop/riskbes_ytu/tests/cocotb/general_tests/general_tests.py" lineno="75" time="0.04383254051208496" sim_time_ns="822.0010000000002" ratio_time="18753.213717406325" />
-    <testcase name="zahid_bubblesort" classname="general_tests" file="/home/basel/Desktop/riskbes_ytu/tests/cocotb/general_tests/general_tests.py" lineno="99" time="0.16161441802978516" sim_time_ns="4022.001" ratio_time="24886.399672947216" />
-    <testcase name="zahid_carpma" classname="general_tests" file="/home/basel/Desktop/riskbes_ytu/tests/cocotb/general_tests/general_tests.py" lineno="123" time="0.09201574325561523" sim_time_ns="2022.0010000000002" ratio_time="21974.51140923766" />
-  </testsuite>
-</testsuites>
