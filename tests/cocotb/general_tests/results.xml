@@ -1,9 +1,9 @@
 <testsuites name="results">
   <testsuite name="all" package="all">
-    <property name="random_seed" value="1714591686" />
-    <testcase name="basel_bubblesort" classname="general_tests" file="/home/azc/Genel/Hardware Projects/riskbes_ytu/tests/cocotb/general_tests/general_tests.py" lineno="64" time="0.3860287666320801" sim_time_ns="4022.001" ratio_time="10418.915240669943" />
-    <testcase name="umut_cpu" classname="general_tests" file="/home/azc/Genel/Hardware Projects/riskbes_ytu/tests/cocotb/general_tests/general_tests.py" lineno="92" time="0.056616783142089844" sim_time_ns="822.0010000000002" ratio_time="14518.68075826638" />
-    <testcase name="zahid_bubblesort" classname="general_tests" file="/home/azc/Genel/Hardware Projects/riskbes_ytu/tests/cocotb/general_tests/general_tests.py" lineno="117" time="0.35456085205078125" sim_time_ns="4022.001" ratio_time="11343.612744432252" />
-    <testcase name="zahid_carpma" classname="general_tests" file="/home/azc/Genel/Hardware Projects/riskbes_ytu/tests/cocotb/general_tests/general_tests.py" lineno="142" time="0.1672987937927246" sim_time_ns="2022.0010000000002" ratio_time="12086.166039578056" />
+    <property name="random_seed" value="1714747815" />
+    <testcase name="basel_bubblesort" classname="general_tests" file="/home/azc/Genel/Hardware Projects/riskbes_ytu/tests/cocotb/general_tests/general_tests.py" lineno="65" time="0.5598897933959961" sim_time_ns="4022.001" ratio_time="7183.558349232738" />
+    <testcase name="umut_cpu" classname="general_tests" file="/home/azc/Genel/Hardware Projects/riskbes_ytu/tests/cocotb/general_tests/general_tests.py" lineno="93" time="0.08178830146789551" sim_time_ns="822.0010000000002" ratio_time="10050.3493194887" />
+    <testcase name="zahid_bubblesort" classname="general_tests" file="/home/azc/Genel/Hardware Projects/riskbes_ytu/tests/cocotb/general_tests/general_tests.py" lineno="118" time="0.5270512104034424" sim_time_ns="4022.001" ratio_time="7631.13891138069" />
+    <testcase name="zahid_carpma" classname="general_tests" file="/home/azc/Genel/Hardware Projects/riskbes_ytu/tests/cocotb/general_tests/general_tests.py" lineno="143" time="0.22580432891845703" sim_time_ns="2022.0010000000002" ratio_time="8954.660035460125" />
   </testsuite>
 </testsuites>

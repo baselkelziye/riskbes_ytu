@@ -1,25 +1,35 @@
 `timescale 1ns / 1ps
 
-module instr_cache(
-   input [31:2]address_i, //Okunacak adresi
+module instr_cache #(
+   parameter INDEX_WIDTH = 4,
+   parameter OFFSET_WIDTH = 5
+)(
+   input [30:2]address_i, //Okunacak adresi
    output reg [31:0]read_data_o //okudugumuz veri
 );
-   wire [20:0] tag = address_i[31:11];
-   wire [3:0] index = address_i[10:7];
-   wire [4:0] offset = address_i[6:2];
+   localparam OFFSET_MSB = OFFSET_WIDTH + 1;
+   localparam INDEX_LSB = OFFSET_MSB + 1;
+   localparam INDEX_MSB = INDEX_LSB + INDEX_WIDTH - 1;
+   localparam TAG_LSB = INDEX_MSB + 1;
+   localparam TAG_WIDTH = 31 - TAG_LSB;
+
+   wire [TAG_WIDTH - 1 : 0] tag = address_i[30 : TAG_LSB];
+   wire [INDEX_WIDTH - 1 : 0] index = address_i[INDEX_MSB : INDEX_LSB];
+   wire [OFFSET_WIDTH - 1 : 0] offset = address_i[OFFSET_MSB : 2];
     
-   wire [31:0] block_data[0:15];
-   wire block_valid[0:15];
+   localparam BLOCK_COUNT = 2 ** INDEX_WIDTH;
+    
+   wire [31:0] block_data[0 : BLOCK_COUNT - 1];
     
    genvar I;
    
    generate
-      for (I = 0; I < 16; I = I + 1) begin
-         instr_cache_block cblock(
-            .tag_i(tag),
-            .offset_i(offset),
-            .data_o(block_data[I]),
-            .valid_o(block_valid[I])
+      for (I = 0; I < BLOCK_COUNT; I = I + 1) begin
+         instr_cache_qword_block #(
+            .ADDR_WIDTH(OFFSET_WIDTH)
+         ) block (
+            .addr_i(offset),
+            .data_o(block_data[I])
          );
       end
    endgenerate

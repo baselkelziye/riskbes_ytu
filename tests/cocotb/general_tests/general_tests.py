@@ -5,14 +5,16 @@ def extract_memory(dut):
    result = []
    
    BLOCK_COUNT = 16
-   BLOCK_WORD_COUNT = 32
+   SUBBLOCK_COUNT = 4
+   SUBSUBBLOCK_COUNT = 4
+   SUBSUBBLOCK_BYTE_COUNT = 8;
    
+   # Evet bunların sıralaması böyle olacak
    for i in range(BLOCK_COUNT):
-      for j in range(BLOCK_WORD_COUNT):
-         result.append(dut.dcache.genblk1[i].cblock.bytes_a.bytes[j])
-         result.append(dut.dcache.genblk1[i].cblock.bytes_b.bytes[j])
-         result.append(dut.dcache.genblk1[i].cblock.bytes_c.bytes[j])
-         result.append(dut.dcache.genblk1[i].cblock.bytes_d.bytes[j])
+      for j in range(SUBSUBBLOCK_BYTE_COUNT):
+         for k in range(SUBBLOCK_COUNT):
+            for l in range (SUBSUBBLOCK_COUNT):
+               result.append(dut.dcache.genblk1[i].block.genblk1[k].sub.genblk1[l].sub.bytes[j])
          
    return result
   
@@ -44,7 +46,7 @@ async def load_instruction_cache(dut, file_path):
     
     # Reset/Clear the instruction cache
     for i in range(cache_size):
-        dut.icache.genblk1[i >> 5].cblock.cache[i & 31].value = 0x13  # NOP
+        dut.icache.genblk1[i >> 5].block.genblk1[i & 3].sub.words[(i >> 2) & 7].value = 0x13  # NOP
     
     # Minimal wait time after clearing the cache
     await Timer(1, units='ns')
@@ -55,7 +57,7 @@ async def load_instruction_cache(dut, file_path):
         for i, line in enumerate(lines):
             instruction = int(line.strip(), 16)
             # Assign the instruction to the cache
-            dut.icache.genblk1[i >> 5].cblock.cache[i & 31].value = instruction
+            dut.icache.genblk1[i >> 5].block.genblk1[i & 3].sub.words[(i >> 2) & 7].value = instruction
 
     # Wait time to ensure assignment is processed
     await Timer(1, units='ns')

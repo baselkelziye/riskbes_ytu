@@ -32,7 +32,7 @@ module data_cache_byte_block #(
 
 localparam CACHE_SIZE = 2 ** ADDR_WIDTH;
 
-reg [7:0] bytes [0:CACHE_SIZE - 1];
+reg [7:0] bytes [0 : CACHE_SIZE - 1];
 
 assign data_o = bytes[addr_i];
 

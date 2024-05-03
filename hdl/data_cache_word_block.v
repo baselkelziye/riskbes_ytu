@@ -30,44 +30,36 @@ module data_cache_word_block #(
    output [31:0] data_o
 );
 
-   data_cache_byte_block #(
-      .ADDR_WIDTH(ADDR_WIDTH)
-   ) bytes_a (
-      .clk_i(clk_i),
-      .addr_i(addr_i),
-      .data_i(data_i[7:0]),
-      .write_en_i(write_en_i[0]),
-      .data_o(data_o[7:0])
-   );
+   genvar I;
    
-   data_cache_byte_block #(
-      .ADDR_WIDTH(ADDR_WIDTH)
-   ) bytes_b (
-      .clk_i(clk_i),
-      .addr_i(addr_i),
-      .data_i(data_i[15:8]),
-      .write_en_i(write_en_i[1]),
-      .data_o(data_o[15:8])
-   );
+   localparam SUB_COUNT = 4;
    
-   data_cache_byte_block #(
-      .ADDR_WIDTH(ADDR_WIDTH)
-   ) bytes_c (
-      .clk_i(clk_i),
-      .addr_i(addr_i),
-      .data_i(data_i[23:16]),
-      .write_en_i(write_en_i[2]),
-      .data_o(data_o[23:16])
-   );
+   wire [7:0] sub_data_r [0 : SUB_COUNT - 1];
    
-   data_cache_byte_block #(
-      .ADDR_WIDTH(ADDR_WIDTH)
-   ) bytes_d (
-      .clk_i(clk_i),
-      .addr_i(addr_i),
-      .data_i(data_i[31:24]),
-      .write_en_i(write_en_i[3]),
-      .data_o(data_o[31:24])
-   );
+   assign sub_data_r[0] = data_i[7:0];
+   assign sub_data_r[1] = data_i[15:8];
+   assign sub_data_r[2] = data_i[23:16];
+   assign sub_data_r[3] = data_i[31:24];
+   
+   wire [7:0] sub_data_w [0 : SUB_COUNT - 1];
+   
+   assign data_o[7:0] = sub_data_w[0];
+   assign data_o[15:8] = sub_data_w[1];
+   assign data_o[23:16] = sub_data_w[2];
+   assign data_o[31:24] = sub_data_w[3];
+   
+   generate
+      for(I = 0; I < SUB_COUNT; I = I + 1) begin
+         data_cache_byte_block #(
+            .ADDR_WIDTH(ADDR_WIDTH)
+         ) sub (
+            .clk_i(clk_i),
+            .addr_i(addr_i),
+            .data_i(sub_data_r[I]),
+            .write_en_i(write_en_i[I]),
+            .data_o(sub_data_w[I])
+         );
+      end
+   endgenerate
 
 endmodule
