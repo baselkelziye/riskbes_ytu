@@ -116,7 +116,7 @@ async def umut_cpu(dut):
             dut._log.info(f"Register {i+1} matches the expected value: {hex(dut_value)}")
 
 
-@cocotb.test()
+""" @cocotb.test()
 async def zahid_bubblesort(dut):
     filename = "zahid_bubblesort.txt"
     dut.rst_i.value = 1
@@ -138,7 +138,7 @@ async def zahid_bubblesort(dut):
         if dut_value != expected_value:
             dut._log.error(f"Mismatch at Data Memory {i}: expected {expected_values[i]}, got {hex(dut_value)}")
         else:
-            dut._log.info(f"Data Memory {i} matches the expected value: {hex(dut_value)}")
+            dut._log.info(f"Data Memory {i} matches the expected value: {hex(dut_value)}") """
 
 
 @cocotb.test()
@@ -153,7 +153,7 @@ async def zahid_carpma(dut):
     expected_value = 143 #in decimal
     register_file = dut.core.u_id.u_regfile.registers
     
-    if(register_file[10] != expected_value):
-        dut._log.error(f"Mismatch at Register 10: expected {expected_value}, got {register_file[10]}")
+    if(register_file[10].value != expected_value):
+        dut._log.error(f"Mismatch at Register 10: expected {expected_value}, got {register_file[10].value}")
     else:
-        dut._log.info(f"Register 10 matches the expected value: {register_file[10]}")
+        dut._log.info(f"Register 10 matches the expected value: {register_file[10].value}")

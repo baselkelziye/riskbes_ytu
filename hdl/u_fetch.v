@@ -64,11 +64,11 @@ module u_fetch(
         .instr_i(decompr_i)
     );
     
-    always @(posedge clk_i) begin
-        instr_save <= cache_data_i[31:18];
-    
+    always @(posedge clk_i) begin    
         if(!rst_i) begin
-            if(!data_busywait_i && !stall) begin      
+            if(!data_busywait_i && !stall) begin     
+                instr_save <= cache_data_i[31:18];
+             
                 if (branching) begin
                     instr_o <= INSTR_NOP;
                 

@@ -293,7 +293,6 @@ module core(
         .PC_sel_w_ex_mem_o(PC_sel_w_ex_mem_o)
     );
                  
-   wire [31:0] data_cache_data_out;
     
 //    data_cache c_data_cache(
 //        .clk_i(clk_i),
@@ -305,47 +304,82 @@ module core(
 //        .busy_o(data_busy_w)
 //    );
 
-   assign data_cache_address_o = alu_out_ex_mem_o[31:2];
+//   assign data_cache_address_o = alu_out_ex_mem_o[31:2];
 
-   cache_access_unit cache_access_unit(
-      .clk_i(clk_i),
-      .rst_i(rst_i),
-      .addr_align_i(alu_out_ex_mem_o[1:0]),
-      .core_raw_data_i(rs2_ex_mem_o),
-      .cache_raw_data_i(data_cache_data_i),
-      .op_type_i(read_write_sel_ex_mem_o),
-      .write_en_o(data_cache_write_en_o),
-      .core_normalized_data_o(data_cache_data_o),
-      .cache_normalized_data_o(data_cache_data_out),
-      .busy_o(data_busy_w)
-   );
+//   cache_access_unit cache_access_unit(
+//      .clk_i(clk_i),
+//      .rst_i(rst_i),
+//      .addr_align_i(alu_out_ex_mem_o[1:0]),
+//      .core_raw_data_i(rs2_ex_mem_o),
+//      .cache_raw_data_i(data_cache_data_i),
+//      .op_type_i(read_write_sel_ex_mem_o),
+//      .write_en_o(data_cache_write_en_o),
+//      .core_normalized_data_o(data_cache_data_o),
+//      .cache_normalized_data_o(data_cache_data_out),
+//      .busy_o(data_busy_w)
+//   );
   
    
-   mem_wb_stage_reg mem_wb(
-        .clk_i(clk_i),
-        .rst_i(rst_i),
-        .busywait(busy_w),
-        .is_long_mem_wb_i(is_long_ex_mem_o),
-        .is_long_mem_wb_o(is_long_mem_wb_o),
-        .reg_wb_en_mem_wb_i(reg_wb_en_ex_mem_o),
-        .reg_wb_en_mem_wb_o(reg_wb_en_mem_wb_o),
-        .rd_mem_wb_i(rd_ex_mem_o),
-        .rd_mem_wb_o(rd_mem_wb_o),
-        .rd_data_mem_wb_i(data_cache_data_out),
-        .rd_data_mem_wb_o(rd_data_mem_wb_o),
-        .alu_out_mem_wb_i(alu_out_ex_mem_o),
-        .alu_out_mem_wb_o(alu_out_mem_wb_o),
-        .wb_sel_mem_wb_i(wb_sel_ex_mem_o),
-        .wb_sel_mem_wb_o(wb_sel_mem_wb_o),
-        .imm_mem_wb_i(imm_ex_mem_o),
-        .imm_mem_wb_o(imm_mem_wb_o),
-        .pc_mem_wb_i(pc_ex_mem_o),
-        .pc_mem_wb_o(pc_mem_wb_o),
-        .is_memory_instruction_mem_wb_i(is_memory_instruction_ex_mem_o),
-        .is_memory_instruction_mem_wb_o(is_memory_instruction_mem_wb_o),
-        .rs2_mem_wb_i(rs2_ex_mem_o),
-        .rs2_mem_wb_o(rs2_mem_wb_o)
-    );
+//   mem_wb_stage_reg mem_wb(
+//        .clk_i(clk_i),
+//        .rst_i(rst_i),
+//        .busywait(busy_w),
+//        .is_long_mem_wb_i(is_long_ex_mem_o),
+//        .is_long_mem_wb_o(is_long_mem_wb_o),
+//        .reg_wb_en_mem_wb_i(reg_wb_en_ex_mem_o),
+//        .reg_wb_en_mem_wb_o(reg_wb_en_mem_wb_o),
+//        .rd_mem_wb_i(rd_ex_mem_o),
+//        .rd_mem_wb_o(rd_mem_wb_o),
+//        .rd_data_mem_wb_i(data_cache_data_out),
+//        .rd_data_mem_wb_o(rd_data_mem_wb_o),
+//        .alu_out_mem_wb_i(alu_out_ex_mem_o),
+//        .alu_out_mem_wb_o(alu_out_mem_wb_o),
+//        .wb_sel_mem_wb_i(wb_sel_ex_mem_o),
+//        .wb_sel_mem_wb_o(wb_sel_mem_wb_o),
+//        .imm_mem_wb_i(imm_ex_mem_o),
+//        .imm_mem_wb_o(imm_mem_wb_o),
+//        .pc_mem_wb_i(pc_ex_mem_o),
+//        .pc_mem_wb_o(pc_mem_wb_o),
+//        .is_memory_instruction_mem_wb_i(is_memory_instruction_ex_mem_o),
+//        .is_memory_instruction_mem_wb_o(is_memory_instruction_mem_wb_o),
+//        .rs2_mem_wb_i(rs2_ex_mem_o),
+//        .rs2_mem_wb_o(rs2_mem_wb_o)
+//    );
+
+   memory_stage u_mem(
+      .clk_i(clk_i),
+      .rst_i(rst_i),
+      
+      .busywait_i(busy_w),
+      
+      .data_cache_data_i(data_cache_data_i),
+      .op_type_i(read_write_sel_ex_mem_o),
+      .reg_wb_en_i(reg_wb_en_ex_mem_o),
+      .rd_label_i(rd_ex_mem_o),
+      .alu_out_i(alu_out_ex_mem_o),
+      .wb_sel_i(wb_sel_ex_mem_o),
+      .imm_i(imm_ex_mem_o),
+      .pc_i(pc_ex_mem_o),
+      .is_memory_instruction_i(is_memory_instruction_ex_mem_o),
+      .rs2_data_i(rs2_ex_mem_o),
+      .is_long_i(is_long_ex_mem_o),
+      
+      .data_busywait_o(data_busy_w),
+      .data_cache_data_o(data_cache_data_o),
+      .data_cache_write_en_o(data_cache_write_en_o),
+      .data_cache_address_o(data_cache_address_o),
+      .load_val_o(rd_data_mem_wb_o),
+      
+      .reg_wb_en_o(reg_wb_en_mem_wb_o),
+      .rd_label_o(rd_mem_wb_o),
+      .alu_out_o(alu_out_mem_wb_o),
+      .wb_sel_o(wb_sel_mem_wb_o),
+      .imm_o(imm_mem_wb_o),
+      .pc_o(pc_mem_wb_o),
+      .is_memory_instruction_o(is_memory_instruction_mem_wb_o),
+      .rs2_data_o(rs2_mem_wb_o),
+      .is_long_o(is_long_mem_wb_o)
+   );
 
     pc_adder u_pc_adder1(
         .in_i(pc_mem_wb_o), //PC i 4 ile toplar
