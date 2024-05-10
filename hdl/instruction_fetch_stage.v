@@ -38,7 +38,8 @@ module instruction_fetch_stage(
    
    assign ins_busywait_o = branched ^ branching;
    
-   parameter FETCH_WIDTH = 29;
+   localparam FETCH_WIDTH = 29;
+   localparam [31:2] INSTR_NOP = 30'b000000000000000000000000000100;
    
    reg [FETCH_WIDTH - 1:0] fetch_counter;
    wire [FETCH_WIDTH - 1:0] fetch_counter_next;
@@ -68,12 +69,13 @@ module instruction_fetch_stage(
            
                if(branching) begin
                   fetch_counter <= branch_fetch_counter;
+                  instr_o <= INSTR_NOP;
                end else begin
                   fetch_counter <= fetch_counter_next;
+                  instr_o <= cache_data[31:2];
                end
                  
                pc_o <= fetch_counter;
-               instr_o <= cache_data[31:2];
            end
        end else begin
            fetch_counter <= {FETCH_WIDTH{1'b0}};
