@@ -24,6 +24,8 @@ module u_fetch(
         input clk_i,
         input rst_i,
         
+        input cache_flushing_n_i,
+        
         input data_busywait_i,
         input stall,
         
@@ -66,45 +68,49 @@ module u_fetch(
     
     always @(posedge clk_i) begin    
         if(!rst_i) begin
-            if(!data_busywait_i && !stall) begin     
-                instr_save <= cache_data_i[31:18];
-             
-                if (branching) begin
-                    instr_o <= INSTR_NOP;
+            if(!data_busywait_i && !stall) begin
+               if(cache_flushing_n_i) begin  
+                   instr_save <= cache_data_i[31:18];
                 
-                    state_upper_half <= branch_aligned_n_i;
-                    state_delayed_read <= 1'b0;
+                   if (branching) begin
+                       instr_o <= INSTR_NOP;
+                   
+                       state_upper_half <= branch_aligned_n_i;
+                       state_delayed_read <= 1'b0;
+                   end else begin
+                       if (state_upper_half) begin
+                           is_long_o <= 1'b0;
+                           
+                           state_upper_half <= 1'b0;
+       
+                           if (is_long_b) begin //Sadece dallanmadan sonra
+                               instr_o <= INSTR_NOP;
+                               state_delayed_read <= 1'b1;
+                           end else begin //Normalde beklenen durum
+                               instr_o <= decompr_o;
+                               state_delayed_read <= 1'b0;
+                           end
+                       end else begin
+                           if (state_delayed_read) begin
+                               instr_o <= unaligned_instr;
+                               is_long_o <= 1'b1; 
+                               if (!is_long_b) begin
+                                   state_upper_half <= 1'b1;
+                                   state_delayed_read <= 1'b0;
+                               end
+                           end else begin
+                               is_long_o <= is_long_a;
+                               instr_o <= is_long_a ? aligned_instr : decompr_o;
+                               
+                               if (!is_long_a) begin
+                                   state_delayed_read <= is_long_b;
+                                   state_upper_half <= ~is_long_b;
+                               end
+                           end
+                       end
+                   end
                 end else begin
-                    if (state_upper_half) begin
-                        is_long_o <= 1'b0;
-                        
-                        state_upper_half <= 1'b0;
-    
-                        if (is_long_b) begin //Sadece dallanmadan sonra
-                            instr_o <= INSTR_NOP;
-                            state_delayed_read <= 1'b1;
-                        end else begin //Normalde beklenen durum
-                            instr_o <= decompr_o;
-                            state_delayed_read <= 1'b0;
-                        end
-                    end else begin
-                        if (state_delayed_read) begin
-                            instr_o <= unaligned_instr;
-                            is_long_o <= 1'b1; 
-                            if (!is_long_b) begin
-                                state_upper_half <= 1'b1;
-                                state_delayed_read <= 1'b0;
-                            end
-                        end else begin
-                            is_long_o <= is_long_a;
-                            instr_o <= is_long_a ? aligned_instr : decompr_o;
-                            
-                            if (!is_long_a) begin
-                                state_delayed_read <= is_long_b;
-                                state_upper_half <= ~is_long_b;
-                            end
-                        end
-                    end
+                  instr_o <= INSTR_NOP;
                 end
             end /*else begin
                 instr_o <= INSTR_NOP;

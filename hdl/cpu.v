@@ -10,15 +10,30 @@
 //resetleri aktif 0 yap
 //Hazard detection yapinca aradaki komutu NOP yapmamiz gerekir mi?
 
-module cpu(
+module cpu #(
+   parameter BUS_ADDRESS_WIDTH = 20,
+   parameter BUS_DATA_WIDTH_SHIFT = 4
+)(
    input clk_i,
-   input rst_i
+   input rst_i,
+   
+   output [BUS_ADDRESS_WIDTH - 1 : BUS_DATA_WIDTH_SHIFT] bus_addr_o,
+   output [BUS_DATA_WIDTH - 1 : 0] bus_data_o,
+   output bus_we_o,
+   
+   input [BUS_DATA_WIDTH - 1 : 0] bus_data_i,
+   input bus_valid_i
 );
+
+   localparam BUS_DATA_WIDTH = (2 ** BUS_DATA_WIDTH_SHIFT) * 8;
     
-   reg instr_sel = 1'b1; //0 = I$, 1 = ROM 
+   assign bus_we_o = 0;
+    
+   reg instr_sel = 1'b0; //0 = I$, 1 = ROM 
     
    wire [31:2] icache_address;
    wire [31:0] icache_data;
+   wire icache_flushing_n;
    wire [31:0] rom_data;
    
    wire [31:0] core_instr_data = instr_sel ? rom_data : icache_data;
@@ -33,6 +48,7 @@ module cpu(
       
       .instr_cache_data_i(core_instr_data),
       .instr_cache_address_o(icache_address),
+      .instr_cache_flushing_n_i(icache_flushing_n),
       
       .data_cache_data_i(dcache_data_r),
       .data_cache_data_o(dcache_data_w),
@@ -41,8 +57,17 @@ module cpu(
    );
    
    instr_cache icache(
-      .address_i(icache_address),
-      .read_data_o(icache_data)
+      .clk_i(clk_i),
+      .rst_i(rst_i),
+   
+      .address_i(icache_address[BUS_ADDRESS_WIDTH - 1 : 2]),
+      .data_o(icache_data),
+      
+      .bus_addr_o(bus_addr_o),
+      .bus_data_i(bus_data_i),     
+      .bus_valid_i(bus_valid_i),
+      
+      .flushing_n_o(icache_flushing_n)
    );
    
    internal_rom rom(
@@ -57,5 +82,11 @@ module cpu(
       .write_en_i(dcache_write_en),
       .data_o(dcache_data_r)
    );
+   
+   initial begin
+      if (BUS_DATA_WIDTH != 128) begin
+         $display("ONLY 128-BIT BUS SUPPORTED");
+      end
+   end
      
 endmodule
