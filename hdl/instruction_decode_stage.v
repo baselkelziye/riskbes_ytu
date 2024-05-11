@@ -70,7 +70,7 @@ module instruction_decode_stage(
    wire [2:0] branch_sel;
    wire [3:0] read_write;
    wire [1:0] wb_sel;
-   wire reg_w_en;
+   wire reg_wr_en;
    wire is_memory_instruction;
    wire is_load_instruction;
    
@@ -79,18 +79,21 @@ module instruction_decode_stage(
       .funct3_i(instr_i[14:12]),
       .funct7_i(instr_i[31:25]),
       .imm_sel_o(imm_sel),
-      .op1_sel_o(op1_sel),
-      .op2_sel_o(op2_sel),
       .alu_op_o(alu_op),
       .branch_sel_o(branch_sel),
       .read_write_o(read_write),
-      .wb_sel_o(wb_sel),
-      .reg_w_en_o(reg_w_en),
       .is_memory_instruction_o(is_memory_instruction),
       .is_load_instruction(is_load_instruction) 
    );
    
    
+   main_decoder u_main_decoder(
+      .opcode_i({instr_i[6:2], 2'b11}),
+      .reg_wr_en(reg_wr_en),
+      .wb_sel(wb_sel),
+      .op1_sel(op1_sel),
+      .op2_sel(op2_sel)
+   );
    wire [31:0] rs1_value, rs2_value;
    //Yazmaclarin durdugu yer
    regfile u_regfile
@@ -169,7 +172,7 @@ module instruction_decode_stage(
      .wb_sel_id_ex_i(wb_sel),//
      .wb_sel_id_ex_o(wb_sel_id_ex_o),
      
-     .reg_wb_en_id_ex_i(reg_w_en),
+     .reg_wb_en_id_ex_i(reg_wr_en),
      .reg_wb_en_id_ex_o(reg_wb_en_id_ex_o),
      
      .rd_id_ex_i(rd_label),

@@ -4,12 +4,11 @@ input [6:0]opcode_i,
 input [2:0]funct3_i,
 input [6:0]funct7_i,
 output [2:0]imm_sel_o,
-output op1_sel_o,
-output op2_sel_o,
+// output op1_sel_o,
+// output op2_sel_o,
 output [4:0]alu_op_o,
 output [2:0]branch_sel_o,
 output [3:0]read_write_o,
-output [1:0]wb_sel_o,
 output reg_w_en_o,
 output is_memory_instruction_o,
 output is_load_instruction
@@ -44,15 +43,10 @@ wire R_type_w;
 assign R_type_w = (!opcode_i[6] & opcode_i[5] & opcode_i[4] & !opcode_i[3] & !opcode_i[2]);
 
 
-assign op1_sel_o = (auipc_w | jal_w | B_type_w);
-
-assign op2_sel_o = (auipc_w | jal_w | jalr_w | B_type_w | load_w | store_w | I_type_w);
 
 assign reg_w_en_o = (lui_w | auipc_w | jal_w | jalr_w | load_w | I_type_w | R_type_w);
 
-assign wb_sel_o[1] = (lui_w | jal_w | jalr_w);
 
-assign wb_sel_o[0] = (jal_w | jalr_w | load_w);
 
 wire alu_op_type_w;
 assign alu_op_type_w = (I_type_w | R_type_w);
