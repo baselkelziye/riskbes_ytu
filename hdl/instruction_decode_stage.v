@@ -30,13 +30,12 @@ module instruction_decode_stage(
    input [31:0] rd_data_i,
    input [4:0] rd_label_i,
    input rd_enable_i,
-   
-   input is_long_i,
-   input [31:1] pc_i,
+
+   input [31:2] pc_i,
    
    output stall,
    
-   output [31:1] pc_id_ex_o,
+   output [31:2] pc_id_ex_o,
     
    output [31:0] rs1_value_id_ex_o,
    output [31:0] rs2_value_id_ex_o,  
@@ -56,8 +55,7 @@ module instruction_decode_stage(
    output [4:0] rs2_label_id_ex_o,   
 //   output reg [6:0] opcode_id_ex_o,  
    output is_memory_instruction_id_ex_o,
-   output is_load_instruction_id_ex_o,
-   output is_long_id_ex_o
+   output is_load_instruction_id_ex_o
 );
    wire [4:0] rd_label = instr_i[11:7];
    wire [4:0] rs1_label = instr_i[19:15];
@@ -134,9 +132,6 @@ module instruction_decode_stage(
      .rst_i(rst_i),
      .busywait(busywait),
      .flush(flush),
-     
-     .is_long_id_ex_i(is_long_i),
-     .is_long_id_ex_o(is_long_id_ex_o),
      
      .pc_id_ex_i(pc_i),          //passing PC for the Branch UNIT
      .pc_id_ex_o(pc_id_ex_o),

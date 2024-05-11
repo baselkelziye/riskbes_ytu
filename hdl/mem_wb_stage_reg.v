@@ -34,7 +34,6 @@ module mem_wb_stage_reg(
     input [31:0] pc_mem_wb_i,
     input is_memory_instruction_mem_wb_i,
     input [31:0] rs2_mem_wb_i,
-    input is_long_mem_wb_i,
     
     output reg reg_wb_en_mem_wb_o,//write enable ucu
     output reg [4:0] rd_mem_wb_o,
@@ -44,8 +43,7 @@ module mem_wb_stage_reg(
     output reg [31:0] imm_mem_wb_o,
     output reg [31:0] pc_mem_wb_o,
     output reg is_memory_instruction_mem_wb_o,
-    output reg [31:0] rs2_mem_wb_o,
-    output reg is_long_mem_wb_o
+    output reg [31:0] rs2_mem_wb_o
 
     );// rd yazmacin numaras
     
@@ -62,7 +60,6 @@ module mem_wb_stage_reg(
             pc_mem_wb_o <= 32'd0;
             is_memory_instruction_mem_wb_o <= 0;
             rs2_mem_wb_o <= 32'b0;
-            is_long_mem_wb_o <= 1'b0;
         end
     end
     
@@ -77,7 +74,6 @@ module mem_wb_stage_reg(
             pc_mem_wb_o <= pc_mem_wb_i;
             is_memory_instruction_mem_wb_o <= is_memory_instruction_mem_wb_i;
             rs2_mem_wb_o <= rs2_mem_wb_i;
-            is_long_mem_wb_o <= is_long_mem_wb_i;
             end
     end
 endmodule
