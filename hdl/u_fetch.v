@@ -24,7 +24,7 @@ module u_fetch(
         input clk_i,
         input rst_i,
         
-        input cache_flushing_n_i,
+        input cache_blocking_n_i,
         
         input data_busywait_i,
         input stall,
@@ -69,7 +69,7 @@ module u_fetch(
     always @(posedge clk_i) begin    
         if(!rst_i) begin
             if(!data_busywait_i && !stall) begin
-               if(cache_flushing_n_i) begin  
+               if(cache_blocking_n_i) begin  
                    instr_save <= cache_data_i[31:18];
                 
                    if (branching) begin

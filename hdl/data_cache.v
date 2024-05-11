@@ -29,13 +29,15 @@ module data_cache #(
    
    generate
       for (I = 0; I < BLOCK_COUNT; I = I + 1) begin
+         wire [3:0] wen = index == I ? write_en_i : 4'b0;
+         
          data_cache_qword_block #(
             .ADDR_WIDTH(OFFSET_WIDTH)
          ) block (
             .clk_i(clk_i),
             .addr_i(offset),
             .data_i(data_i),
-            .write_en_i(index == I ? write_en_i : 4'b0),
+            .write_en_i(wen),
             .data_o(block_data[I])
          );
       end

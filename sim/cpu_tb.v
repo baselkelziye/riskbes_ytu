@@ -32,7 +32,8 @@ cpu #(
 
 slow_ram #(
    .ADDRESS_WIDTH(BUS_ADDRESS_WIDTH),
-   .DATA_WIDTH_SHIFT(BUS_DATA_WIDTH_SHIFT)
+   .DATA_WIDTH_SHIFT(BUS_DATA_WIDTH_SHIFT),
+   .LATENCY(5)
 ) ram (
    .clk_i(CLK),
    .rst_i(RST),
@@ -58,6 +59,11 @@ initial begin
    ram.data[8] = 128'h00900533000008630097002300838023;
    ram.data[9] = 128'hfc0006e30010809300a3802300870023;
    ram.data[10] = 128'ha001fa000ee300128293;
+   ram.data[11] = 128'hABCDEF;
+   ram.data[12] = 128'hABCDEF;
+   ram.data[13] = 128'hABCDEF;
+   ram.data[14] = 128'hABCDEF;
+   ram.data[15] = 128'hDEADC0DE;
 
     CLK = 1'b0;
     RST = 1'b1;

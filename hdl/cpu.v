@@ -33,7 +33,7 @@ module cpu #(
     
    wire [31:2] icache_address;
    wire [31:0] icache_data;
-   wire icache_flushing_n;
+   wire icache_blocking_n;
    wire [31:0] rom_data;
    
    wire [31:0] core_instr_data = instr_sel ? rom_data : icache_data;
@@ -48,7 +48,7 @@ module cpu #(
       
       .instr_cache_data_i(core_instr_data),
       .instr_cache_address_o(icache_address),
-      .instr_cache_flushing_n_i(icache_flushing_n),
+      .instr_cache_blocking_n_i(icache_blocking_n),
       
       .data_cache_data_i(dcache_data_r),
       .data_cache_data_o(dcache_data_w),
@@ -67,7 +67,7 @@ module cpu #(
       .bus_data_i(bus_data_i),     
       .bus_valid_i(bus_valid_i),
       
-      .flushing_n_o(icache_flushing_n)
+      .blocking_n_o(icache_blocking_n)
    );
    
    internal_rom rom(

@@ -40,7 +40,7 @@ module u_if(
     
     output ins_busywait_o,
     
-    input cache_flushing_n_i
+    input cache_blocking_n_i
     );
 
 reg branched;
@@ -83,7 +83,7 @@ u_fetch fetch(
     .clk_i(clk_i),
     .rst_i(rst_i),
     
-    .cache_flushing_n_i(cache_flushing_n_i),
+    .cache_blocking_n_i(cache_blocking_n_i),
     
     .data_busywait_i(data_busywait_i),
     .stall(stall),
@@ -103,7 +103,7 @@ u_fetch fetch(
 
 always @(posedge clk_i) begin
     if(!rst_i) begin
-        if(!data_busywait_i && !stall && cache_flushing_n_i) begin 
+        if(!data_busywait_i && !stall && cache_blocking_n_i) begin 
             branched <= branching;
         
             if(branching) begin

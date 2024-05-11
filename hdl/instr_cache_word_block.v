@@ -28,11 +28,12 @@ module instr_cache_word_block #(
    
    input [ADDR_WIDTH - 1 : 0] addr_i,
    output reg [31:0] data_o,
-   
-   input flushing_n_i,
+  
    input [31:0] flush_data_i,
-   input [ADDR_WIDTH - 1 : 0] flush_counter_i
+   input [WORD_COUNT - 1 : 0] flushing_n_i
 );
+   genvar I;
+
    localparam BUS_DATA_WIDTH_SHIFT = 4;
    localparam WORD_COUNT = 2 ** ADDR_WIDTH;
    
@@ -42,10 +43,14 @@ module instr_cache_word_block #(
       data_o = words[addr_i];
    end
    
-   always @(posedge clk_i) begin
-      if(!flushing_n_i) begin
-         words[flush_counter_i] = flush_data_i;
+   generate
+      for(I = 0; I < WORD_COUNT; I = I + 1) begin
+         always @(posedge clk_i) begin
+            if(!flushing_n_i[I]) begin
+               words[I] <= flush_data_i;
+            end
+         end
       end
-   end
+   endgenerate
 
 endmodule

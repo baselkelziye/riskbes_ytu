@@ -14,7 +14,7 @@ module core(
    input clk_i,
    input rst_i,
    
-   input instr_cache_flushing_n_i,
+   input instr_cache_blocking_n_i,
    
    input [31:0] instr_cache_data_i,
    input [31:0] data_cache_data_i,
@@ -128,7 +128,7 @@ module core(
    u_if u_if(
      .clk_i(clk_i),
      .rst_i(rst_i),
-     .cache_flushing_n_i(instr_cache_flushing_n_i),
+     .cache_blocking_n_i(instr_cache_blocking_n_i),
      .cache_data_i(instr_cache_data_i),
      .cache_address_o(instr_cache_address_o),
      .data_busywait_i(data_busy_w),
