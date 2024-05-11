@@ -20,6 +20,7 @@ module cpu #(
    output [BUS_ADDRESS_WIDTH - 1 : BUS_DATA_WIDTH_SHIFT] bus_addr_o,
    output [BUS_DATA_WIDTH - 1 : 0] bus_data_o,
    output bus_we_o,
+   output bus_valid_o,
    
    input [BUS_DATA_WIDTH - 1 : 0] bus_data_i,
    input bus_valid_i
@@ -67,6 +68,7 @@ module cpu #(
       .bus_data_i(bus_data_i),     
       .bus_valid_i(bus_valid_i),
       
+      .bus_valid_o(bus_valid_o),
       .blocking_n_o(icache_blocking_n)
    );
    

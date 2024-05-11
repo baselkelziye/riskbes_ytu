@@ -5,7 +5,7 @@ module data_cache #(
    parameter OFFSET_WIDTH = 5
 )(
    input clk_i,
-   input [30:2] addr_i,
+   input [31:2] addr_i,
    input [31:0] data_i,
    input [3:0] write_en_i,
    output reg [31:0] data_o

@@ -15,6 +15,8 @@ module instr_cache #(
    input [BUS_DATA_WIDTH - 1 : 0] bus_data_i,
    input bus_valid_i,
    
+   output reg bus_valid_o,
+   
    output blocking_n_o
 );
    genvar I;   
@@ -58,9 +60,12 @@ module instr_cache #(
    
    always @(posedge clk_i) begin
       if(rst_i) begin      
-         flushing_n <= 1;
+         flushing_n <= 0;
          flush_index <= 0;
+         block_tag[0] <= 0;
+         block_valid[0] <= 1;
          flush_counter <= 0;
+         bus_valid_o <= 1;
       end else begin
          if (flushing_n) begin
             if (!access_valid) begin
@@ -69,10 +74,16 @@ module instr_cache #(
                block_valid[index] <= 1;
                flush_index <= index;
                flush_counter <= 0;
+               bus_valid_o <= 1;
             end
-         end else if (bus_valid_i) begin
-            flush_counter <= flush_counter_next;
-            flushing_n <= flushing_n | flush_finish;
+         end else begin
+            if (bus_valid_i) begin
+               bus_valid_o <= 0;
+            end else if (!bus_valid_o) begin
+               flush_counter <= flush_counter_next;
+               flushing_n <= flush_finish;
+               bus_valid_o <= !flush_finish;
+            end
          end
       end
    end
@@ -114,8 +125,12 @@ module instr_cache #(
             .flush_data_i(bus_data_i)
          );
          
-         always @(posedge rst_i) begin
-            block_valid[I] = 1'b0;
+         if (I != 0) begin
+            always @(posedge clk_i) begin
+               if (rst_i) begin
+                  block_valid[I] <= 1'b0;
+               end
+            end
          end
       end
    endgenerate

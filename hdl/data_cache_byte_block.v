@@ -36,7 +36,7 @@ reg [7:0] bytes [0 : CACHE_SIZE - 1];
 
 assign data_o = bytes[addr_i];
 
-always @(clk_i) begin
+always @(posedge clk_i) begin
    if(write_en_i) begin
       bytes[addr_i] <= data_i;
    end
