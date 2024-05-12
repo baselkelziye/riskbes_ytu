@@ -36,8 +36,6 @@ module memory_stage(
    input is_memory_instruction_i,
    input [31:0] rs2_data_i,
    input is_long_i,
-   
-   output data_busywait_o,
     
    output [31:0] data_cache_data_o,
    output [3:0] data_cache_write_en_o,
@@ -56,7 +54,7 @@ module memory_stage(
 );
 
    assign data_cache_address_o = alu_out_i[31:2];
-
+   
    wire [31:0] load_val_next;
 
    cache_access_unit cau(
@@ -68,8 +66,7 @@ module memory_stage(
       .op_type_i(op_type_i),
       .write_en_o(data_cache_write_en_o),
       .core_normalized_data_o(data_cache_data_o),
-      .cache_normalized_data_o(load_val_next),
-      .busy_o(data_busywait_o)
+      .cache_normalized_data_o(load_val_next)
    );
    
    always @(posedge clk_i) begin
@@ -77,13 +74,13 @@ module memory_stage(
          is_long_o <= 1'b0;
          reg_wb_en_o <= 1'b0;
          rd_label_o <= 5'b0;
-         load_val_o <= 32'b0;
          alu_out_o <= 32'b0;
          wb_sel_o <= 2'b0;
          imm_o <= 32'b0;
          pc_o <= 32'b0;
          is_memory_instruction_o <= 1'b0;
          rs2_data_o <= 32'b0;
+         load_val_o <= 32'b0;
       end else begin
          if(!busywait_i) begin
             is_long_o <= is_long_i;

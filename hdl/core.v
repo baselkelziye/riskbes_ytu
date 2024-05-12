@@ -117,12 +117,11 @@ module core(
     wire [31:0] alu_in1_w;
     wire [31:0] alu_in2_w; 
     wire [31:0] reg_wb_data_w;
-    wire data_busy_w;
     wire ins_busy_w;
     wire busy_w;
     wire write_en_w;
     
-    assign busy_w = (data_busy_w | ins_busy_w);
+    assign busy_w = ins_busy_w;
     assign write_en_w = (reg_wb_en_mem_wb_o & !busy_w); //reg i mem_wb_o yapmak laizm en son
 
    u_if u_if(
@@ -131,7 +130,6 @@ module core(
      .cache_blocking_n_i(instr_cache_blocking_n_i),
      .cache_data_i(instr_cache_data_i),
      .cache_address_o(instr_cache_address_o),
-     .data_busywait_i(data_busy_w),
      .ins_busywait_o(ins_busy_w),
      .stall(stall),
      .branching(PC_sel_w_ex_mem_o),
@@ -296,59 +294,6 @@ module core(
         .PC_sel_w_ex_mem_i(PC_sel_w),
         .PC_sel_w_ex_mem_o(PC_sel_w_ex_mem_o)
     );
-                 
-    
-//    data_cache c_data_cache(
-//        .clk_i(clk_i),
-//        .rst_i(rst_i),
-//        .address_i(alu_out_ex_mem_o),
-//        .write_data_i(rs2_ex_mem_o), //rs2 n�n de�erini ta�� yaz oraya
-//        .read_write_sel_i(read_write_sel_ex_mem_o),
-//        .read_data_o(data_cache_data_out),
-//        .busy_o(data_busy_w)
-//    );
-
-//   assign data_cache_address_o = alu_out_ex_mem_o[31:2];
-
-//   cache_access_unit cache_access_unit(
-//      .clk_i(clk_i),
-//      .rst_i(rst_i),
-//      .addr_align_i(alu_out_ex_mem_o[1:0]),
-//      .core_raw_data_i(rs2_ex_mem_o),
-//      .cache_raw_data_i(data_cache_data_i),
-//      .op_type_i(read_write_sel_ex_mem_o),
-//      .write_en_o(data_cache_write_en_o),
-//      .core_normalized_data_o(data_cache_data_o),
-//      .cache_normalized_data_o(data_cache_data_out),
-//      .busy_o(data_busy_w)
-//   );
-  
-   
-//   mem_wb_stage_reg mem_wb(
-//        .clk_i(clk_i),
-//        .rst_i(rst_i),
-//        .busywait(busy_w),
-//        .is_long_mem_wb_i(is_long_ex_mem_o),
-//        .is_long_mem_wb_o(is_long_mem_wb_o),
-//        .reg_wb_en_mem_wb_i(reg_wb_en_ex_mem_o),
-//        .reg_wb_en_mem_wb_o(reg_wb_en_mem_wb_o),
-//        .rd_mem_wb_i(rd_ex_mem_o),
-//        .rd_mem_wb_o(rd_mem_wb_o),
-//        .rd_data_mem_wb_i(data_cache_data_out),
-//        .rd_data_mem_wb_o(rd_data_mem_wb_o),
-//        .alu_out_mem_wb_i(alu_out_ex_mem_o),
-//        .alu_out_mem_wb_o(alu_out_mem_wb_o),
-//        .wb_sel_mem_wb_i(wb_sel_ex_mem_o),
-//        .wb_sel_mem_wb_o(wb_sel_mem_wb_o),
-//        .imm_mem_wb_i(imm_ex_mem_o),
-//        .imm_mem_wb_o(imm_mem_wb_o),
-//        .pc_mem_wb_i(pc_ex_mem_o),
-//        .pc_mem_wb_o(pc_mem_wb_o),
-//        .is_memory_instruction_mem_wb_i(is_memory_instruction_ex_mem_o),
-//        .is_memory_instruction_mem_wb_o(is_memory_instruction_mem_wb_o),
-//        .rs2_mem_wb_i(rs2_ex_mem_o),
-//        .rs2_mem_wb_o(rs2_mem_wb_o)
-//    );
 
    memory_stage u_mem(
       .clk_i(clk_i),
@@ -368,7 +313,6 @@ module core(
       .rs2_data_i(rs2_ex_mem_o),
       .is_long_i(is_long_ex_mem_o),
       
-      .data_busywait_o(data_busy_w),
       .data_cache_data_o(data_cache_data_o),
       .data_cache_write_en_o(data_cache_write_en_o),
       .data_cache_address_o(data_cache_address_o),

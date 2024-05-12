@@ -24,10 +24,11 @@ module data_cache_word_block #(
    parameter ADDR_WIDTH = 3
 )(
    input clk_i,
-   input [ADDR_WIDTH - 1 : 0] addr_i,
+   input [ADDR_WIDTH - 1 : 0] addr_r_i,
+   output [31:0] data_o,
+   input [ADDR_WIDTH - 1 : 0] addr_w_i,
    input [31:0] data_i,
-   input [3:0] write_en_i,
-   output [31:0] data_o
+   input [3:0] write_en_i
 );
 
    genvar I;
@@ -54,7 +55,8 @@ module data_cache_word_block #(
             .ADDR_WIDTH(ADDR_WIDTH)
          ) sub (
             .clk_i(clk_i),
-            .addr_i(addr_i),
+            .addr_r_i(addr_r_i),
+            .addr_w_i(addr_w_i),
             .data_i(sub_data_r[I]),
             .write_en_i(write_en_i[I]),
             .data_o(sub_data_w[I])

@@ -28,17 +28,8 @@ module cache_access_unit(
    input [3:0] op_type_i,
    output reg [3:0] write_en_o,
    output reg [31:0] core_normalized_data_o,
-   output reg [31:0] cache_normalized_data_o,
-   output reg busy_o
+   output reg [31:0] cache_normalized_data_o
 );
-
-always @(posedge clk_i) begin
-   if(rst_i) begin
-      busy_o <= 1'b0;
-   end else begin
-      busy_o <= op_type_i[3] & !busy_o;
-   end
-end
 
 always @(*) begin
    case(op_type_i)
