@@ -72,20 +72,6 @@ module data_cache_word_block #(
             .flush_data_i(flush_data_i[FLUSH_MSB : FLUSH_LSB]),
             .flushing_n_i(flushing_n_i)
          );
-         
-         initial begin
-            //DEBUG
-         
-            #2 
-            sub.bytes[0] = DEBUGINT * 16 + I;
-            sub.bytes[1] = DEBUGINT * 16 + I + 1;
-            sub.bytes[2] = DEBUGINT * 16 + I + 2;
-            sub.bytes[3] = DEBUGINT * 16 + I + 3;
-            sub.bytes[4] = DEBUGINT * 16 + I + 4;
-            sub.bytes[5] = DEBUGINT * 16 + I + 5;
-            sub.bytes[6] = DEBUGINT * 16 + I + 6;
-            sub.bytes[7] = DEBUGINT * 16 + I + 7;
-         end
       end
    endgenerate
 endmodule

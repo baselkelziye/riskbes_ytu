@@ -51,7 +51,7 @@ module data_cache_byte_block #(
                   bytes[I] <= data_i;
                end
             end else begin
-               //bytes[I] <= flush_data_i;
+               bytes[I] <= flush_data_i;
             end
          end
       end

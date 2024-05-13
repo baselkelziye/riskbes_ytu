@@ -52,6 +52,8 @@ module data_cache_qword_block #(
    
    wire [31:0] sub_data_r [0 : SUB_COUNT - 1];
    
+   wire [QWORD_PER_BLOCK_COUNT - 1 : 0] fn = (!dirty) | flushing_n_i;
+   
    genvar I;
    
    generate
@@ -71,14 +73,8 @@ module data_cache_qword_block #(
             .write_en_i(wen),
             .data_o(sub_data_r[I]),
             .flush_data_i(flush_data_i[FLUSH_MSB : FLUSH_LSB]),
-            .flushing_n_i((!dirty) | flushing_n_i)
+            .flushing_n_i(fn)
          );
-         
-         initial begin
-            //DEBUG
-            
-            #1 sub.DEBUGINT = (DEBUGINT * 4) + I;
-         end
       end
       
       for(I = 0; I < QWORD_PER_BLOCK_COUNT; I = I + 1) begin

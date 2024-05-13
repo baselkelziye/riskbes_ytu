@@ -119,20 +119,24 @@ module data_cache #(
          //Bir önceki (gerçekte olmayan) erişimi geçerli varsay
          access_valid_last <= 1;
       
-         //DEBUG: Yeni tazeleme başlat
-         flushing_n <= 0;
-         flush_index <= 0;
-         flush_counter <= 0;
-         bus_valid_o <= 1;
-         flush_tag_old <= 1;
-         block_tag[0] <= 0;
-         block_valid[0] <= 1;
-         dirty <= qword_dirty_first;
-         cleaned_n <= qword_dirty_first;
+         //Tazeleme yapma
+         flushing_n <= 1;
       end else begin
          if (flushing_n) begin
             //Flush yok
             
+            if (!access_valid) begin
+               //Yeni tazeleme başlat
+               flushing_n <= 0;
+               flush_index <= index;
+               flush_counter <= 0;
+               bus_valid_o <= 1;
+               flush_tag_old <= block_tag[index];
+               block_tag[index] <= tag;
+               block_valid[index] <= 1;
+               dirty <= qword_dirty_first;
+               cleaned_n <= qword_dirty_first;
+            end
          end else begin
             //Flush var
             
