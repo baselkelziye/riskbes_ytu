@@ -28,7 +28,7 @@ module cpu #(
 
    localparam BUS_DATA_WIDTH = (2 ** BUS_DATA_WIDTH_SHIFT) * 8;
     
-   assign bus_we_o = 0;
+   //assign bus_we_o = 0;
     
    reg instr_sel = 1'b0; //0 = I$, 1 = ROM 
     
@@ -41,6 +41,7 @@ module cpu #(
    
    wire [31:2] dcache_address;
    wire [31:0] dcache_data_r, dcache_data_w;
+   wire dcache_blocking_n;
    wire [3:0] dcache_write_en;
     
    core core(
@@ -54,7 +55,8 @@ module cpu #(
       .data_cache_data_i(dcache_data_r),
       .data_cache_data_o(dcache_data_w),
       .data_cache_address_o(dcache_address),
-      .data_cache_write_en_o(dcache_write_en)
+      .data_cache_write_en_o(dcache_write_en),
+      .data_cache_blocking_n_i(dcache_blocking_n)
    );
    
    instr_cache icache(
@@ -64,11 +66,11 @@ module cpu #(
       .address_i(icache_address[BUS_ADDRESS_WIDTH - 1 : 2]),
       .data_o(icache_data),
       
-      .bus_addr_o(bus_addr_o),
-      .bus_data_i(bus_data_i),     
-      .bus_valid_i(bus_valid_i),
+      .bus_addr_o(),
+      .bus_data_i(0),     
+      .bus_valid_i(0),
+      .bus_valid_o(),
       
-      .bus_valid_o(bus_valid_o),
       .blocking_n_o(icache_blocking_n)
    );
    
@@ -79,10 +81,20 @@ module cpu #(
    
    data_cache dcache(
       .clk_i(clk_i),
+      .rst_i(rst_i),
       .addr_i(dcache_address),
       .data_i(dcache_data_w),
       .write_en_i(dcache_write_en),
-      .data_o(dcache_data_r)
+      .data_o(dcache_data_r),
+      .blocking_n_o(dcache_blocking_n),
+      
+      .bus_addr_o(bus_addr_o),
+      .bus_data_i(bus_data_i),     
+      .bus_valid_i(bus_valid_i),
+      .bus_valid_o(bus_valid_o),
+      
+      .bus_data_o(bus_data_o),
+      .bus_we_o(bus_we_o)
    );
    
    initial begin

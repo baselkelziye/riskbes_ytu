@@ -23,15 +23,24 @@
 module data_cache_qword_block #(
    parameter ADDR_WIDTH = 5
 )(
-   input clk_i,
-   input [ADDR_WIDTH - 1 : 0] addr_r_i,
-   output [31:0] data_o,
+   input clk_i, rst_i,
+   input [ADDR_WIDTH - 1 : 2] addr_r_i,
+   output [31:0] data0_o, data1_o, data2_o, data3_o,
    input [ADDR_WIDTH - 1 : 0] addr_w_i,
    input [31:0] data_i,
-   input [3:0] write_en_i
+   input [3:0] write_en_i,
+   input [127:0] flush_data_i,
+   input [QWORD_PER_BLOCK_COUNT - 1 : 0] flushing_n_i,
+   output [QWORD_PER_BLOCK_COUNT - 1 : 0] dirty_o,
+   input cleaned_n_i
 );
+   integer DEBUGINT;
 
-   wire [1:0] sel_r = addr_r_i[1:0];
+   localparam QWORD_PER_BLOCK_COUNT = 2 ** SUB_ADDR_WIDTH;
+   
+   reg [QWORD_PER_BLOCK_COUNT - 1 : 0] dirty; //Written after flush?
+   assign dirty_o = dirty;
+
    wire [1:0] sel_w = addr_w_i[1:0];
    
    localparam SUB_ADDR_WIDTH = ADDR_WIDTH - 2;
@@ -47,6 +56,9 @@ module data_cache_qword_block #(
    
    generate
       for(I = 0; I < SUB_COUNT; I = I + 1) begin
+         localparam FLUSH_LSB = I * 32;
+         localparam FLUSH_MSB = FLUSH_LSB + 31;
+      
          wire [3:0] wen = sel_w == I ? write_en_i : 4'b0;
       
          data_cache_word_block #(
@@ -57,11 +69,46 @@ module data_cache_qword_block #(
             .addr_w_i(sub_addr_w),
             .data_i(data_i),
             .write_en_i(wen),
-            .data_o(sub_data_r[I])
+            .data_o(sub_data_r[I]),
+            .flush_data_i(flush_data_i[FLUSH_MSB : FLUSH_LSB]),
+            .flushing_n_i(!dirty & flushing_n_i)
          );
+         
+         initial begin
+            //DEBUG
+            
+            #1 sub.DEBUGINT = (DEBUGINT * 4) + I;
+         end
+      end
+      
+      for(I = 0; I < QWORD_PER_BLOCK_COUNT; I = I + 1) begin
+         wire updating;
+         if(I == 0) begin
+            assign updating = !flushing_n_i[0];
+         end else begin
+            assign updating = !flushing_n_i[I] & flushing_n_i[I - 1];
+         end
+      
+         always @(posedge clk_i) begin
+            if (rst_i) begin
+               dirty[I] <= 1'b1; //DEBUG
+            end else begin   
+               // Eğer güncelleniyorsa, cleaned_n ata; eğer güncellenmeden yazılıyorsa, 1 ata; diğer durumlarda değiştirme.
+               if (updating) begin
+                  dirty[I] <= cleaned_n_i;
+               end else begin
+                  if (write_en_i != 4'b0) begin
+                     dirty[I] <= 1'b1;
+                  end
+               end
+            end
+         end
       end
    endgenerate
 
-   assign data_o = sub_data_r[sel_r];
+   assign data0_o = sub_data_r[0];
+   assign data1_o = sub_data_r[1];
+   assign data2_o = sub_data_r[2];
+   assign data3_o = sub_data_r[3];
 
 endmodule

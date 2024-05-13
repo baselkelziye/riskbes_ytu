@@ -30,11 +30,9 @@ module instr_cache_qword_block #(
    output [31:0] data_o,
    
    input [127:0] flush_data_i,
-   input [WORD_PER_BLOCK_COUNT - 1 : 0] flushing_n_i
+   input [QWORD_PER_BLOCK_COUNT - 1 : 0] flushing_n_i
 );
-   localparam WORD_PER_BLOCK_COUNT = 2 ** SUB_ADDR_WIDTH;
-
-   localparam BUS_DATA_WIDTH_SHIFT = 4;
+   localparam QWORD_PER_BLOCK_COUNT = 2 ** SUB_ADDR_WIDTH;
 
    wire [1:0] sel = addr_i[1:0];
    

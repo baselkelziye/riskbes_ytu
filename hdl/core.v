@@ -15,6 +15,7 @@ module core(
    input rst_i,
    
    input instr_cache_blocking_n_i,
+   input data_cache_blocking_n_i,
    
    input [31:0] instr_cache_data_i,
    input [31:0] data_cache_data_i,
@@ -113,7 +114,8 @@ module core(
     //************ tmp values *******************\\
     
     //tmp control signals
-    wire stall;
+    wire id_hazard;
+    wire if_stall = id_hazard | !data_cache_blocking_n_i;
     wire [31:0] alu_in1_w;
     wire [31:0] alu_in2_w; 
     wire [31:0] reg_wb_data_w;
@@ -121,7 +123,7 @@ module core(
     wire busy_w;
     wire write_en_w;
     
-    assign busy_w = ins_busy_w;
+    assign busy_w = ins_busy_w | !data_cache_blocking_n_i;
     assign write_en_w = (reg_wb_en_mem_wb_o & !busy_w); //reg i mem_wb_o yapmak laizm en son
 
    u_if u_if(
@@ -131,7 +133,8 @@ module core(
      .cache_data_i(instr_cache_data_i),
      .cache_address_o(instr_cache_address_o),
      .ins_busywait_o(ins_busy_w),
-     .stall(stall),
+
+     .stall_i(if_stall),
      .branching(PC_sel_w_ex_mem_o),
      .branch_pc(alu_out_ex_mem_o[31:1]),
      .instr_o(instruction_if_id_o),
@@ -149,7 +152,7 @@ module core(
       .instr_i(instruction_if_id_o),
       .busywait(busy_w),
       .flush(PC_sel_w_ex_mem_o),
-      .stall(stall),
+      .hazard_o(id_hazard),
       
       .rd_label_i(rd_mem_wb_o),
       .rd_data_i(reg_wb_data_w),

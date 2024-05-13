@@ -28,11 +28,16 @@ module data_cache_word_block #(
    output [31:0] data_o,
    input [ADDR_WIDTH - 1 : 0] addr_w_i,
    input [31:0] data_i,
-   input [3:0] write_en_i
+   input [3:0] write_en_i,
+   
+   input [31:0] flush_data_i,
+   input [WORD_PER_BLOCK_COUNT - 1 : 0] flushing_n_i
 );
+   integer DEBUGINT;
 
    genvar I;
    
+   localparam WORD_PER_BLOCK_COUNT = 2 ** ADDR_WIDTH;
    localparam SUB_COUNT = 4;
    
    wire [7:0] sub_data_r [0 : SUB_COUNT - 1];
@@ -51,6 +56,9 @@ module data_cache_word_block #(
    
    generate
       for(I = 0; I < SUB_COUNT; I = I + 1) begin
+         localparam FLUSH_LSB = I * 8;
+         localparam FLUSH_MSB = FLUSH_LSB + 7;
+      
          data_cache_byte_block #(
             .ADDR_WIDTH(ADDR_WIDTH)
          ) sub (
@@ -59,9 +67,17 @@ module data_cache_word_block #(
             .addr_w_i(addr_w_i),
             .data_i(sub_data_r[I]),
             .write_en_i(write_en_i[I]),
-            .data_o(sub_data_w[I])
+            .data_o(sub_data_w[I]),
+            
+            .flush_data_i(flush_data_i[FLUSH_MSB : FLUSH_LSB]),
+            .flushing_n_i(flushing_n_i)
          );
+         
+         initial begin
+            //DEBUG
+         
+            #2 sub.bytes[0] = DEBUGINT * 16 + I;
+         end
       end
    endgenerate
-
 endmodule

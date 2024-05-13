@@ -30,31 +30,34 @@ module data_cache_byte_block #(
    
    input [ADDR_WIDTH - 1 : 0] addr_w_i, //WRITE
    input [7:0] data_i,
-   input write_en_i
+   input write_en_i,
+   
+   input [7:0] flush_data_i,
+   input [BYTE_COUNT - 1 : 0] flushing_n_i
 );
 
-localparam CACHE_SIZE = 2 ** ADDR_WIDTH;
-
-reg [7:0] bytes [0 : CACHE_SIZE - 1];
-
-//Positive edge yazma
-always @(posedge clk_i) begin
-   if(write_en_i) begin
-      bytes[addr_w_i] <= data_i;
-   end
-end
-
-//Negative edge okuma (data_cache.v)
-assign data_o = bytes[addr_r_i];
-
-//DEBUG AMAÇLI
-
-integer I;
-
-initial begin
-   for(I = 0; I < CACHE_SIZE; I = I + 1) begin
-      bytes[I] = 0;
-   end
-end
-
+   genvar I;
+   
+   localparam BYTE_COUNT = 2 ** ADDR_WIDTH;
+   
+   reg [7:0] bytes [0 : BYTE_COUNT - 1];
+   
+   //Positive edge yazma
+   generate
+      for (I = 0; I < BYTE_COUNT; I = I + 1) begin
+         always @(posedge clk_i) begin
+            if (flushing_n_i[I]) begin
+               if(write_en_i && addr_w_i == I) begin
+                  bytes[I] <= data_i;
+               end
+            end else begin
+               //bytes[I] <= flush_data_i;
+            end
+         end
+      end
+   endgenerate
+   
+   //Negative edge okuma (data_cache.v)
+   assign data_o = bytes[addr_r_i];
+   
 endmodule

@@ -26,7 +26,7 @@ module u_fetch(
         
         input cache_blocking_n_i,
 
-        input stall,
+        input stall_i,
         
         input [31:0] cache_data_i,
         
@@ -67,7 +67,7 @@ module u_fetch(
     
     always @(posedge clk_i) begin    
         if(!rst_i) begin
-            if(!stall) begin
+            if(!stall_i) begin
                if(cache_blocking_n_i) begin  
                    instr_save <= cache_data_i[31:18];
                 

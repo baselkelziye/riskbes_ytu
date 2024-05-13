@@ -34,7 +34,7 @@ module instruction_decode_stage(
    input is_long_i,
    input [31:1] pc_i,
    
-   output stall,
+   output hazard_o,
    
    output [31:1] pc_id_ex_o,
     
@@ -113,7 +113,7 @@ module instruction_decode_stage(
        .rd_label_id_ex_o(rd_id_ex_o), // EX asamasinda RD
        .rs1_label_if_id_o(rs1_label), // ID rs1 numarasi
        .rs2_label_if_id_o(rs2_label), // ID rs2 numarasi
-       .stall(stall)  // cikis stall sinyali
+       .hazard_o(hazard_o)  // cikis hazard_o sinyali
    );
    
    wire [31:0] imm;

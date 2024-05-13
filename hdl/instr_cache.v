@@ -36,8 +36,6 @@ module instr_cache #(
    wire [INDEX_WIDTH - 1 : 0] index = address_i[INDEX_MSB : INDEX_LSB];
    wire [OFFSET_WIDTH - 1 : 0] offset = address_i[OFFSET_MSB : 2];
    
-   // FLUSHING MECHANISM
-   
    localparam FLUSH_COUNTER_WIDTH = OFFSET_WIDTH - 2;
    
    reg flushing_n; //active low (0 = flushing, 1 = not flushing)
@@ -59,7 +57,8 @@ module instr_cache #(
    assign bus_addr_o = {flush_tag, flush_index, flush_counter};
    
    always @(posedge clk_i) begin
-      if(rst_i) begin      
+      if(rst_i) begin   
+         //Flush başlat (Başlamak için kod yükle)   
          flushing_n <= 0;
          flush_index <= 0;
          block_tag[0] <= 0;
@@ -68,7 +67,10 @@ module instr_cache #(
          bus_valid_o <= 1;
       end else begin
          if (flushing_n) begin
+            //Flush yok
+         
             if (!access_valid) begin
+               //Flush başlat
                flushing_n <= 0;
                block_tag[index] <= tag;
                block_valid[index] <= 1;
@@ -77,6 +79,8 @@ module instr_cache #(
                bus_valid_o <= 1;
             end
          end else begin
+            // Flush var
+            
             if (bus_valid_i) begin
                bus_valid_o <= 0;
             end else if (!bus_valid_o) begin
@@ -87,16 +91,14 @@ module instr_cache #(
          end
       end
    end
-   
-   //FETCHING MECHANISM
     
-   localparam WORD_PER_BLOCK_COUNT = 2 ** FLUSH_COUNTER_WIDTH;
+   localparam QWORD_PER_BLOCK_COUNT = 2 ** FLUSH_COUNTER_WIDTH;
     
-   wire [WORD_PER_BLOCK_COUNT - 1 : 0] word_flushing_n;
+   wire [QWORD_PER_BLOCK_COUNT - 1 : 0] qword_flushing_n;
    
    generate
-      for (I = 0; I < WORD_PER_BLOCK_COUNT; I = I + 1) begin
-         assign word_flushing_n[I] = flushing_n || flush_counter > I;
+      for (I = 0; I < QWORD_PER_BLOCK_COUNT; I = I + 1) begin
+         assign qword_flushing_n[I] = flushing_n || flush_counter > I;
       end
    endgenerate
     
@@ -112,7 +114,7 @@ module instr_cache #(
    
    generate
       for (I = 0; I < BLOCK_COUNT; I = I + 1) begin
-         wire [WORD_PER_BLOCK_COUNT - 1 : 0] fn = flush_index == I ? word_flushing_n : {WORD_PER_BLOCK_COUNT{1'b1}};
+         wire [QWORD_PER_BLOCK_COUNT - 1 : 0] fn = flush_index == I ? qword_flushing_n : {QWORD_PER_BLOCK_COUNT{1'b1}};
       
          instr_cache_qword_block #(
             .ADDR_WIDTH(OFFSET_WIDTH)
@@ -135,7 +137,7 @@ module instr_cache #(
       end
    endgenerate
    
-   assign blocking_n_o = word_flushing_n[offset[OFFSET_WIDTH - 1 : 2]] 
+   assign blocking_n_o = qword_flushing_n[offset[OFFSET_WIDTH - 1 : 2]] 
       | ((index != flush_index) & access_valid);
    assign data_o = block_data[index];
     
