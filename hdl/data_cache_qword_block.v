@@ -71,7 +71,7 @@ module data_cache_qword_block #(
             .write_en_i(wen),
             .data_o(sub_data_r[I]),
             .flush_data_i(flush_data_i[FLUSH_MSB : FLUSH_LSB]),
-            .flushing_n_i(!dirty & flushing_n_i)
+            .flushing_n_i((!dirty) | flushing_n_i)
          );
          
          initial begin

@@ -11,7 +11,9 @@ module data_cache #(
    input [31:0] data_i,
    input [3:0] write_en_i,
    output reg [31:0] data_o,
+   
    output blocking_n_o,
+   output flushing_n_o,
    
    output [BUS_ADDRESS_WIDTH - 1 : BUS_DATA_WIDTH_SHIFT] bus_addr_o,
    input [BUS_DATA_WIDTH - 1 : 0] bus_data_i,
@@ -43,6 +45,19 @@ module data_cache #(
    wire [127:0] block_qword [0 : BLOCK_COUNT - 1];
    wire [31:0] block_data [0 : BLOCK_COUNT - 1];
    
+   reg [TAG_WIDTH - 1 : 0] block_tag [0 : BLOCK_COUNT - 1];
+   reg block_valid [0 : BLOCK_COUNT - 1];
+   
+   generate
+      for(I = 0; I < BLOCK_COUNT; I = I + 1) begin
+         always @(posedge clk_i) begin
+            if(rst_i) begin
+               block_valid[I] <= 0;
+            end
+         end
+      end
+   endgenerate
+   
    //Yazmayı bir çevrim geciktir
    reg [INDEX_WIDTH - 1 : 0] index_last;
    reg [OFFSET_WIDTH - 1 : 0] offset_last;
@@ -50,8 +65,10 @@ module data_cache #(
    reg [3:0] write_en_last;
    
    reg flushing_n; //active low (0 = flushing, 1 = not flushing)
+   assign flushing_n_o = flushing_n;
+   
    reg [TAG_WIDTH - 1 : 0] flush_tag_old;
-   wire [TAG_WIDTH - 1 : 0] flush_tag = {TAG_WIDTH{1'b0}};
+   wire [TAG_WIDTH - 1 : 0] flush_tag = block_tag[flush_index];
    reg [INDEX_WIDTH - 1 : 0] flush_index;
    reg [FLUSH_COUNTER_WIDTH - 1 : 0] flush_counter;
    
@@ -70,7 +87,7 @@ module data_cache #(
    assign blocking_n_o = blocking_n;
     
    localparam QWORD_PER_BLOCK_COUNT = 2 ** FLUSH_COUNTER_WIDTH;
-    
+   
    wire [QWORD_PER_BLOCK_COUNT - 1 : 0] block_qword_dirty [0 : BLOCK_COUNT - 1];
     
    wire [QWORD_PER_BLOCK_COUNT - 1 : 0] qword_flushing_n;
@@ -98,6 +115,8 @@ module data_cache #(
          flush_counter <= 0;
          bus_valid_o <= 1;
          flush_tag_old <= 1;
+         block_tag[0] <= 0;
+         block_valid[0] <= 1;
          dirty <= qword_dirty_first;
          cleaned_n <= qword_dirty_first;
       end else begin
@@ -139,7 +158,7 @@ module data_cache #(
          localparam SUB_COUNT = 4;
       
          wire [QWORD_PER_BLOCK_COUNT - 1 : 0] fn = flush_index == I ? qword_flushing_n : {QWORD_PER_BLOCK_COUNT{1'b1}};
-         wire [3:0] wen = (index_last == I && blocking_n) ? write_en_last : 4'b0;
+         wire [3:0] wen = ((index_last == I) && blocking_n) ? write_en_last : 4'b0;
          
          wire [31:0] data [0 : SUB_COUNT - 1];
          

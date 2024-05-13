@@ -27,9 +27,7 @@ module cpu #(
 );
 
    localparam BUS_DATA_WIDTH = (2 ** BUS_DATA_WIDTH_SHIFT) * 8;
-    
-   //assign bus_we_o = 0;
-    
+
    reg instr_sel = 1'b0; //0 = I$, 1 = ROM 
     
    wire [31:2] icache_address;
@@ -59,6 +57,33 @@ module cpu #(
       .data_cache_blocking_n_i(dcache_blocking_n)
    );
    
+   wire cache_sel; //0 = I$; 1 = D$
+   wire icache_flushing_n, dcache_flushing_n;
+   
+   wire [BUS_ADDRESS_WIDTH - 1 : BUS_DATA_WIDTH_SHIFT] icache_bus_addr_o;
+   wire [BUS_ADDRESS_WIDTH - 1 : BUS_DATA_WIDTH_SHIFT] dcache_bus_addr_o;
+   assign bus_addr_o = cache_sel ? dcache_bus_addr_o : icache_bus_addr_o;
+   
+   wire icache_bus_valid_i = !cache_sel & bus_valid_i;
+   wire dcache_bus_valid_i = cache_sel & bus_valid_i;
+   
+   wire icache_bus_valid_o, dcache_bus_valid_o;
+   assign bus_valid_o = cache_sel ? dcache_bus_valid_o : icache_bus_valid_o;
+   
+   wire dcache_bus_we_o;
+   assign bus_we_o = cache_sel & dcache_bus_we_o;
+   
+   cache_arbiter arbiter(
+      .clk_i(clk_i),
+      .rst_i(rst_i),
+      
+      .instr_cache_blocking_n_i(icache_blocking_n),
+      .instr_cache_flushing_n_i(icache_flushing_n),
+      .data_cache_flushing_n_i(dcache_flushing_n),
+      .bus_valid_i(bus_valid_i),
+      .cache_sel_o(cache_sel)
+   );
+   
    instr_cache icache(
       .clk_i(clk_i),
       .rst_i(rst_i),
@@ -66,12 +91,13 @@ module cpu #(
       .address_i(icache_address[BUS_ADDRESS_WIDTH - 1 : 2]),
       .data_o(icache_data),
       
-      .bus_addr_o(),
-      .bus_data_i(0),     
-      .bus_valid_i(0),
-      .bus_valid_o(),
+      .bus_addr_o(icache_bus_addr_o),
+      .bus_data_i(bus_data_i),     
+      .bus_valid_i(icache_bus_valid_i),
+      .bus_valid_o(icache_bus_valid_o),
       
-      .blocking_n_o(icache_blocking_n)
+      .blocking_n_o(icache_blocking_n),
+      .flushing_n_o(icache_flushing_n)
    );
    
    internal_rom rom(
@@ -86,15 +112,17 @@ module cpu #(
       .data_i(dcache_data_w),
       .write_en_i(dcache_write_en),
       .data_o(dcache_data_r),
-      .blocking_n_o(dcache_blocking_n),
       
-      .bus_addr_o(bus_addr_o),
+      .blocking_n_o(dcache_blocking_n),
+      .flushing_n_o(dcache_flushing_n),
+      
+      .bus_addr_o(dcache_bus_addr_o),
       .bus_data_i(bus_data_i),     
-      .bus_valid_i(bus_valid_i),
-      .bus_valid_o(bus_valid_o),
+      .bus_valid_i(dcache_bus_valid_i),
+      .bus_valid_o(dcache_bus_valid_o),
       
       .bus_data_o(bus_data_o),
-      .bus_we_o(bus_we_o)
+      .bus_we_o(dcache_bus_we_o)
    );
    
    initial begin

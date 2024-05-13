@@ -47,7 +47,7 @@ module data_cache_byte_block #(
       for (I = 0; I < BYTE_COUNT; I = I + 1) begin
          always @(posedge clk_i) begin
             if (flushing_n_i[I]) begin
-               if(write_en_i && addr_w_i == I) begin
+               if(write_en_i && (addr_w_i == I)) begin
                   bytes[I] <= data_i;
                end
             end else begin

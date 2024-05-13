@@ -17,7 +17,8 @@ module instr_cache #(
    
    output reg bus_valid_o,
    
-   output blocking_n_o
+   output blocking_n_o,
+   output flushing_n_o
 );
    genvar I;   
    
@@ -39,6 +40,8 @@ module instr_cache #(
    localparam FLUSH_COUNTER_WIDTH = OFFSET_WIDTH - 2;
    
    reg flushing_n; //active low (0 = flushing, 1 = not flushing)
+   assign flushing_n_o = flushing_n;
+   
    wire [TAG_WIDTH - 1 : 0] flush_tag;
    reg [INDEX_WIDTH - 1 : 0] flush_index;
    reg [FLUSH_COUNTER_WIDTH - 1 : 0] flush_counter;
