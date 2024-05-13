@@ -9,6 +9,7 @@ module data_cache #(
    input rst_i,
    input [31:2] addr_i,
    input [31:0] data_i,
+   input en_n_i, //Hafıza işlemi yapılmıyor
    input [3:0] write_en_i,
    output reg [31:0] data_o,
    
@@ -35,6 +36,12 @@ module data_cache #(
    localparam TAG_WIDTH = BUS_ADDRESS_WIDTH - TAG_LSB;
    
    localparam FLUSH_COUNTER_WIDTH = OFFSET_WIDTH - 2;
+   
+   wire blocking_n;
+   
+   wire access_valid = ((tag == block_tag[index]) & block_valid[index]) | en_n_i; //Erişeceğimiz hücre önbellekte yüklü veya erişim yapılmıyor
+   reg access_valid_last; //Bir önceki çevrimdeki access_valid değeri
+   wire delayed_access_valid = qword_flushing_n[offset_last[OFFSET_WIDTH - 1 : 2]]; //Erişeceğimiz hücrenin tazelenmesi tamamlanmış
    
    wire [TAG_WIDTH - 1 : 0] tag = addr_i[30 : TAG_LSB];
    wire [INDEX_WIDTH - 1 : 0] index = addr_i[INDEX_MSB : INDEX_LSB];
@@ -82,15 +89,14 @@ module data_cache #(
       .value_o(flush_counter_next),
       .carry_o(flush_finish)
    );
-   
-   wire blocking_n = flushing_n;
-   assign blocking_n_o = blocking_n;
     
    localparam QWORD_PER_BLOCK_COUNT = 2 ** FLUSH_COUNTER_WIDTH;
    
    wire [QWORD_PER_BLOCK_COUNT - 1 : 0] block_qword_dirty [0 : BLOCK_COUNT - 1];
     
    wire [QWORD_PER_BLOCK_COUNT - 1 : 0] qword_flushing_n;
+   //assign access_valid_last = qword_flushing_n[offset_last[OFFSET_WIDTH - 1 : 2]];
+   
    wire [QWORD_PER_BLOCK_COUNT - 1 : 0] qword_dirty = block_qword_dirty[flush_index];
    
    wire qword_dirty_first = qword_dirty[0];
@@ -110,6 +116,10 @@ module data_cache #(
     
    always @(posedge clk_i) begin
       if (rst_i) begin
+         //Bir önceki (gerçekte olmayan) erişimi geçerli varsay
+         access_valid_last <= 1;
+      
+         //DEBUG: Yeni tazeleme başlat
          flushing_n <= 0;
          flush_index <= 0;
          flush_counter <= 0;
@@ -149,6 +159,7 @@ module data_cache #(
             offset_last <= offset;
             write_en_last <= write_en_i;
             data_w_last <= data_i;
+            access_valid_last <= access_valid;
          end
       end
    end
@@ -162,12 +173,17 @@ module data_cache #(
          
          wire [31:0] data [0 : SUB_COUNT - 1];
          
+         wire [OFFSET_WIDTH - 3 : 0] addr_r = 
+            clk_i ? 
+            flush_counter : //Posedge okuma -> Tazeleme
+            offset[OFFSET_WIDTH - 1 : 2]; //Negedge okuma -> Veri okuma
+         
          data_cache_qword_block #(
             .ADDR_WIDTH(OFFSET_WIDTH)
          ) block (
             .clk_i(clk_i),
             .rst_i(rst_i),
-            .addr_r_i(offset[OFFSET_WIDTH - 1 : 2]),
+            .addr_r_i(addr_r),
             .addr_w_i(offset_last),
             .data_i(data_w_last),
             .write_en_i(wen),
@@ -202,5 +218,12 @@ module data_cache #(
       data_o[23:16] <= (write_en_last[2] && forward) ? data_w_last[23:16] : data_r[23:16];
       data_o[31:24] <= (write_en_last[3] && forward) ? data_w_last[31:24] : data_r[31:24];
    end
+    
+   assign blocking_n = (
+      qword_flushing_n[offset[OFFSET_WIDTH - 1 : 2]]  //Erişeceğimiz hücrenin tazelenmesi tamamlanmış
+      | ((index != flush_index) & access_valid) //Erişeceğimiz hücre geçerli ve tazelenen blokta bulunmuyor.
+   ) & (access_valid_last | delayed_access_valid); //Bir önceki hücrenin erişimi tamamlanmaya hazır.
+   
+   assign blocking_n_o = blocking_n;
     
 endmodule

@@ -50,9 +50,12 @@ module memory_stage(
    output reg [31:0] pc_o,
    output reg is_memory_instruction_o,
    output reg [31:0] rs2_data_o,
-   output reg is_long_o
+   output reg is_long_o,
+   
+   output data_cache_enabled_o
 );
 
+   assign data_cache_enabled_o = is_memory_instruction_i;
    assign data_cache_address_o = alu_out_i[31:2];
    
    wire [31:0] load_val_next;

@@ -41,6 +41,7 @@ module cpu #(
    wire [31:0] dcache_data_r, dcache_data_w;
    wire dcache_blocking_n;
    wire [3:0] dcache_write_en;
+   wire dcache_en;
     
    core core(
       .clk_i(clk_i),
@@ -54,34 +55,44 @@ module cpu #(
       .data_cache_data_o(dcache_data_w),
       .data_cache_address_o(dcache_address),
       .data_cache_write_en_o(dcache_write_en),
-      .data_cache_blocking_n_i(dcache_blocking_n)
+      .data_cache_blocking_n_i(dcache_blocking_n),
+      .data_cache_enabled_o(dcache_en)
    );
    
-   wire cache_sel; //0 = I$; 1 = D$
    wire icache_flushing_n, dcache_flushing_n;
    
    wire [BUS_ADDRESS_WIDTH - 1 : BUS_DATA_WIDTH_SHIFT] icache_bus_addr_o;
    wire [BUS_ADDRESS_WIDTH - 1 : BUS_DATA_WIDTH_SHIFT] dcache_bus_addr_o;
-   assign bus_addr_o = cache_sel ? dcache_bus_addr_o : icache_bus_addr_o;
-   
-   wire icache_bus_valid_i = !cache_sel & bus_valid_i;
-   wire dcache_bus_valid_i = cache_sel & bus_valid_i;
+  
+   wire icache_bus_valid_i;
+   wire dcache_bus_valid_i;
    
    wire icache_bus_valid_o, dcache_bus_valid_o;
-   assign bus_valid_o = cache_sel ? dcache_bus_valid_o : icache_bus_valid_o;
    
-   wire dcache_bus_we_o;
-   assign bus_we_o = cache_sel & dcache_bus_we_o;
+   wire dcache_bus_we;
    
    cache_arbiter arbiter(
       .clk_i(clk_i),
       .rst_i(rst_i),
       
-      .instr_cache_blocking_n_i(icache_blocking_n),
-      .instr_cache_flushing_n_i(icache_flushing_n),
-      .data_cache_flushing_n_i(dcache_flushing_n),
-      .bus_valid_i(bus_valid_i),
-      .cache_sel_o(cache_sel)
+      .icache_blocking_n_i(icache_blocking_n),
+      .icache_flushing_n_i(icache_flushing_n),
+      .dcache_flushing_n_i(dcache_flushing_n),
+      
+      .icache_bus_addr_i(icache_bus_addr_o),
+      .dcache_bus_addr_i(dcache_bus_addr_o),
+      .bus_addr_o(bus_addr_o),
+      
+      .dcache_bus_we_i(dcache_bus_we),
+      .bus_we_o(bus_we_o),
+      
+      .icache_bus_valid_i(icache_bus_valid_o),
+      .dcache_bus_valid_i(dcache_bus_valid_o),
+      .bus_valid_o(bus_valid_o),
+      
+      .icache_bus_valid_o(icache_bus_valid_i),
+      .dcache_bus_valid_o(dcache_bus_valid_i),
+      .bus_valid_i(bus_valid_i)
    );
    
    instr_cache icache(
@@ -122,7 +133,9 @@ module cpu #(
       .bus_valid_o(dcache_bus_valid_o),
       
       .bus_data_o(bus_data_o),
-      .bus_we_o(dcache_bus_we_o)
+      .bus_we_o(dcache_bus_we),
+      
+      .en_n_i(!dcache_en)
    );
    
    initial begin

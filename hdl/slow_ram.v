@@ -72,8 +72,14 @@ module slow_ram #(
       end
    end
    
-   always @(addr_i or data_i or we_i) begin
+   always @(addr_i or we_i) begin
       if (valid_i & valid_i_last & !rst_i) begin
+         $display("WARNING: slow_ram input changed while valid_i is high.");
+      end
+   end
+   
+   always @(data_i) begin
+      if (we_i & valid_i & valid_i_last & !rst_i) begin
          $display("WARNING: slow_ram input changed while valid_i is high.");
       end
    end

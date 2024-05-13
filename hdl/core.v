@@ -23,7 +23,8 @@ module core(
    output [31:2] instr_cache_address_o,
    output [31:2] data_cache_address_o,
    output [3:0] data_cache_write_en_o,
-   output [31:0] data_cache_data_o
+   output [31:0] data_cache_data_o,
+   output data_cache_enabled_o
 );
     
    //***********IF-ID STAGE VARIABLES************
@@ -319,6 +320,7 @@ module core(
       .data_cache_data_o(data_cache_data_o),
       .data_cache_write_en_o(data_cache_write_en_o),
       .data_cache_address_o(data_cache_address_o),
+      .data_cache_enabled_o(data_cache_enabled_o),
       .load_val_o(rd_data_mem_wb_o),
       
       .reg_wb_en_o(reg_wb_en_mem_wb_o),
