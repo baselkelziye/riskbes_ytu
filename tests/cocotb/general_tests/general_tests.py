@@ -1,26 +1,9 @@
 import cocotb
 from cocotb.triggers import Timer
+from memory import MemoryAdapter
 
 def get_register_file(dut):
     return dut.cpu.core.u_id.u_regfile.registers_r
-        
-
-def extract_data_cache(dut):
-   result = []
-   
-   BLOCK_COUNT = 16
-   SUBBLOCK_COUNT = 4
-   SUBSUBBLOCK_COUNT = 4
-   SUBSUBBLOCK_BYTE_COUNT = 8
-   
-   # Evet bunların sıralaması böyle olacak
-   for i in range(BLOCK_COUNT):
-      for j in range(SUBSUBBLOCK_BYTE_COUNT):
-         for k in range(SUBBLOCK_COUNT):
-            for l in range (SUBSUBBLOCK_COUNT):
-               result.append(dut.cpu.dcache.genblk1[i].block.genblk1[k].sub.genblk1[l].sub.bytes[j])
-         
-   return result
   
 @cocotb.coroutine
 async def run_clock(dut, num_cycles, period_ns):
@@ -43,28 +26,6 @@ async def run_clock(dut, num_cycles, period_ns):
 
 filepath = "assembly_codes/"
 period_ns = 2
-""" async def load_instruction_cache(dut, file_path):
-    dut.cpu.instr_sel = 0; # Select cache, not internal rom;
-
-    cache_size = 100  # Example size, adjust according to your actual cache size
-    
-    # Reset/Clear the instruction cache
-    for i in range(cache_size):
-        dut.cpu.icache.genblk2[i >> 5].block.genblk1[i & 3].sub.words[(i >> 2) & 7].value = 0x13  # NOP
-    
-    # Minimal wait time after clearing the cache
-    await Timer(1, units='ns')
-
-    # Load new instructions into the cache
-    with open(file_path, "r") as file:
-        lines = file.readlines()
-        for i, line in enumerate(lines):
-            instruction = int(line.strip(), 16)
-            # Assign the instruction to the cache
-            dut.cpu.icache.genblk2[i >> 5].block.genblk1[i & 3].sub.words[(i >> 2) & 7].value = instruction
-
-    # Wait time to ensure assignment is processed
-    await Timer(1, units='ns') """
 
 async def load_code(dut, file_path):
     dut.cpu.instr_sel.value = 0 # Select cache, not internal rom;
@@ -101,11 +62,11 @@ async def basel_bubblesort(dut):
     num_cycles = 2000  # Define the number of cycles to run the clock
     await run_clock(dut, num_cycles, period_ns)
     # After the clock has been run for 400 cycles, you can add your comparison logic here.  
-    data_memory = extract_data_cache(dut)
+    data_memory = MemoryAdapter(dut)
     expected_data_values = ["0x01", "0x02", "0x03", "0x04", "0x05", "0x06", "0x07", "0x08", "0x09", "0x0b"]
 
     for i in range(10):
-    # Fetch the value from your DUT's data memory directly
+        # Fetch the value from the memory adapter
         dut_value = data_memory[256 + i].value
 
         # Assuming dut_value is already an integer, we can compare directly after converting
@@ -154,7 +115,7 @@ async def zahid_bubblesort(dut):
     num_cycles = 2000  # Define the number of cycles to run the clock
     await run_clock(dut, num_cycles, period_ns)
     # After the clock has been run for 400 cycles, you can add your comparison logic here.  
-    data_memory = extract_data_cache(dut)
+    data_memory = MemoryAdapter(dut)
     expected_values = ["0x14", "0x00", "0x00", "0x00", "0x13", "0x00", "0x00", "0x00", "0x12", "0x00", "0x00", "0x00",
                        "0x11", "0x00", "0x00", "0x00", "0x10", "0x00", "0x00", "0x00", "0x0f", "0x00", "0x00", "0x00",
                        "0x0e", "0x00", "0x00", "0x00", "0x0d", "0x00", "0x00", "0x00", "0x0c", "0x00", "0x00", "0x00",

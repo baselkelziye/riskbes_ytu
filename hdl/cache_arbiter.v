@@ -58,11 +58,11 @@ module cache_arbiter #(
    reg updating;
    
    assign bus_addr_o = cache_sel ? dcache_bus_addr_i : icache_bus_addr_i;
-   assign bus_valid_o = cache_sel ? dcache_bus_valid_i : icache_bus_valid_i;
+   assign bus_valid_o = (cache_sel ? dcache_bus_valid_i : icache_bus_valid_i) & !updating;
    assign bus_we_o = cache_sel & dcache_bus_we_i;
    
-   assign icache_bus_valid_o = !cache_sel & bus_valid_i & !updating;
-   assign dcache_bus_valid_o = cache_sel & bus_valid_i & !updating;
+   assign icache_bus_valid_o = !cache_sel & bus_valid_i;
+   assign dcache_bus_valid_o = cache_sel & bus_valid_i;
 
    always @(negedge clk_i) begin
       if (rst_i) begin

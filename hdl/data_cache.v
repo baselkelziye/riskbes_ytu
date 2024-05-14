@@ -22,7 +22,7 @@ module data_cache #(
    output reg bus_valid_o,
    
    output bus_we_o,
-   output [BUS_DATA_WIDTH - 1 : 0] bus_data_o
+   output reg [BUS_DATA_WIDTH - 1 : 0] bus_data_o
 );
    genvar I;
 
@@ -112,7 +112,6 @@ module data_cache #(
    wire bus_tag = dirty ? flush_tag_old : flush_tag;
    assign bus_addr_o = {bus_tag, flush_index, flush_counter};
    assign bus_we_o = dirty;
-   assign bus_data_o = block_qword[flush_counter];
     
    always @(posedge clk_i) begin
       if (rst_i) begin
@@ -130,6 +129,7 @@ module data_cache #(
                flushing_n <= 0;
                flush_index <= index;
                flush_counter <= 0;
+               bus_data_o <= block_qword[0];   
                bus_valid_o <= 1;
                flush_tag_old <= block_tag[index];
                block_tag[index] <= tag;
@@ -145,8 +145,9 @@ module data_cache #(
                cleaned_n <= 0;
             end else if (!bus_valid_o) begin
                if(!dirty) begin
+                  flushing_n <= flush_finish;
                   flush_counter <= flush_counter_next;
-                  flushing_n <= flush_finish;       
+                  bus_data_o <= block_qword[flush_counter_next];       
                   bus_valid_o <= !flush_finish;        
                   dirty <= qword_dirty_next;
                   cleaned_n <= qword_dirty_next;
