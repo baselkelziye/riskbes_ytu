@@ -131,6 +131,7 @@ module instruction_decode_stage(
      .rst_i(rst_i),
      .busywait(busywait),
      .flush(flush),
+     .hazard_i(hazard_o),
      
      .is_long_id_ex_i(is_long_i),
      .is_long_id_ex_o(is_long_id_ex_o),

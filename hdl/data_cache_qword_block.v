@@ -52,7 +52,7 @@ module data_cache_qword_block #(
    
    wire [31:0] sub_data_r [0 : SUB_COUNT - 1];
    
-   wire [QWORD_PER_BLOCK_COUNT - 1 : 0] fn = (!dirty) | flushing_n_i;
+   wire [QWORD_PER_BLOCK_COUNT - 1 : 0] fn = dirty | flushing_n_i;
    
    genvar I;
    
@@ -80,20 +80,20 @@ module data_cache_qword_block #(
       for(I = 0; I < QWORD_PER_BLOCK_COUNT; I = I + 1) begin
          wire updating;
          if(I == 0) begin
-            assign updating = !flushing_n_i[0];
+            assign updating = ~flushing_n_i[0];
          end else begin
-            assign updating = !flushing_n_i[I] & flushing_n_i[I - 1];
+            assign updating = ~flushing_n_i[I] & flushing_n_i[I - 1];
          end
       
          always @(posedge clk_i) begin
             if (rst_i) begin
-               dirty[I] <= 1'b1; //DEBUG
+               dirty[I] <= 1'b0;
             end else begin   
                // Eğer güncelleniyorsa, cleaned_n ata; eğer güncellenmeden yazılıyorsa, 1 ata; diğer durumlarda değiştirme.
                if (updating) begin
                   dirty[I] <= cleaned_n_i;
                end else begin
-                  if (write_en_i != 4'b0) begin
+                  if (addr_w_i == I && write_en_i != 4'b0) begin
                      dirty[I] <= 1'b1;
                   end
                end

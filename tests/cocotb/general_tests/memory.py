@@ -54,7 +54,9 @@ class MemoryAdapter:
 
     def __getitem__(self, address):
         cache_index = MemoryAdapter.get_cache_index(address)
-        if(MemoryAdapter.get_cache_tag(address) == self.dut.cpu.dcache.block_tag[cache_index].value):
+        if(self.dut.cpu.dcache.block_valid[cache_index].value == 1 and \
+            MemoryAdapter.get_cache_tag(address) == self.dut.cpu.dcache.block_tag[cache_index].value):
+            
             return self.dut.cpu.dcache.genblk3[cache_index].block \
                 .genblk1[MemoryAdapter.get_cache_word_sel(address)].sub \
                 .genblk1[MemoryAdapter.get_cache_byte_sel(address)] \
@@ -62,5 +64,17 @@ class MemoryAdapter:
         else:
             ram_sel = MemoryAdapter.get_ram_sel(address)
             lsb = ram_sel * 8
-            msb = lsb + 7
-            return self.dut.ram.data[MemoryAdapter.get_ram_addr(address)][msb:lsb]
+
+            return (self.dut.ram.data[MemoryAdapter.get_ram_addr(address)].value >> lsb) & 0xFF
+
+    def __setitem__(self, address, value):
+        ram_addr = MemoryAdapter.get_ram_addr(address)
+        ram_sel = MemoryAdapter.get_ram_sel(address)
+        lsb = ram_sel * 8
+
+        ramdata = self.dut.ram.data[ram_addr].value
+        pattern = (0xFF << lsb) ^ 0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF
+        ramdata &= pattern
+        ramdata |= value << lsb
+
+        self.dut.ram.data[ram_addr].value = ramdata

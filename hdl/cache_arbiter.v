@@ -54,14 +54,16 @@ module cache_arbiter #(
    // I$ Non-blocking + D$ Flushing = D$
    // I$ Blocking + D$ Non-flushing = I$
    // I$ Non-blocking + D$ Non-flushing = I$
-   wire cache_sel_next = icache_blocking_n_i & !dcache_flushing_n_i;
+   wire cache_sel_next = icache_blocking_n_i & ~dcache_flushing_n_i;
    reg updating;
    
+   wire flushing_n = cache_sel ? dcache_flushing_n_i : icache_flushing_n_i;
+   
    assign bus_addr_o = cache_sel ? dcache_bus_addr_i : icache_bus_addr_i;
-   assign bus_valid_o = (cache_sel ? dcache_bus_valid_i : icache_bus_valid_i) & !updating;
+   assign bus_valid_o = (cache_sel ? dcache_bus_valid_i : icache_bus_valid_i) & ~updating;
    assign bus_we_o = cache_sel & dcache_bus_we_i;
    
-   assign icache_bus_valid_o = !cache_sel & bus_valid_i;
+   assign icache_bus_valid_o = ~cache_sel & bus_valid_i;
    assign dcache_bus_valid_o = cache_sel & bus_valid_i;
 
    always @(negedge clk_i) begin
@@ -74,7 +76,7 @@ module cache_arbiter #(
             updating <= 0;
          end
       end else begin
-         if ((!bus_valid_o) & (cache_sel != cache_sel_next)) begin
+         if (flushing_n & (cache_sel != cache_sel_next)) begin
             updating <= 1;
          end 
       end

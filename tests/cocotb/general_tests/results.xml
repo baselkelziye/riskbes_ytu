@@ -1,8 +1,8 @@
 <testsuites name="results">
   <testsuite name="all" package="all">
-    <property name="random_seed" value="1715704843" />
-    <testcase name="basel_bubblesort" classname="general_tests" file="/home/azc/Genel/Hardware Projects/riskbes_ytu/tests/cocotb/general_tests/general_tests.py" lineno="55" time="4.009764909744263" sim_time_ns="4021.001" ratio_time="1002.8021818008414" />
-    <testcase name="umut_cpu" classname="general_tests" file="/home/azc/Genel/Hardware Projects/riskbes_ytu/tests/cocotb/general_tests/general_tests.py" lineno="83" time="0.7817068099975586" sim_time_ns="821.0010000000002" ratio_time="1050.267171143826" />
-    <testcase name="zahid_carpma" classname="general_tests" file="/home/azc/Genel/Hardware Projects/riskbes_ytu/tests/cocotb/general_tests/general_tests.py" lineno="133" time="0.20382165908813477" sim_time_ns="221.0009999999993" ratio_time="1084.286140092874" />
+    <property name="random_seed" value="1715733312" />
+    <testcase name="mem_test" classname="general_tests" file="/home/azc/Genel/Hardware Projects/riskbes_ytu/tests/cocotb/general_tests/general_tests.py" lineno="55" time="37.43344044685364" sim_time_ns="40025.001" ratio_time="1069.2311612881467">
+      <failure message="Test failed with RANDOM_SEED=1715733312" />
+    </testcase>
   </testsuite>
 </testsuites>

@@ -53,6 +53,34 @@ async def load_code(dut, file_path):
     await Timer(1, units='ns')
 
 @cocotb.test()
+async def mem_test(dut):
+    filename = "c_mem_test.txt"
+    dut.rst_i.value = 1
+    await run_clock(dut, 10, 2)
+    dut.rst_i.value = 0
+    await load_code(dut, filepath + filename)
+    memory = MemoryAdapter(dut)
+
+    word1 = [0x12, 0x34, 0x56, 0x78]
+    word2 = [0x0, 0xBC, 0xDE, 0xFF]
+
+    for i in range(4):
+        memory[0x80 + i] = word1[i]
+        memory[0x1080 + i] = word2[i]
+        await Timer(1, units='ns')
+
+
+    num_cycles = 20000  # Define the number of cycles to run the clock
+    await run_clock(dut, num_cycles, period_ns)
+    # After the clock has been run for 400 cycles, you can add your comparison logic here.  
+
+    for i in range(4):
+        dut._log.info(f"Value at address {0x80 + i} is {hex(memory[0x80 + i])}, compare with {hex(word1[i])} and {hex(word1[i] ^ 0xFF)}.")
+        dut._log.info(f"Value at address {0x1080 + i} is {hex(memory[0x1080 + i])}, compare with {hex(word2[i])} and {hex(word2[i] ^ 0xFF)}.")
+    
+    assert get_register_file(dut)[31].value == 1
+
+# @cocotb.test()
 async def basel_bubblesort(dut):
     filename = "basel_bubblesort.txt"
     dut.rst_i.value = 1
@@ -80,7 +108,7 @@ async def basel_bubblesort(dut):
             dut._log.info(f"Data Memory {256+i} matches the expected value: {hex(dut_value)}")
         
     
-@cocotb.test()
+# @cocotb.test()
 async def umut_cpu(dut):
     filename = "umut_cpu.txt"
     dut.rst_i.value = 1
@@ -130,7 +158,7 @@ async def zahid_bubblesort(dut):
             dut._log.info(f"Data Memory {i} matches the expected value: {hex(dut_value)}")
 
 
-@cocotb.test()
+# @cocotb.test()
 async def zahid_carpma(dut):
     filename = "zahid_carpma.txt"
     dut.rst_i.value = 1

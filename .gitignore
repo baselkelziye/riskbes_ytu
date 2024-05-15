@@ -1,2 +1,4 @@
 /riscv32im_pipelined_cpu/
 .Xil/
+**/__pycache__/
+dump.vcd

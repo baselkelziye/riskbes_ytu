@@ -42,11 +42,17 @@ module slow_ram #(
    
    reg [DATA_WIDTH - 1 : 0] data [0 : SIZE - 1];
    reg valid_i_last;
-   integer count;
+   integer i, count;
+   
+   initial begin
+      for(i = 0; i < SIZE; i = i + 1) begin
+         data[i] <= 0;
+      end
+   end
    
    always @(posedge clk_i) begin
       valid_i_last <= valid_i;
-   
+
       if(rst_i) begin
          count <= LATENCY;
       end else begin

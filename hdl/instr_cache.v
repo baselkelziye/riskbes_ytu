@@ -89,7 +89,7 @@ module instr_cache #(
             end else if (!bus_valid_o) begin
                flush_counter <= flush_counter_next;
                flushing_n <= flush_finish;
-               bus_valid_o <= !flush_finish;
+               bus_valid_o <= ~flush_finish;
             end
          end
       end
@@ -140,8 +140,9 @@ module instr_cache #(
       end
    endgenerate
    
-   assign blocking_n_o = qword_flushing_n[offset[OFFSET_WIDTH - 1 : 2]] 
-      | ((index != flush_index) & access_valid);
+   assign blocking_n_o = 
+      (qword_flushing_n[offset[OFFSET_WIDTH - 1 : 2]] | (index != flush_index))
+      & access_valid;
    assign data_o = block_data[index];
     
 endmodule

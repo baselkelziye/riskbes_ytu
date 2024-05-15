@@ -5,6 +5,7 @@ module id_ex_stage_reg(
     input rst_i,
     input busywait,
     input flush,
+    input hazard_i,
     
     input [31:1] pc_id_ex_i,
     
@@ -79,24 +80,44 @@ module id_ex_stage_reg(
     
     always @(posedge clk_i)begin
         if(!busywait)begin
-            pc_id_ex_o  <= pc_id_ex_i;
-            rs1_value_id_ex_o <= rs1_value_id_ex_i;
-            rs2_value_id_ex_o <= rs2_value_id_ex_i;
-            imm_value_id_ex_o <= imm_value_id_ex_i; 
-            imm_sel_id_ex_o <= imm_sel_id_ex_i;
-            alu_op1_sel_id_ex_o <= alu_op1_sel_id_ex_i;
-            alu_op2_sel_id_ex_o <= alu_op2_sel_id_ex_i;
-            alu_op_id_ex_o <= alu_op_id_ex_i;
-            branch_sel_id_ex_o <= branch_sel_id_ex_i;
-            read_write_sel_id_ex_o <= read_write_sel_id_ex_i;
-            wb_sel_id_ex_o <= wb_sel_id_ex_i;
-            reg_wb_en_id_ex_o <= reg_wb_en_id_ex_i;  
-            rd_id_ex_o <= rd_id_ex_i;
-            rs1_label_id_ex_o <= rs1_label_id_ex_i;
-            rs2_label_id_ex_o <= rs2_label_id_ex_i;
-            is_memory_instruction_id_ex_o <= is_memory_instruction_id_ex_i;
-            is_load_instruction_id_ex_o <= is_load_instruction_id_ex_i;
-            is_long_id_ex_o <= is_long_id_ex_i;
+            if(hazard_i) begin
+               pc_id_ex_o <= 31'd0;
+               rs1_value_id_ex_o <= 32'd0;
+               rs2_value_id_ex_o <= 32'd0;
+               imm_value_id_ex_o <= 32'd0;
+               imm_sel_id_ex_o <= 3'd0;
+               alu_op1_sel_id_ex_o <= 0;
+               alu_op2_sel_id_ex_o <= 0;
+               alu_op_id_ex_o <= 5'd0;
+               branch_sel_id_ex_o <= 3'b010;
+               read_write_sel_id_ex_o <= 4'd0;
+               wb_sel_id_ex_o <= 2'd0;
+               reg_wb_en_id_ex_o <= 0;
+               rd_id_ex_o <= 5'd0;
+               rs1_label_id_ex_o <= 5'd0;
+               is_memory_instruction_id_ex_o  <= 1'b0;
+               is_load_instruction_id_ex_o <= 1'b0;
+               is_long_id_ex_o <= 1'b0;
+            end else begin          
+               pc_id_ex_o  <= pc_id_ex_i;
+               rs1_value_id_ex_o <= rs1_value_id_ex_i;
+               rs2_value_id_ex_o <= rs2_value_id_ex_i;
+               imm_value_id_ex_o <= imm_value_id_ex_i; 
+               imm_sel_id_ex_o <= imm_sel_id_ex_i;
+               alu_op1_sel_id_ex_o <= alu_op1_sel_id_ex_i;
+               alu_op2_sel_id_ex_o <= alu_op2_sel_id_ex_i;
+               alu_op_id_ex_o <= alu_op_id_ex_i;
+               branch_sel_id_ex_o <= branch_sel_id_ex_i;
+               read_write_sel_id_ex_o <= read_write_sel_id_ex_i;
+               wb_sel_id_ex_o <= wb_sel_id_ex_i;
+               reg_wb_en_id_ex_o <= reg_wb_en_id_ex_i;  
+               rd_id_ex_o <= rd_id_ex_i;
+               rs1_label_id_ex_o <= rs1_label_id_ex_i;
+               rs2_label_id_ex_o <= rs2_label_id_ex_i;
+               is_memory_instruction_id_ex_o <= is_memory_instruction_id_ex_i;
+               is_load_instruction_id_ex_o <= is_load_instruction_id_ex_i;
+               is_long_id_ex_o <= is_long_id_ex_i;
+            end
         end
     end
 endmodule

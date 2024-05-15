@@ -114,9 +114,17 @@ module core(
 
     //************ tmp values *******************\\
     
+    //Verilerin yazmaçlara doğru yazılabilmesi için bir çevrim fazla beklemeliyiz
+    reg data_cache_blocking_n_last; 
+    wire wait_for_data_cache_n = data_cache_blocking_n_i & data_cache_blocking_n_last;
+    
+    always @(posedge clk_i) begin
+      data_cache_blocking_n_last <= data_cache_blocking_n_i;
+    end
+    
     //tmp control signals
     wire id_hazard;
-    wire if_stall = id_hazard | !data_cache_blocking_n_i;
+    wire if_stall = id_hazard | ~wait_for_data_cache_n;
     wire [31:0] alu_in1_w;
     wire [31:0] alu_in2_w; 
     wire [31:0] reg_wb_data_w;
@@ -124,8 +132,8 @@ module core(
     wire busy_w;
     wire write_en_w;
     
-    assign busy_w = ins_busy_w | !data_cache_blocking_n_i;
-    assign write_en_w = (reg_wb_en_mem_wb_o & !busy_w); //reg i mem_wb_o yapmak laizm en son
+    assign busy_w = ins_busy_w | ~wait_for_data_cache_n;
+    assign write_en_w = (reg_wb_en_mem_wb_o & ~busy_w); //reg i mem_wb_o yapmak laizm en son
 
    u_if u_if(
      .clk_i(clk_i),
@@ -304,6 +312,7 @@ module core(
       .rst_i(rst_i),
       
       .busywait_i(busy_w),
+      .data_cache_blocking_n_i(data_cache_blocking_n_i),
       
       .data_cache_data_i(data_cache_data_i),
       .op_type_i(read_write_sel_ex_mem_o),

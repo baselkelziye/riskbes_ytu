@@ -135,7 +135,7 @@ module cpu #(
       .bus_data_o(bus_data_o),
       .bus_we_o(dcache_bus_we),
       
-      .en_n_i(!dcache_en)
+      .en_n_i(~dcache_en)
    );
    
    initial begin
