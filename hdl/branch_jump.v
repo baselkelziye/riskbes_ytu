@@ -8,12 +8,12 @@ module branch_jump(
    output PC_sel_o
 );
 
-   assign PC_sel_o = out_sel_r;
-    
    reg equal_r;
    reg less_t_r;
     
    reg out_sel_r;
+
+   assign PC_sel_o = out_sel_r;
     
    always @(in1_i or in2_i or bj_sel_i) begin   
       if (bj_sel_i < 3'b110) begin 

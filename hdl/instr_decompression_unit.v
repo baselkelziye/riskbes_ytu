@@ -50,7 +50,7 @@ wire [9:4] imm7 = {instr_i[12], instr_i[4:3], instr_i[5], instr_i[2], instr_i[6]
 wire [8:1] imm8 = {instr_i[12], instr_i[6:5], instr_i[2], instr_i[11:10], instr_i[4:3]}; //xxx843xxx76215xx (imm8)
 wire [7:2] imm9 = {instr_i[8:7], instr_i[12:9]}; //xxx543276xxxxxxx (imm9)
 
-always @(instr_i) begin
+always @(*) begin
     case (op)
         0: case (funct)
             0: //ADDI4SPN -> addi rdx, x2, nzuimm[9:2]
