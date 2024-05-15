@@ -2,3 +2,5 @@
 .Xil/
 **/__pycache__/
 dump.vcd
+/tests/cocotb/general_tests/sim_build/
+/tests/cocotb/general_tests/results.xml

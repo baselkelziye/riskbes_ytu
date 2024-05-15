@@ -1,0 +1,53 @@
+module cla32(d1,d2,cin,sum,cout);
+input [31:0] d1;
+input [31:0] d2;
+input cin;
+output cout;
+output [31:0] sum;
+wire c0,c1,c2,c3,c4,c5,c6;
+
+cla4 n1(d1[3:0],d2[3:0],cin,sum[3:0],c0);
+cla4 n2(d1[7:4],d2[7:4],c0,sum[7:4],c1);
+cla4 n3(d1[11:8],d2[11:8],c1,sum[11:8],c2);
+cla4 n4(d1[15:12],d2[15:12],c2,sum[15:12],c3);
+cla4 n5(d1[19:16],d2[19:16],c3,sum[19:16],c4);
+cla4 n6(d1[23:20],d2[23:20],c4,sum[23:20],c5);
+cla4 n7(d1[27:24],d2[27:24],c5,sum[27:24],c6);
+cla4 n8(d1[31:28],d2[31:28],c6,sum[31:28],cout);
+endmodule
+
+module cla4(a,b,cin,s,cout);
+input[3:0] a,b;
+input cin;
+output cout;
+output[3:0] s;
+wire[3:0] g,p;
+wire[13:0] z;
+xor(p[0], a[0], b[0]);
+and(g[0], a[0], b[0]);
+xor(p[1], a[1], b[1]);
+and(g[1], a[1], b[1]);
+xor(p[2], a[2], b[2]);
+and(g[2], a[2], b[2]);
+xor(p[3], a[3], b[3]);
+and(g[3], a[3], b[3]);
+xor(s[0], cin, p[0]);
+and(z[0], cin, p[0]);
+or(z[1], z[0], g[0]);
+xor(s[1], z[1], p[1]);
+and(z[2], cin, p[0], p[1]);
+and(z[3], g[0], p[1]);
+or(z[4], z[2], z[3], g[1]);
+xor(s[2], z[4], p[2]);
+and(z[5], cin, p[0], p[1], p[2]);
+and(z[6], g[0], p[1], p[2]);
+and(z[7], g[1], p[2]);
+or(z[8], z[5], z[6], z[7], g[2]);
+xor(s[3], z[8], p[3]);
+and(z[9], cin, p[0], p[1], p[2]);
+and(z[10], g[0], p[1], p[2]);
+and(z[11], g[1], p[2]);
+or(z[12], z[9], z[10], z[11], g[2]);
+and(z[13], z[12], p[3]);
+or(cout, z[13], g[3]);
+endmodule
