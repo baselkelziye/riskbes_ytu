@@ -34,17 +34,9 @@ module cpu( input clk_i,
     wire [31:0] rs2_value_id_ex_o;
 
     wire [31:0] imm_value_id_ex_o;
-
-    wire [2:0] imm_sel_id_ex_o; 
-
     wire alu_op1_sel_id_ex_o;
 
     wire alu_op2_sel_id_ex_o; 
-
-    wire [4:0] alu_op_id_ex_o; 
-
-    wire [2:0] branch_sel_id_ex_o;  
-
     wire [3:0] read_write_sel_id_ex_o; 
 
     wire [1:0] wb_sel_id_ex_o;
@@ -56,6 +48,14 @@ module cpu( input clk_i,
     
     wire [4:0] rs2_label_id_ex_o;    
     wire is_memory_instruction_id_ex_o;
+    
+    wire [2:0] funct3_id_ex_o;
+    wire [6:0] funct7_id_ex_o;
+
+    wire is_load_instr_id_ex_o;
+    wire is_store_instr_id_ex_o;
+    wire is_branch_instr_id_ex_o;
+    wire [1:0] EX_op_id_ex_o;
     
     //*****************EX-MEM******************
     wire [31:0] alu_out_ex_mem_i; // for alu output
@@ -77,6 +77,12 @@ module cpu( input clk_i,
     wire [31:0] alu_in2_forwarded_input;
     wire [1:0]  forwardA;
     wire [1:0]  forwardB;
+    
+    wire [2:0] funct3_ex_mem_o;
+    wire [6:0] funct7_ex_mem_o;
+    wire is_load_instr_ex_mem_o;
+    wire is_store_instr_ex_mem_o;
+    
     
     //    *********** MEM-WB STAGE ***************
     wire reg_wb_en_mem_wb_o;  
@@ -139,11 +145,8 @@ module cpu( input clk_i,
       .rs1_value_id_ex_o(rs1_value_id_ex_o),
       .rs2_value_id_ex_o(rs2_value_id_ex_o),
       .imm_value_id_ex_o(imm_value_id_ex_o),
-      .imm_sel_id_ex_o(imm_sel_id_ex_o),
       .alu_op1_sel_id_ex_o(alu_op1_sel_id_ex_o),
       .alu_op2_sel_id_ex_o(alu_op2_sel_id_ex_o),
-      .alu_op_id_ex_o(alu_op_id_ex_o),
-      .branch_sel_id_ex_o(branch_sel_id_ex_o),   //signal 3 bit
       .read_write_sel_id_ex_o(read_write_sel_id_ex_o),
       .wb_sel_id_ex_o(wb_sel_id_ex_o),
       .reg_wb_en_id_ex_o(reg_wb_en_id_ex_o),
@@ -151,16 +154,25 @@ module cpu( input clk_i,
       .rs1_label_id_ex_o(rs1_label_id_ex_o),
       .rs2_label_id_ex_o(rs2_label_id_ex_o),
       .is_memory_instruction_id_ex_o(is_memory_instruction_id_ex_o),
-      .is_load_instruction_id_ex_o(is_load_instruction_id_ex_o)
+      .is_load_instruction_id_ex_o(is_load_instruction_id_ex_o),
+      .funct3_id_ex_o(funct3_id_ex_o),
+      .funct7_id_ex_o(funct7_id_ex_o),
+      .is_load_instr_id_ex_o(is_load_instr_id_ex_o),
+      .is_store_instr_id_ex_o(is_store_instr_id_ex_o),
+      .is_branch_instr_id_ex_o(is_branch_instr_id_ex_o),
+      .EX_op_id_ex_o(EX_op_id_ex_o)
    );
             
     //Dallanma birimi (umutuun raporuna bakilmali)
     branch_jump u_branch_jump(
         .in1_i(alu_in1_w),          //alu output yap
         .in2_i(alu_in2_w),
-        .bj_sel_i(branch_sel_id_ex_o), //sinyal
+        .is_branch_instr(is_branch_instr_id_ex_o),
+        .funct3_i(funct3_id_ex_o),
         .PC_sel_o(PC_sel_w)            //sinyal
     );
+
+
                  
      //Yonlendirma birimi, kendi dosyasinda aciklama yapildi
     forwarding_unit forwarding_unit(
@@ -176,64 +188,94 @@ module cpu( input clk_i,
     );
     
     
-        //bu mux RS1 degerinin en guncelini secer (forwarding unit ile)
-    mux #(
-        .DATA_WIDTH(32),
-        .NUM_INPUTS(4)   
+
+    mux_4x1 #(
+    .DATA_WIDTH(32)
     ) rs1_latest_value_selector (
-        .in_flat(
-        {rd_data_mem_wb_o, // LOAD sonucu
-         alu_out_ex_mem_o, // ex_mem deki ALU sonucu
-         alu_out_mem_wb_o, // mem_wb deki ALU sonucu
-         rs1_value_id_ex_o}),    // reg file dan okunan rs1 degeri
-        .select(forwardA), // Selection signal
-        .out(alu_in1_w)    // Output of the MUX
+    .in0(rs1_value_id_ex_o),    // X0
+    .in1(alu_out_mem_wb_o),     // X1
+    .in2(alu_out_ex_mem_o),     // X2
+    .in3(rd_data_mem_wb_o),     // X3
+    .select(forwardA),
+    .out(alu_in1_w)
     );
 
-
-    mux #(
-        .DATA_WIDTH(32),    
-        .NUM_INPUTS(2)      
+    mux_2x1 #(
+    .DATA_WIDTH(32)
     ) pc_or_rs1_selector (
-        .in_flat(
-        {pc_id_ex_o,                  //PC degeri
-         alu_in1_w}),                 // En guncel rs1 degeri
-        .select(alu_op1_sel_id_ex_o), 
-        .out(alu_in1_forwarded_input) 
+    .in0(alu_in1_w),             // X0: Most recent rs1 value
+    .in1(pc_id_ex_o),            // X1: PC value
+    .select(alu_op1_sel_id_ex_o),
+    .out(alu_in1_forwarded_input)
     );
 
-
-    //Asagidaki iki mux yukari ile ayni sadece farkli seyleri seciyor
-    mux #(
-        .DATA_WIDTH(32),    
-        .NUM_INPUTS(2)      
+    mux_2x1 #(
+    .DATA_WIDTH(32)
     ) imm_or_rs2_selector (
-        .in_flat(
-        {imm_value_id_ex_o,                  //imm degeri
-         alu_in2_w}),                  // en guncel rs2 degeri
-        .select(alu_op2_sel_id_ex_o),  
-        .out(alu_in2_forwarded_input)       
+    .in0(alu_in2_w),                 // X0: Most recent rs2 value
+    .in1(imm_value_id_ex_o),         // X1: Immediate value
+    .select(alu_op2_sel_id_ex_o),
+    .out(alu_in2_forwarded_input)
     );
+
 
    
-    mux #(
-        .DATA_WIDTH(32),    
-        .NUM_INPUTS(4)      
+    mux_4x1 #(
+    .DATA_WIDTH(32)
     ) rs2_latest_value_selector (
-        .in_flat(
-        {rd_data_mem_wb_o, 
-         alu_out_ex_mem_o,
-         alu_out_mem_wb_o,
-         rs2_value_id_ex_o}), 
-        .select(forwardB),         
-        .out(alu_in2_w) 
+    .in0(rs2_value_id_ex_o),    // X0
+    .in1(alu_out_mem_wb_o),     // X1
+    .in2(alu_out_ex_mem_o),     // X2
+    .in3(rd_data_mem_wb_o),     // X3
+    .select(forwardB),
+    .out(alu_in2_w)
+    );
+
+
+    
+    //EX_Decoder sinyalleri, Sonra yukariya EX Stage sinyallerin altina Aynen tasinsin
+    wire [1:0] chip_select;
+    wire [4:0] ALU_op;
+    wire [4:0] BMU_op;
+    wire [2:0] MDU_op;
+    wire [31:0] ALU_res, MDU_res, BMU_res;
+    
+    EX_Decoder u_EX_Decoder(
+                   .EX_op (EX_op_id_ex_o), 
+                   .funct3(funct3_id_ex_o),
+                   .funct7(funct7_id_ex_o),
+                   .ALU_op(ALU_op),
+                //    .BMU_op(BMU_op),
+                   .MDU_op(MDU_op),
+                   .chip_select(chip_select)
+    );
+
+    MDU u_MDU(
+        .alu1_i(alu_in1_w),
+        .alu2_i(alu_in2_w),
+        .chip_select(chip_select),
+        .MDU_op(MDU_op),
+        .result_o(MDU_res)
     );
                                    
     alu u_alu(
         .alu1_i(alu_in1_forwarded_input),  //bunlar anlik cikis oldugu icin pipeline'a girmelerine gerek yok.
         .alu2_i(alu_in2_forwarded_input),
-        .alu_op_i(alu_op_id_ex_o),
-        .result_o(alu_out_ex_mem_i)
+        .chip_select(chip_select),
+        .alu_op_i(ALU_op),
+        .result_o(ALU_res)
+    );
+
+
+    mux_4x1 #(
+    .DATA_WIDTH(32)
+    ) u_EX_res_select_mux (
+    .in0(ALU_res),        // X0
+    .in1(MDU_res),        // X1
+    .in2(32'hdeadbeef),   // X2
+    .in3(32'hdeadbeef),   // X3
+    .select(chip_select),
+    .out(alu_out_ex_mem_i)
     );
 
     ex_mem_stage_reg ex_mem(
@@ -263,7 +305,18 @@ module cpu( input clk_i,
         .is_memory_instruction_ex_mem_i(is_memory_instruction_id_ex_o),
         .is_memory_instruction_ex_mem_o(is_memory_instruction_ex_mem_o),
         .PC_sel_w_ex_mem_i(PC_sel_w),
-        .PC_sel_w_ex_mem_o(PC_sel_w_ex_mem_o)
+        .PC_sel_w_ex_mem_o(PC_sel_w_ex_mem_o),
+        .funct3_ex_mem_i(funct3_id_ex_o),
+        .funct3_ex_mem_o(funct3_ex_mem_o),
+        
+        .funct7_ex_mem_i(funct7_id_ex_o),
+        .funct7_ex_mem_o(funct7_ex_mem_o),
+
+        .is_load_instr_ex_mem_i(is_load_instr_id_ex_o),
+        .is_load_instr_ex_mem_o(is_load_instr_ex_mem_o),
+
+        .is_store_instr_ex_mem_i(is_store_instr_id_ex_o),
+        .is_store_instr_ex_mem_o(is_store_instr_ex_mem_o)
     );
                  
     wire [31:0] data_cache_data_out;
@@ -274,6 +327,9 @@ module cpu( input clk_i,
         .address_i(alu_out_ex_mem_o),
         .write_data_i(rs2_ex_mem_o), //rs2 n�n de�erini ta�� yaz oraya
         .read_write_sel_i(read_write_sel_ex_mem_o),
+//        .funct3_i(funct3_ex_mem_o),
+//        .is_load_instr(is_load_instr_ex_mem_o),
+//        .is_store_instr(is_store_instr_ex_mem_o),
         .read_data_o(data_cache_data_out),
         .busy_o(data_busy_w)
     );
@@ -307,13 +363,16 @@ module cpu( input clk_i,
         .out_o(pc_mem_wb_o_4) // cunku son muxta PC+4 var, su ana kadar sadece PC i ilettik biz, 4 ile toplayip yollamamiz lazim.
     );
 
-    mux #(
-        .DATA_WIDTH(32),    // Set the data width of each input to 32 bits
-        .NUM_INPUTS(4)      // Set the number of inputs to 4 (for a 4-to-1 MUX)
+    mux_4x1 #(
+        .DATA_WIDTH(32)
     ) u_wb_mux (
-        .in_flat({pc_mem_wb_o_4, imm_mem_wb_o, rd_data_mem_wb_o, alu_out_mem_wb_o}), // Concatenate inputs for the mux
-        .select(wb_sel_mem_wb_o),    // Selection signal
-        .out(reg_wb_data_w)          // Output of the MUX
+        .in0(alu_out_mem_wb_o),  // X3
+        .in1(rd_data_mem_wb_o),  // X2
+        .in2(imm_mem_wb_o),      // X1
+        .in3(pc_mem_wb_o_4),     // X0
+        .select(wb_sel_mem_wb_o),
+        .out(reg_wb_data_w)
     );
+
      
 endmodule

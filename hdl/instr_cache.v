@@ -77,7 +77,7 @@ module instr_cache(
 //cache_r[25] = 32'h018ca6b3; //� ori x13, x25, 24
 //cache_r[26] = 32'h019c2733; //� andi x14, x24, 25
 //cache_r[27] = 32'h00e6e7b3; //� ori x15, x13, 14
-cache_r[28] = 32'h0ff77813; //� andi x16, x14, 255
+//cache_r[28] = 32'h0ff77813; //� andi x16, x14, 255
 
 
 
