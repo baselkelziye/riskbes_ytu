@@ -57,10 +57,10 @@ class MemoryAdapter:
         if(self.dut.cpu.dcache.block_valid[cache_index].value == 1 and \
             MemoryAdapter.get_cache_tag(address) == self.dut.cpu.dcache.block_tag[cache_index].value):
             
-            return self.dut.cpu.dcache.genblk3[cache_index].block \
+            return int(self.dut.cpu.dcache.genblk3[cache_index].block \
                 .genblk1[MemoryAdapter.get_cache_word_sel(address)].sub \
                 .genblk1[MemoryAdapter.get_cache_byte_sel(address)] \
-                .sub.bytes[MemoryAdapter.get_cache_offset(address)]
+                .sub.bytes[MemoryAdapter.get_cache_offset(address)].value)
         else:
             ram_sel = MemoryAdapter.get_ram_sel(address)
             lsb = ram_sel * 8
@@ -72,7 +72,7 @@ class MemoryAdapter:
         ram_sel = MemoryAdapter.get_ram_sel(address)
         lsb = ram_sel * 8
 
-        ramdata = self.dut.ram.data[ram_addr].value
+        ramdata = int(self.dut.ram.data[ram_addr].value)
         pattern = (0xFF << lsb) ^ 0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF
         ramdata &= pattern
         ramdata |= value << lsb

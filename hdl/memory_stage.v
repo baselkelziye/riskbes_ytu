@@ -40,7 +40,7 @@ module memory_stage(
     
    output [31:0] data_cache_data_o,
    output [3:0] data_cache_write_en_o,
-   output reg [31:2] data_cache_address_o,
+   output [31:2] data_cache_address_o,
    output reg [31:0] load_val_o,
    
    output reg reg_wb_en_o,
@@ -55,8 +55,8 @@ module memory_stage(
    
    output reg data_cache_enabled_o
 );
-   
-   reg [3:0] op_type;
+   assign data_cache_address_o = alu_out_i[31:2];
+ 
    wire [31:0] load_val_next;
    
    reg [31:0] load_val_delay;
@@ -67,7 +67,7 @@ module memory_stage(
       .addr_align_i(alu_out_i[1:0]),
       .core_raw_data_i(rs2_data_i),
       .cache_raw_data_i(data_cache_data_i),
-      .op_type_i(op_type),
+      .op_type_i(op_type_i),
       .write_en_o(data_cache_write_en_o),
       .core_normalized_data_o(data_cache_data_o),
       .cache_normalized_data_o(load_val_next)
@@ -104,15 +104,11 @@ module memory_stage(
       if (rst_i) begin
          load_val_o <= 0;
          load_val_delay <= 0;
-         data_cache_address_o <= 0;
-         op_type <= 0;
          data_cache_enabled_o <= 0;
       end else begin
          if (data_cache_blocking_n_i) begin
             load_val_delay <= load_val_next;
             load_val_o <= load_val_delay;
-            data_cache_address_o <= alu_out_i[31:2];
-            op_type <= op_type_i;
             data_cache_enabled_o <= is_memory_instruction_i;
          end
       end

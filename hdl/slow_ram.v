@@ -46,7 +46,7 @@ module slow_ram #(
    
    initial begin
       for(i = 0; i < SIZE; i = i + 1) begin
-         data[i] <= 0;
+         data[i] = 0;
       end
    end
    
