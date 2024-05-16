@@ -34,8 +34,8 @@ always @(opcode_i) begin
         R_TYPE :  control_signals = 13'b1_00_0_0_0_0_0_XXX_10;
         I_TYPE :  control_signals = 13'b1_00_0_1_0_0_0_101_01;
         BRANCH :  control_signals = 13'b0_XX_1_1_0_0_1_011_00;
-        JAL    :  control_signals = 13'b1_11_1_1_0_0_0_001_00;
-        JALR   :  control_signals = 13'b1_11_0_1_0_0_0_100_00;
+        JAL    :  control_signals = 13'b1_11_1_1_0_0_1_001_00;
+        JALR   :  control_signals = 13'b1_11_0_1_0_0_1_100_00;
         LUI    :  control_signals = 13'b1_10_X_X_0_0_0_000_XX;
         AUIPC  :  control_signals = 13'b1_00_1_1_0_0_0_000_00;
         default:  control_signals = 13'bX_XX_X_X_X_X_X_XXX_XX;

@@ -82,6 +82,7 @@ module instruction_fetch_stage(
       end else begin
          fetch_counter <= {FETCH_WIDTH{1'b0}};
          instr_o <= INSTR_NOP;
+         branched <= 0;
       end
    end
 
