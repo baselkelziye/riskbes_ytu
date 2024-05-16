@@ -24,31 +24,36 @@ module u_if(
     input clk_i,
     input rst_i,
     
-    input data_busywait_i,
-    output ins_busywait_o,
-    input stall,
+    input [31:0] cache_data_i,
+
+    input stall_i,
     
     input branching,
     input [31:1] branch_pc,
     
+    output [31:2] cache_address_o,
+    
     output [31:2] instr_o,
     output is_long_o,
-    output reg [31:1] pc_o
+    output reg [31:1] pc_o,
+    
+    output ins_busywait_o,
+   
+    input cache_blocking_n_i
     );
 
-reg state_loading_cache;
 reg branched;
 
 assign ins_busywait_o = branched ^ branching;
 
 parameter FETCH_WIDTH = 30;
 
-reg [FETCH_WIDTH - 1:0] fetch_counter;
-wire [FETCH_WIDTH - 1:0] fetch_counter_next;
+reg [FETCH_WIDTH + 1:2] fetch_counter;
+wire [FETCH_WIDTH + 1:2] fetch_counter_next;
 wire fetch_counter_carry;
 
 wire fetch_counter_sel, fetch_address_sel, pc_aligned_n_sel;
-wire [FETCH_WIDTH - 1:0] fetch_address = fetch_address_sel ? fetch_counter_next : fetch_counter;
+wire [FETCH_WIDTH + 1:2] fetch_address = fetch_address_sel ? fetch_counter_next : fetch_counter;
 
 wire [31:1] pc_aligned = {fetch_counter, 1'b0};
 wire [31:1] pc_unaligned = {fetch_counter, 1'b1};
@@ -65,17 +70,21 @@ increment #(.DATA_WIDTH(FETCH_WIDTH)) fetch_counter_inc
     .carry_o(fetch_counter_carry)
 );
 
-instr_cache cache(
-    .address_i(fetch_address),
-    .read_data_o(cache_data)
- );
+//instr_cache cache(
+//    .address_i(fetch_address),
+//    .read_data_o(cache_data)
+// );
+
+assign cache_address_o = fetch_address;
+assign cache_data = cache_data_i;
 
 u_fetch fetch(
     .clk_i(clk_i),
     .rst_i(rst_i),
     
-    .data_busywait_i(data_busywait_i),
-    .stall(stall),
+    .cache_blocking_n_i(cache_blocking_n_i),
+    
+    .stall_i(stall_i),
     
     .cache_data_i(cache_data),
     
@@ -92,7 +101,7 @@ u_fetch fetch(
 
 always @(posedge clk_i) begin
     if(!rst_i) begin
-        if(!data_busywait_i && !stall) begin 
+        if(!stall_i && cache_blocking_n_i) begin 
             branched <= branching;
         
             if(branching) begin
@@ -104,7 +113,7 @@ always @(posedge clk_i) begin
             pc_o <= pc_aligned_n_sel ? pc_unaligned : pc_aligned;
         end
     end else begin
-        fetch_counter <= 30'b0;
+        fetch_counter <= 32'b0;
     end
 end
     

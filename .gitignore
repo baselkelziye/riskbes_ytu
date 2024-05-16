@@ -1,5 +1,6 @@
 /riscv32im_pipelined_cpu/
 .Xil/
-/tests/cocotb/general_tests/__pycache__
+**/__pycache__/
+dump.vcd
 /tests/cocotb/general_tests/sim_build/
 /tests/cocotb/general_tests/results.xml

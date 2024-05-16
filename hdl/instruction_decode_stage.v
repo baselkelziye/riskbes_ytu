@@ -33,7 +33,7 @@ module instruction_decode_stage(
 
    input [31:2] pc_i,
    
-   output stall,
+   output hazard_o,
    
    output [31:2] pc_id_ex_o,
     
@@ -130,7 +130,7 @@ module instruction_decode_stage(
        .rd_label_id_ex_o(rd_id_ex_o), // EX asamasinda RD
        .rs1_label_if_id_o(rs1_label), // ID rs1 numarasi
        .rs2_label_if_id_o(rs2_label), // ID rs2 numarasi
-       .stall(stall)  // cikis stall sinyali
+       .hazard_o(hazard_o)  // cikis hazard_o sinyali
    );
    
    wire [31:0] imm;
@@ -148,6 +148,7 @@ module instruction_decode_stage(
      .rst_i(rst_i),
      .busywait(busywait),
      .flush(flush),
+     .hazard_i(hazard_o),
      
      .pc_id_ex_i(pc_i),          //passing PC for the Branch UNIT
      .pc_id_ex_o(pc_id_ex_o),
