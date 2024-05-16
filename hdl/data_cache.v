@@ -9,7 +9,7 @@ module data_cache #(
    input rst_i,
    input [31:2] addr_i,
    input [31:0] data_i,
-   input en_n_i, //Hafıza işlemi yapılmıyor
+   input en_i, //Hafıza işlemi yapılmıyor
    input [3:0] write_en_i,
    output reg [31:0] data_o,
    
@@ -39,7 +39,7 @@ module data_cache #(
    
    wire blocking_n;
    
-   wire access_valid = ((tag == block_tag[index]) & block_valid[index]) | en_n_i; //Erişeceğimiz hücre önbellekte yüklü veya erişim yapılmıyor
+   wire access_valid = ((tag == block_tag[index]) && block_valid[index]) || !en_i; //Erişeceğimiz hücre önbellekte yüklü veya erişim yapılmıyor
 
    wire [TAG_WIDTH - 1 : 0] tag = addr_i[30 : TAG_LSB];
    wire [INDEX_WIDTH - 1 : 0] index = addr_i[INDEX_MSB : INDEX_LSB];
@@ -69,8 +69,8 @@ module data_cache #(
    reg [OFFSET_WIDTH - 1 : 0] offset_last;
    reg [31:0] data_w_last;
    reg [3:0] write_en_last;
-   reg en_n_last;
-   wire delayed_access_valid = ((tag_last == block_tag[index_last]) & block_valid[index_last]) | en_n_last;
+   reg en_last;
+   wire delayed_access_valid = ((tag_last == block_tag[index_last]) && block_valid[index_last]) || !en_last;
    
    reg flushing_n; //active low (0 = flushing, 1 = not flushing)
    assign flushing_n_o = flushing_n;
@@ -110,20 +110,36 @@ module data_cache #(
    wire [TAG_WIDTH - 1 : 0] bus_tag = dirty ? flush_tag_old : flush_tag;
    assign bus_addr_o = {bus_tag, flush_index, flush_counter};
    assign bus_we_o = dirty;
+   
+   reg start_flushing;
     
    always @(posedge clk_i) begin
       if (rst_i) begin
          //Tazeleme yapma
+         start_flushing <= 0;
          flushing_n <= 1;
-         en_n_last <= 1; //"Bir önceki çevrimde önbellek kullanılmıyordu" olarak ayarlanacak
+         bus_valid_o <= 0;
+         en_last <= 0; //"Bir önceki çevrimde önbellek kullanılmıyordu" olarak ayarlanacak
          flush_index <= 0;
       end else begin
          if (flushing_n) begin
             //Flush yok
             
-            if (!access_valid & en_n_last) begin
-               //Yeni tazeleme başlat
+            //Buyruk önbelleğinden farklı olarak
+            //tazeleme başlatmadan önce
+            //bir çevrim kadar beklememiz gerekiyor
+            
+            //Bunun iki sebebi var:
+            // 1) Geciktirilmiş yazmanın bitmesini beklemeliyiz.
+            // 2) Çekirdek hafıza okuma işlemlerini negedge'de yapıyor.
+            //    Buradaki okuma da negedge'de yapıldığı için
+            //    arada bir çevrimlik gecikme oluşuyor
+            //    Hafıza okuma işleminin bitmesini beklemeliyiz
+            if (start_flushing) begin      
+               // Yeni tazeleme başlat
+               
                flushing_n <= 0;
+               start_flushing <= 0;
                flush_index <= index;
                flush_counter <= 0;
                bus_data_o <= block_qword[index];   
@@ -132,7 +148,11 @@ module data_cache #(
                block_tag[index] <= tag;
                block_valid[index] <= 1;
                dirty <= qword_dirty_first;
-               cleaned_n <= qword_dirty_first;
+               cleaned_n <= qword_dirty_first;   
+            end else if (!access_valid) begin
+               // Tazelemeye başlamaya hazırlan
+               
+               start_flushing <= 1;
             end
          end else begin
             //Flush var
@@ -162,7 +182,7 @@ module data_cache #(
             offset_last <= offset;
             write_en_last <= write_en_i;
             data_w_last <= data_i;
-            en_n_last <= en_n_i | !blocking_n;
+            en_last <= en_i & blocking_n;
          end
       end
    end
@@ -172,7 +192,7 @@ module data_cache #(
          localparam SUB_COUNT = 4;
       
          wire [QWORD_PER_BLOCK_COUNT - 1 : 0] fn = flush_index == I ? qword_flushing_n : {QWORD_PER_BLOCK_COUNT{1'b1}};
-         wire [3:0] wen = ((index_last == I) && delayed_access_valid && !en_n_last) ? write_en_last : 4'b0;
+         wire [3:0] wen = ((index_last == I) && delayed_access_valid && en_last) ? write_en_last : 4'b0;
          
          wire [31:0] data [0 : SUB_COUNT - 1];
          
@@ -217,7 +237,8 @@ module data_cache #(
    end
     
    assign blocking_n = 
-      (qword_flushing_n[offset[OFFSET_WIDTH - 1 : 2]] | (index != flush_index))  //Erişeceğimiz hücrenin taze
+      !start_flushing //Tazeleme başlamak üzere değil
+      & (qword_flushing_n[offset[OFFSET_WIDTH - 1 : 2]] | (index != flush_index))  //Erişeceğimiz hücre taze
       & access_valid //Erişeceğimiz hücre geçerli
       & delayed_access_valid; //Bir önceki hücrenin erişimi tamamlanmaya hazır. 
    
