@@ -69,6 +69,7 @@ module core(
     wire is_load_instr_id_ex_o;
     wire is_store_instr_id_ex_o;
     wire is_branch_instr_id_ex_o;
+    wire is_jump_instr_id_ex_o;
     wire [1:0] EX_op_id_ex_o;
     
     //*****************EX-MEM******************
@@ -182,6 +183,7 @@ module core(
       .is_load_instr_id_ex_o(is_load_instr_id_ex_o),
       .is_store_instr_id_ex_o(is_store_instr_id_ex_o),
       .is_branch_instr_id_ex_o(is_branch_instr_id_ex_o),
+      .is_jump_instr_id_ex_o(is_jump_instr_id_ex_o),
       .EX_op_id_ex_o(EX_op_id_ex_o)
    );
             
@@ -190,6 +192,7 @@ module core(
         .in1_i(alu_in1_w),          //alu output yap
         .in2_i(alu_in2_w),
         .is_branch_instr(is_branch_instr_id_ex_o),
+        .is_jump_instr(is_jump_instr_id_ex_o),
         .funct3_i(funct3_id_ex_o),
         .PC_sel_o(PC_sel_w)            //sinyal
     );

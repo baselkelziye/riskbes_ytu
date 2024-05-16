@@ -24,6 +24,7 @@ module branch_jump(
     input [31:0]in1_i,
     input [31:0]in2_i,
     input is_branch_instr,
+    input is_jump_instr,
     input [2:0] funct3_i,
     output PC_sel_o
     );
@@ -45,28 +46,26 @@ module branch_jump(
 
     
     always @* begin
-    if(is_branch_instr) begin
-    case(funct3_i)
-        3'b000:
-            out_sel_r = beq_reg;
-        3'b001:
-            out_sel_r = ~beq_reg;
-        3'b010:
-            out_sel_r = 1'b0;
-        3'b011:
-            out_sel_r = 1'b1;
-        3'b100:
-            out_sel_r = blt_reg;
-        3'b101: //BGE. EQUAL | !BLT
-            out_sel_r = beq_reg | ~blt_reg;
-        3'b110:
-            out_sel_r = bltu_reg;
-        3'b111:
-            out_sel_r = beq_reg | ~bltu_reg;
-        endcase
-        end else begin
-            out_sel_r = 1'b0;
-        end
+      if(is_branch_instr) begin
+          case(funct3_i)
+              3'b000:
+                  out_sel_r = beq_reg;
+              3'b001:
+                  out_sel_r = ~beq_reg;
+              3'b100:
+                  out_sel_r = blt_reg;
+              3'b101: //BGE. EQUAL | !BLT
+                  out_sel_r = beq_reg | ~blt_reg;
+              3'b110:
+                  out_sel_r = bltu_reg;
+              3'b111:
+                  out_sel_r = beq_reg | ~bltu_reg;
+              default:
+                  out_sel_r = 0;
+           endcase
+      end else begin
+          out_sel_r = is_jump_instr;
+      end
     end   
     assign PC_sel_o = out_sel_r;
     
