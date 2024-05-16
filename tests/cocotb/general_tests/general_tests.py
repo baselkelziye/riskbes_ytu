@@ -51,6 +51,7 @@ async def load_code(dut, file_path):
         dut.ram.data[j].value = qword
 
     await Timer(1, units='ns')
+        
 
 @cocotb.test()
 async def basel_bubblesort(dut):
@@ -81,7 +82,7 @@ async def basel_bubblesort(dut):
 
 @cocotb.test()
 async def mem_test(dut):
-    filename = "c_mem_test.txt"
+    filename = "mem_test.txt"
     dut.rst_i.value = 1
     await run_clock(dut, 10, 2)
     dut.rst_i.value = 0
@@ -105,71 +106,3 @@ async def mem_test(dut):
         assert memory[0x1080 + i] == word2[i] ^ 0xFF
     
     assert get_register_file(dut)[31].value == 1
-        
-    
-# @cocotb.test()
-async def umut_cpu(dut):
-    filename = "umut_cpu.txt"
-    dut.rst_i.value = 1
-    await run_clock(dut, 10, 2)
-    dut.rst_i.value = 0
-    await load_code(dut, filepath + filename)
-
-    num_cycles = 400
-    await run_clock(dut, num_cycles, period_ns)
-    expect_values = ["0x0a", "0x0a", "0xa00", "0xa0a", "0xa00", "0x646400", "0x03", "0x9ff",
-                      "0xa0b", "0x0b",  "0x1000", "0x1048", "0x00", "0x01", "0x01",
-                        "0x01", "0x00", "0x00", "0x00", "0x00", "0x00", "0x00", "0x00", "0x02",
-                        "0x50", "0xffff9b38", "0xffffff01", "0xffffffff", "0x00", "0x01", "0xff"]
-    register_file = get_register_file(dut)
-    for i in range(31):
-        dut_value = register_file[i+1].value
-        expected_value = int(expect_values[i], 16)
-        
-        if dut_value != expected_value:
-            dut._log.error(f"Mismatch at Register {i+1}: expected {expect_values[i]}, got {hex(dut_value)}")
-        else:
-            dut._log.info(f"Register {i+1} matches the expected value: {hex(dut_value)}")
-
-
-# @cocotb.test()
-async def zahid_bubblesort(dut):
-    filename = "zahid_bubblesort.txt"
-    dut.rst_i.value = 1
-    await run_clock(dut, 10, 2)
-    dut.rst_i.value = 0
-    await load_code(dut, filepath + filename)
-    num_cycles = 2000  # Define the number of cycles to run the clock
-    await run_clock(dut, num_cycles, period_ns)
-    # After the clock has been run for 400 cycles, you can add your comparison logic here.  
-    data_memory = MemoryAdapter(dut)
-    expected_values = ["0x14", "0x00", "0x00", "0x00", "0x13", "0x00", "0x00", "0x00", "0x12", "0x00", "0x00", "0x00",
-                       "0x11", "0x00", "0x00", "0x00", "0x10", "0x00", "0x00", "0x00", "0x0f", "0x00", "0x00", "0x00",
-                       "0x0e", "0x00", "0x00", "0x00", "0x0d", "0x00", "0x00", "0x00", "0x0c", "0x00", "0x00", "0x00",
-                       "0x0b", "0x00", "0x00", "0x00", "0x0a", "0x00", "0x00", "0x00", "0x09"]
-    for i in range(45):
-        dut_value = data_memory[i].value
-        expected_value = int(expected_values[i], 16)
-        
-        if dut_value != expected_value:
-            dut._log.error(f"Mismatch at Data Memory {i}: expected {expected_values[i]}, got {hex(dut_value)}")
-        else:
-            dut._log.info(f"Data Memory {i} matches the expected value: {hex(dut_value)}")
-
-
-@cocotb.test()
-async def zahid_carpma(dut):
-    filename = "zahid_carpma.txt"
-    dut.rst_i.value = 1
-    await run_clock(dut, 10, 2)
-    dut.rst_i.value = 0
-    await load_code(dut, filepath + filename)
-    num_cycles = 100
-    await run_clock(dut, num_cycles, period_ns)
-    expected_value = 143 #in decimal
-    register_file = get_register_file(dut)
-    
-    if(register_file[10].value != expected_value):
-        dut._log.error(f"Mismatch at Register 10: expected {expected_value}, got {register_file[10].value}")
-    else:
-        dut._log.info(f"Register 10 matches the expected value: {register_file[10].value}")

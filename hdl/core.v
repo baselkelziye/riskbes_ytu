@@ -30,7 +30,7 @@ module core(
    //***********IF-ID STAGE VARIABLES************
    wire is_long_if_id_o; 
     
-   wire [31:1] pc_if_id_o; //ID asamasina giren PC olduugu icin PC_ID_O isimlend
+   wire [31:2] pc_if_id_o; //ID asamasina giren PC olduugu icin PC_ID_O isimlend
    wire [31:2] instruction_if_id_o;
     
    wire [4:0] rd_if_id_o  = instruction_if_id_o[11:7]; 
@@ -113,18 +113,10 @@ module core(
     wire [31:0] pc_mem_wb_o_4; 
 
     //************ tmp values *******************\\
-    
-    //Verilerin yazmaçlara doğru yazılabilmesi için bir çevrim fazla beklemeliyiz
-    reg data_cache_blocking_n_last; 
-    wire wait_for_data_cache_n = data_cache_blocking_n_i & data_cache_blocking_n_last;
-    
-    always @(posedge clk_i) begin
-      data_cache_blocking_n_last <= data_cache_blocking_n_i;
-    end
-    
+
     //tmp control signals
     wire id_hazard;
-    wire if_stall = id_hazard | ~wait_for_data_cache_n;
+    wire if_stall = id_hazard | ~data_cache_blocking_n_i;
     wire [31:0] alu_in1_w;
     wire [31:0] alu_in2_w; 
     wire [31:0] reg_wb_data_w;
@@ -132,14 +124,14 @@ module core(
     wire busy_w;
     wire write_en_w;
     
-    assign busy_w = ins_busy_w | ~wait_for_data_cache_n;
+    assign busy_w = ins_busy_w | ~data_cache_blocking_n_i;
     assign write_en_w = (reg_wb_en_mem_wb_o & ~busy_w); //reg i mem_wb_o yapmak laizm en son
 
-   u_if u_if(
+   instruction_fetch_stage u_if(
      .clk_i(clk_i),
      .rst_i(rst_i),
      .cache_blocking_n_i(instr_cache_blocking_n_i),
-     .cache_data_i(instr_cache_data_i),
+     .cache_data_i(instr_cache_data_i[31:2]),
      .cache_address_o(instr_cache_address_o),
      .ins_busywait_o(ins_busy_w),
 
@@ -147,13 +139,13 @@ module core(
      .branching(PC_sel_w_ex_mem_o),
      .branch_pc(alu_out_ex_mem_o[31:1]),
      .instr_o(instruction_if_id_o),
-     .is_long_o(is_long_if_id_o),
      .pc_o(pc_if_id_o)
    );
     
         
-   wire [31:1] u_id_pc_o;  
-   assign pc_id_ex_o = {u_id_pc_o, 1'b0};   
+   wire [31:2] u_id_pc_o;  
+   assign is_long_if_id_o = 0;
+   assign pc_id_ex_o = {u_id_pc_o, 2'b00};   
    instruction_decode_stage u_id(
       .clk_i(clk_i),
       .rst_i(rst_i),

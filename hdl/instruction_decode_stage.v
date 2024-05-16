@@ -32,11 +32,11 @@ module instruction_decode_stage(
    input rd_enable_i,
    
    input is_long_i,
-   input [31:1] pc_i,
+   input [31:2] pc_i,
    
    output hazard_o,
    
-   output [31:1] pc_id_ex_o,
+   output [31:2] pc_id_ex_o,
     
    output [31:0] rs1_value_id_ex_o,
    output [31:0] rs2_value_id_ex_o,  

@@ -25,6 +25,7 @@ module memory_stage(
    input rst_i,
    input busywait_i,
    input data_cache_blocking_n_i,
+   //input data_cache_blocking_n_last,
     
    input [31:0] data_cache_data_i,
    input [3:0] op_type_i,
@@ -60,7 +61,7 @@ module memory_stage(
    wire [31:0] load_val_next;
    
    reg [31:0] load_val_delay;
-
+   
    cache_access_unit cau(
       .clk_i(clk_i),
       .rst_i(rst_i),
@@ -95,7 +96,7 @@ module memory_stage(
             pc_o <= pc_i;
             is_memory_instruction_o <= is_memory_instruction_i;
             rs2_data_o <= rs2_data_i;
-         end
+         end 
       end
    end
    
@@ -108,9 +109,9 @@ module memory_stage(
       end else begin
          if (data_cache_blocking_n_i) begin
             load_val_delay <= load_val_next;
-            load_val_o <= load_val_delay;
+            load_val_o <= load_val_delay;      
             data_cache_enabled_o <= is_memory_instruction_i;
-         end
+         end       
       end
    end
 

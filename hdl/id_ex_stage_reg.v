@@ -7,7 +7,7 @@ module id_ex_stage_reg(
     input flush,
     input hazard_i,
     
-    input [31:1] pc_id_ex_i,
+    input [31:2] pc_id_ex_i,
     
     input [31:0] rs1_value_id_ex_i,
     input [31:0] rs2_value_id_ex_i,
@@ -30,7 +30,7 @@ module id_ex_stage_reg(
     input is_load_instruction_id_ex_i,
     input is_long_id_ex_i,
 
-    output reg [31:1] pc_id_ex_o,
+    output reg [31:2] pc_id_ex_o,
     
     output reg [31:0] rs1_value_id_ex_o,
     output reg [31:0] rs2_value_id_ex_o,  
@@ -57,7 +57,7 @@ module id_ex_stage_reg(
     always @(*) begin
         if(rst_i || flush) begin
             #0.1;
-            pc_id_ex_o <= 31'd0;
+            pc_id_ex_o <= 32'd0;
             rs1_value_id_ex_o <= 32'd0;
             rs2_value_id_ex_o <= 32'd0;
             imm_value_id_ex_o <= 32'd0;
@@ -79,7 +79,7 @@ module id_ex_stage_reg(
     end
     
     always @(posedge clk_i)begin
-        if(!busywait)begin
+        if(!rst_i && !busywait)begin
             if(hazard_i) begin
                pc_id_ex_o <= 31'd0;
                rs1_value_id_ex_o <= 32'd0;
