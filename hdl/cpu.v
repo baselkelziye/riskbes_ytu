@@ -25,9 +25,9 @@ module cpu #(
    input [BUS_DATA_WIDTH - 1 : 0] bus_data_i,
    input bus_valid_i
 );
-
+  
    localparam BUS_DATA_WIDTH = (2 ** BUS_DATA_WIDTH_SHIFT) * 8;
-
+  
    reg instr_sel = 1'b0; //0 = I$, 1 = ROM 
     
    wire [31:2] icache_address;

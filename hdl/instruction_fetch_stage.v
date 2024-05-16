@@ -45,8 +45,9 @@ module instruction_fetch_stage(
    localparam [31:2] INSTR_NOP = 30'b000000000000000000000000000100;
    
    reg [FETCH_WIDTH - 1:0] fetch_counter;
+
    assign cache_address_o = fetch_counter;
-   
+
    wire [FETCH_WIDTH - 1:0] fetch_counter_next;
    wire fetch_counter_carry;
    
@@ -65,7 +66,6 @@ module instruction_fetch_stage(
          if(!stall_i) begin
             if(cache_blocking_n_i) begin         
                branched <= branching;
-               
                if(branching) begin
                   fetch_counter <= branch_fetch_counter;
                   instr_o <= INSTR_NOP;
