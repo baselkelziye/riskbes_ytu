@@ -40,7 +40,7 @@ module memory_stage(
     
    output [31:0] data_cache_data_o,
    output [3:0] data_cache_write_en_o,
-   output reg [31:2] data_cache_address_o,
+   output [31:2] data_cache_address_o,
    output reg [31:0] load_val_o,
    
    output reg reg_wb_en_o,
@@ -52,8 +52,11 @@ module memory_stage(
    output reg is_memory_instruction_o,
    output reg [31:0] rs2_data_o,
    
-   output reg data_cache_enabled_o
+   output data_cache_enabled_o
 );
+
+   assign data_cache_address_o = alu_out_i[31:2];
+   assign data_cache_enabled_o = is_memory_instruction_i;
  
    wire [31:0] load_val_next;
    
@@ -92,19 +95,6 @@ module memory_stage(
             rs2_data_o <= rs2_data_i;     
             load_val_o <= load_val_next;  
          end 
-      end
-   end
-   
-   //Negatif edge okuma
-   always @(negedge clk_i) begin
-      if (rst_i) begin
-         data_cache_address_o <= 0;
-         data_cache_enabled_o <= 0;
-      end else begin
-         if (data_cache_blocking_n_i) begin
-            data_cache_address_o <= alu_out_i[31:2];
-            data_cache_enabled_o <= is_memory_instruction_i;
-         end       
       end
    end
 

@@ -55,6 +55,7 @@ module slow_ram #(
 
       if(rst_i) begin
          count <= LATENCY;
+         valid_o <= 0;
       end else begin
          if (valid_i) begin
             if (count == 1) begin

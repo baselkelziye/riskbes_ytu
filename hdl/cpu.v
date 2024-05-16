@@ -76,7 +76,6 @@ module cpu #(
       .rst_i(rst_i),
       
       .icache_blocking_n_i(icache_blocking_n),
-      .icache_flushing_n_i(icache_flushing_n),
       .dcache_flushing_n_i(dcache_flushing_n),
       
       .icache_bus_addr_i(icache_bus_addr_o),

@@ -134,7 +134,7 @@ module data_cache #(
             // 2) Çekirdek hafıza okuma işlemlerini negedge'de yapıyor.
             //    Buradaki okuma da negedge'de yapıldığı için
             //    arada bir çevrimlik gecikme oluşuyor
-            //    Hafıza okuma işleminin bitmesini beklemeliyiz
+            //    Hafıza okuma işleminin bitmesini beklemeliy
             if (start_flushing) begin      
                // Yeni tazeleme başlat
                
@@ -199,7 +199,9 @@ module data_cache #(
          wire [OFFSET_WIDTH - 3 : 0] addr_r = 
             clk_i ? 
             flush_counter : //Posedge okuma -> Tazeleme
-            offset[OFFSET_WIDTH - 1 : 2]; //Negedge okuma -> Veri okuma
+            blocking_n ? //Negedge okuma -> Veri okuma
+               offset[OFFSET_WIDTH - 1 : 2] : 
+               offset_last[OFFSET_WIDTH - 1 : 2];
          
          data_cache_qword_block #(
             .ADDR_WIDTH(OFFSET_WIDTH)

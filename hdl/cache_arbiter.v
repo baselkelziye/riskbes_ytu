@@ -28,7 +28,6 @@ module cache_arbiter #(
    input rst_i,
    
    input icache_blocking_n_i,
-   input icache_flushing_n_i,
    input dcache_flushing_n_i,
    
    input [BUS_ADDRESS_WIDTH - 1 : BUS_DATA_WIDTH_SHIFT] icache_bus_addr_i,
@@ -56,15 +55,16 @@ module cache_arbiter #(
    // I$ Non-blocking + D$ Non-flushing = I$
    wire cache_sel_next = icache_blocking_n_i & ~dcache_flushing_n_i;
    reg updating;
+
+   //updating durumunda bus_addr_o'nun değiştiğinden emin ol (valid sinyalinin 0 olmasi için gerekli)
+   wire [BUS_ADDRESS_WIDTH - 1 : BUS_DATA_WIDTH_SHIFT] bus_addr = cache_sel ? dcache_bus_addr_i : icache_bus_addr_i;
+   assign bus_addr_o = bus_addr ^ {(BUS_ADDRESS_WIDTH - BUS_DATA_WIDTH_SHIFT){updating}}; 
    
-   wire flushing_n = cache_sel ? dcache_flushing_n_i : icache_flushing_n_i;
-   
-   assign bus_addr_o = cache_sel ? dcache_bus_addr_i : icache_bus_addr_i;
    assign bus_valid_o = (cache_sel ? dcache_bus_valid_i : icache_bus_valid_i) & ~updating;
    assign bus_we_o = cache_sel & dcache_bus_we_i;
    
-   assign icache_bus_valid_o = ~cache_sel & bus_valid_i;
-   assign dcache_bus_valid_o = cache_sel & bus_valid_i;
+   assign icache_bus_valid_o = !cache_sel && bus_valid_i;
+   assign dcache_bus_valid_o = cache_sel && bus_valid_i;
 
    always @(negedge clk_i) begin
       if (rst_i) begin
@@ -76,7 +76,7 @@ module cache_arbiter #(
             updating <= 0;
          end
       end else begin
-         if (flushing_n & (cache_sel != cache_sel_next)) begin
+         if (!bus_valid_o & (cache_sel != cache_sel_next)) begin
             updating <= 1;
          end 
       end
