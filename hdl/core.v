@@ -10,8 +10,22 @@
 //resetleri aktif 0 yap
 //Hazard detection yapinca aradaki komutu NOP yapmamiz gerekir mi?
 
-module cpu( input clk_i,
-            input rst_i);
+module core(
+   input clk_i,
+   input rst_i,
+   
+   input instr_cache_blocking_n_i,
+   input data_cache_blocking_n_i,
+   
+   input [31:0] instr_cache_data_i,
+   input [31:0] data_cache_data_i,
+   
+   output [31:2] instr_cache_address_o,
+   output [31:2] data_cache_address_o,
+   output [3:0] data_cache_write_en_o,
+   output [31:0] data_cache_data_o,
+   output data_cache_enabled_o
+);
     
    //***********IF-ID STAGE VARIABLES************
    wire [31:2] pc_if_id_o; //ID asamasina giren PC olduugu icin PC_ID_O isimlend
@@ -26,7 +40,7 @@ module cpu( input clk_i,
    wire [24:0] instruction_payload_if_id_o = instruction_if_id_o[31:7];
     
     
-    //*******************ID-EX STAGE VARIABLES***********   
+ //*******************ID-EX STAGE VARIABLES***********   
     wire [31:0] rs1_value_id_ex_o;
     
     wire [31:0] pc_id_ex_o; //pass PC to ID/EX stage
@@ -34,17 +48,9 @@ module cpu( input clk_i,
     wire [31:0] rs2_value_id_ex_o;
 
     wire [31:0] imm_value_id_ex_o;
-
-    wire [2:0] imm_sel_id_ex_o; 
-
     wire alu_op1_sel_id_ex_o;
 
     wire alu_op2_sel_id_ex_o; 
-
-    wire [4:0] alu_op_id_ex_o; 
-
-    wire [2:0] branch_sel_id_ex_o;  
-
     wire [3:0] read_write_sel_id_ex_o; 
 
     wire [1:0] wb_sel_id_ex_o;
@@ -56,6 +62,15 @@ module cpu( input clk_i,
     
     wire [4:0] rs2_label_id_ex_o;    
     wire is_memory_instruction_id_ex_o;
+    
+    wire [2:0] funct3_id_ex_o;
+    wire [6:0] funct7_id_ex_o;
+
+    wire is_load_instr_id_ex_o;
+    wire is_store_instr_id_ex_o;
+    wire is_branch_instr_id_ex_o;
+    wire is_jump_instr_id_ex_o;
+    wire [1:0] EX_op_id_ex_o;
     
     //*****************EX-MEM******************
     wire [31:0] alu_out_ex_mem_i; // for alu output
@@ -72,11 +87,16 @@ module cpu( input clk_i,
     wire is_memory_instruction_ex_mem_o;  
     wire PC_sel_w_ex_mem_o;
     
-    // forwarding unit                   
+// forwarding unit                   
     wire [31:0] alu_in1_forwarded_input;
     wire [31:0] alu_in2_forwarded_input;
     wire [1:0]  forwardA;
     wire [1:0]  forwardB;
+    
+    wire [2:0] funct3_ex_mem_o;
+    wire [6:0] funct7_ex_mem_o;
+    wire is_load_instr_ex_mem_o;
+    wire is_store_instr_ex_mem_o;
     
     //    *********** MEM-WB STAGE ***************
     wire reg_wb_en_mem_wb_o;  
@@ -91,26 +111,35 @@ module cpu( input clk_i,
     wire [31:0] pc_mem_wb_o_4; 
 
     //************ tmp values *******************\\
+
+    reg data_cache_blocking_n_last;
     
+    always @(posedge clk_i) begin
+      data_cache_blocking_n_last <= data_cache_blocking_n_i;
+    end
+
     //tmp control signals
-    wire stall;
+    wire id_stall;
+    wire if_stall = id_stall | ~data_cache_blocking_n_last | ~data_cache_blocking_n_i;
     wire [31:0] alu_in1_w;
     wire [31:0] alu_in2_w; 
     wire [31:0] reg_wb_data_w;
-    wire data_busy_w;
     wire ins_busy_w;
     wire busy_w;
     wire write_en_w;
     
-    assign busy_w = (data_busy_w | ins_busy_w);
-    assign write_en_w = (reg_wb_en_mem_wb_o & !busy_w); //reg i mem_wb_o yapmak laizm en son
+    assign busy_w = ins_busy_w | ~data_cache_blocking_n_last | ~data_cache_blocking_n_i;
+    assign write_en_w = (reg_wb_en_mem_wb_o & ~busy_w); //reg i mem_wb_o yapmak laizm en son
 
    instruction_fetch_stage u_if(
      .clk_i(clk_i),
      .rst_i(rst_i),
-     .data_busywait_i(data_busy_w),
+     .cache_blocking_n_i(instr_cache_blocking_n_i),
+     .cache_data_i(instr_cache_data_i[31:2]),
+     .cache_address_o(instr_cache_address_o),
      .ins_busywait_o(ins_busy_w),
-     .stall(stall),
+
+     .stall_i(if_stall),
      .branching(PC_sel_w_ex_mem_o),
      .branch_pc(alu_out_ex_mem_o[31:1]),
      .instr_o(instruction_if_id_o),
@@ -127,7 +156,7 @@ module cpu( input clk_i,
       .instr_i(instruction_if_id_o),
       .busywait(busy_w),
       .flush(PC_sel_w_ex_mem_o),
-      .stall(stall),
+      .stall(id_stall),
       
       .rd_label_i(rd_mem_wb_o),
       .rd_data_i(reg_wb_data_w),
@@ -139,11 +168,8 @@ module cpu( input clk_i,
       .rs1_value_id_ex_o(rs1_value_id_ex_o),
       .rs2_value_id_ex_o(rs2_value_id_ex_o),
       .imm_value_id_ex_o(imm_value_id_ex_o),
-      .imm_sel_id_ex_o(imm_sel_id_ex_o),
       .alu_op1_sel_id_ex_o(alu_op1_sel_id_ex_o),
       .alu_op2_sel_id_ex_o(alu_op2_sel_id_ex_o),
-      .alu_op_id_ex_o(alu_op_id_ex_o),
-      .branch_sel_id_ex_o(branch_sel_id_ex_o),   //signal 3 bit
       .read_write_sel_id_ex_o(read_write_sel_id_ex_o),
       .wb_sel_id_ex_o(wb_sel_id_ex_o),
       .reg_wb_en_id_ex_o(reg_wb_en_id_ex_o),
@@ -151,16 +177,27 @@ module cpu( input clk_i,
       .rs1_label_id_ex_o(rs1_label_id_ex_o),
       .rs2_label_id_ex_o(rs2_label_id_ex_o),
       .is_memory_instruction_id_ex_o(is_memory_instruction_id_ex_o),
-      .is_load_instruction_id_ex_o(is_load_instruction_id_ex_o)
+      .is_load_instruction_id_ex_o(is_load_instruction_id_ex_o),
+      .funct3_id_ex_o(funct3_id_ex_o),
+      .funct7_id_ex_o(funct7_id_ex_o),
+      .is_load_instr_id_ex_o(is_load_instr_id_ex_o),
+      .is_store_instr_id_ex_o(is_store_instr_id_ex_o),
+      .is_branch_instr_id_ex_o(is_branch_instr_id_ex_o),
+      .is_jump_instr_id_ex_o(is_jump_instr_id_ex_o),
+      .EX_op_id_ex_o(EX_op_id_ex_o)
    );
             
     //Dallanma birimi (umutuun raporuna bakilmali)
     branch_jump u_branch_jump(
         .in1_i(alu_in1_w),          //alu output yap
         .in2_i(alu_in2_w),
-        .bj_sel_i(branch_sel_id_ex_o), //sinyal
+        .is_branch_instr(is_branch_instr_id_ex_o),
+        .is_jump_instr(is_jump_instr_id_ex_o),
+        .funct3_i(funct3_id_ex_o),
         .PC_sel_o(PC_sel_w)            //sinyal
     );
+
+
                  
      //Yonlendirma birimi, kendi dosyasinda aciklama yapildi
     forwarding_unit forwarding_unit(
@@ -176,66 +213,97 @@ module cpu( input clk_i,
     );
     
     
-        //bu mux RS1 degerinin en guncelini secer (forwarding unit ile)
-    mux #(
-        .DATA_WIDTH(32),
-        .NUM_INPUTS(4)   
+
+    mux_4x1 #(
+    .DATA_WIDTH(32)
     ) rs1_latest_value_selector (
-        .in_flat(
-        {rd_data_mem_wb_o, // LOAD sonucu
-         alu_out_ex_mem_o, // ex_mem deki ALU sonucu
-         alu_out_mem_wb_o, // mem_wb deki ALU sonucu
-         rs1_value_id_ex_o}),    // reg file dan okunan rs1 degeri
-        .select(forwardA), // Selection signal
-        .out(alu_in1_w)    // Output of the MUX
+    .in0(rs1_value_id_ex_o),    // X0
+    .in1(alu_out_mem_wb_o),     // X1
+    .in2(alu_out_ex_mem_o),     // X2
+    .in3(rd_data_mem_wb_o),     // X3
+    .select(forwardA),
+    .out(alu_in1_w)
     );
 
-
-    mux #(
-        .DATA_WIDTH(32),    
-        .NUM_INPUTS(2)      
+    mux_2x1 #(
+    .DATA_WIDTH(32)
     ) pc_or_rs1_selector (
-        .in_flat(
-        {pc_id_ex_o,                  //PC degeri
-         alu_in1_w}),                 // En guncel rs1 degeri
-        .select(alu_op1_sel_id_ex_o), 
-        .out(alu_in1_forwarded_input) 
+    .in0(alu_in1_w),             // X0: Most recent rs1 value
+    .in1(pc_id_ex_o),            // X1: PC value
+    .select(alu_op1_sel_id_ex_o),
+    .out(alu_in1_forwarded_input)
     );
 
-
-    //Asagidaki iki mux yukari ile ayni sadece farkli seyleri seciyor
-    mux #(
-        .DATA_WIDTH(32),    
-        .NUM_INPUTS(2)      
+    mux_2x1 #(
+    .DATA_WIDTH(32)
     ) imm_or_rs2_selector (
-        .in_flat(
-        {imm_value_id_ex_o,                  //imm degeri
-         alu_in2_w}),                  // en guncel rs2 degeri
-        .select(alu_op2_sel_id_ex_o),  
-        .out(alu_in2_forwarded_input)       
+    .in0(alu_in2_w),                 // X0: Most recent rs2 value
+    .in1(imm_value_id_ex_o),         // X1: Immediate value
+    .select(alu_op2_sel_id_ex_o),
+    .out(alu_in2_forwarded_input)
     );
+
 
    
-    mux #(
-        .DATA_WIDTH(32),    
-        .NUM_INPUTS(4)      
+    mux_4x1 #(
+    .DATA_WIDTH(32)
     ) rs2_latest_value_selector (
-        .in_flat(
-        {rd_data_mem_wb_o, 
-         alu_out_ex_mem_o,
-         alu_out_mem_wb_o,
-         rs2_value_id_ex_o}), 
-        .select(forwardB),         
-        .out(alu_in2_w) 
+    .in0(rs2_value_id_ex_o),    // X0
+    .in1(alu_out_mem_wb_o),     // X1
+    .in2(alu_out_ex_mem_o),     // X2
+    .in3(rd_data_mem_wb_o),     // X3
+    .select(forwardB),
+    .out(alu_in2_w)
+    );
+
+
+    
+    //EX_Decoder sinyalleri, Sonra yukariya EX Stage sinyallerin altina Aynen tasinsin
+    wire [1:0] chip_select;
+    wire [4:0] ALU_op;
+    wire [4:0] BMU_op;
+    wire [2:0] MDU_op;
+    wire [31:0] ALU_res, MDU_res, BMU_res;
+    
+    EX_Decoder u_EX_Decoder(
+                   .EX_op (EX_op_id_ex_o), 
+                   .funct3(funct3_id_ex_o),
+                   .funct7(funct7_id_ex_o),
+                   .ALU_op(ALU_op),
+                //    .BMU_op(BMU_op),
+                   .MDU_op(MDU_op),
+                   .chip_select(chip_select)
+    );
+
+    MDU u_MDU(
+        .alu1_i(alu_in1_w),
+        .alu2_i(alu_in2_w),
+        .chip_select(chip_select),
+        .MDU_op(MDU_op),
+        .result_o(MDU_res)
     );
                                    
     alu u_alu(
         .alu1_i(alu_in1_forwarded_input),  //bunlar anlik cikis oldugu icin pipeline'a girmelerine gerek yok.
         .alu2_i(alu_in2_forwarded_input),
-        .alu_op_i(alu_op_id_ex_o),
-        .result_o(alu_out_ex_mem_i)
+        .chip_select(chip_select),
+        .alu_op_i(ALU_op),
+        .result_o(ALU_res)
     );
 
+
+    mux_4x1 #(
+    .DATA_WIDTH(32)
+    ) u_EX_res_select_mux (
+       .in0(ALU_res),        // X0
+       .in1(MDU_res),        // X1
+       .in2(32'hdeadbeef),   // X2
+       .in3(32'hdeadbeef),   // X3
+       .select(chip_select),
+       .out(alu_out_ex_mem_i)
+    );
+    
+    
     ex_mem_stage_reg ex_mem(
         .clk_i(clk_i),
         .rst_i(rst_i),
@@ -263,44 +331,53 @@ module cpu( input clk_i,
         .is_memory_instruction_ex_mem_i(is_memory_instruction_id_ex_o),
         .is_memory_instruction_ex_mem_o(is_memory_instruction_ex_mem_o),
         .PC_sel_w_ex_mem_i(PC_sel_w),
-        .PC_sel_w_ex_mem_o(PC_sel_w_ex_mem_o)
+        .PC_sel_w_ex_mem_o(PC_sel_w_ex_mem_o),
+        .funct3_ex_mem_i(funct3_id_ex_o),
+        .funct3_ex_mem_o(funct3_ex_mem_o),
+        
+        .funct7_ex_mem_i(funct7_id_ex_o),
+        .funct7_ex_mem_o(funct7_ex_mem_o),
+
+        .is_load_instr_ex_mem_i(is_load_instr_id_ex_o),
+        .is_load_instr_ex_mem_o(is_load_instr_ex_mem_o),
+
+        .is_store_instr_ex_mem_i(is_store_instr_id_ex_o),
+        .is_store_instr_ex_mem_o(is_store_instr_ex_mem_o)
     );
-                 
-    wire [31:0] data_cache_data_out;
     
-    data_cache c_data_cache(
-        .clk_i(clk_i),
-        .rst_i(rst_i),
-        .address_i(alu_out_ex_mem_o),
-        .write_data_i(rs2_ex_mem_o), //rs2 n�n de�erini ta�� yaz oraya
-        .read_write_sel_i(read_write_sel_ex_mem_o),
-        .read_data_o(data_cache_data_out),
-        .busy_o(data_busy_w)
-    );
-   
-    mem_wb_stage_reg mem_wb(
-        .clk_i(clk_i),
-        .rst_i(rst_i),
-        .busywait(busy_w),
-        .reg_wb_en_mem_wb_i(reg_wb_en_ex_mem_o),
-        .reg_wb_en_mem_wb_o(reg_wb_en_mem_wb_o),
-        .rd_mem_wb_i(rd_ex_mem_o),
-        .rd_mem_wb_o(rd_mem_wb_o),
-        .rd_data_mem_wb_i(data_cache_data_out),
-        .rd_data_mem_wb_o(rd_data_mem_wb_o),
-        .alu_out_mem_wb_i(alu_out_ex_mem_o),
-        .alu_out_mem_wb_o(alu_out_mem_wb_o),
-        .wb_sel_mem_wb_i(wb_sel_ex_mem_o),
-        .wb_sel_mem_wb_o(wb_sel_mem_wb_o),
-        .imm_mem_wb_i(imm_ex_mem_o),
-        .imm_mem_wb_o(imm_mem_wb_o),
-        .pc_mem_wb_i(pc_ex_mem_o),
-        .pc_mem_wb_o(pc_mem_wb_o),
-        .is_memory_instruction_mem_wb_i(is_memory_instruction_ex_mem_o),
-        .is_memory_instruction_mem_wb_o(is_memory_instruction_mem_wb_o),
-        .rs2_mem_wb_i(rs2_ex_mem_o),
-        .rs2_mem_wb_o(rs2_mem_wb_o)
-    );
+   memory_stage u_mem(
+      .clk_i(clk_i),
+      .rst_i(rst_i),
+      
+      .busywait_i(busy_w),
+      .data_cache_blocking_n_i(data_cache_blocking_n_i),
+      
+      .data_cache_data_i(data_cache_data_i),
+      .op_type_i(read_write_sel_ex_mem_o),
+      .reg_wb_en_i(reg_wb_en_ex_mem_o),
+      .rd_label_i(rd_ex_mem_o),
+      .alu_out_i(alu_out_ex_mem_o),
+      .wb_sel_i(wb_sel_ex_mem_o),
+      .imm_i(imm_ex_mem_o),
+      .pc_i(pc_ex_mem_o),
+      .is_memory_instruction_i(is_memory_instruction_ex_mem_o),
+      .rs2_data_i(rs2_ex_mem_o),
+      
+      .data_cache_data_o(data_cache_data_o),
+      .data_cache_write_en_o(data_cache_write_en_o),
+      .data_cache_address_o(data_cache_address_o),
+      .data_cache_enabled_o(data_cache_enabled_o),
+      .load_val_o(rd_data_mem_wb_o),
+      
+      .reg_wb_en_o(reg_wb_en_mem_wb_o),
+      .rd_label_o(rd_mem_wb_o),
+      .alu_out_o(alu_out_mem_wb_o),
+      .wb_sel_o(wb_sel_mem_wb_o),
+      .imm_o(imm_mem_wb_o),
+      .pc_o(pc_mem_wb_o),
+      .is_memory_instruction_o(is_memory_instruction_mem_wb_o),
+      .rs2_data_o(rs2_mem_wb_o)
+   );
 
     pc_adder u_pc_adder1(
         .in_i(pc_mem_wb_o), //PC i 4 ile toplar
@@ -315,5 +392,4 @@ module cpu( input clk_i,
         .select(wb_sel_mem_wb_o),    // Selection signal
         .out(reg_wb_data_w)          // Output of the MUX
     );
-     
 endmodule

@@ -8,7 +8,7 @@ HDL_DIR := ../../../hdl
 VERILOG_SOURCES := $(wildcard $(HDL_DIR)/*.v)
 
 # Specify the name of your top-level module (not the file name)
-TOPLEVEL = cpu
+TOPLEVEL = my_wrapper
 
 # Specify the name of your test module
 MODULE = general_tests
