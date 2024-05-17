@@ -392,5 +392,4 @@ module core(
         .select(wb_sel_mem_wb_o),    // Selection signal
         .out(reg_wb_data_w)          // Output of the MUX
     );
-     
 endmodule
