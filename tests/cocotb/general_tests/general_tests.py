@@ -28,8 +28,6 @@ filepath = "assembly_codes/"
 period_ns = 2
 
 async def load_code(dut, file_path):
-    dut.cpu.instr_sel.value = 0 # Select cache, not internal rom;
-
     with open(file_path, "r") as file:
         lines = file.readlines()
 

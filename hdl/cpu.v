@@ -27,15 +27,12 @@ module cpu #(
 );
   
    localparam BUS_DATA_WIDTH = (2 ** BUS_DATA_WIDTH_SHIFT) * 8;
-  
-   reg instr_sel = 1'b0; //0 = I$, 1 = ROM 
-    
+
    wire [31:2] icache_address;
    wire [31:0] icache_data;
    wire icache_blocking_n;
-   wire [31:0] rom_data;
    
-   wire [31:0] core_instr_data = instr_sel ? rom_data : icache_data;
+   wire [31:0] core_instr_data = icache_data;
    
    wire [31:2] dcache_address;
    wire [31:0] dcache_data_r, dcache_data_w;
@@ -108,11 +105,6 @@ module cpu #(
       
       .blocking_n_o(icache_blocking_n),
       .flushing_n_o(icache_flushing_n)
-   );
-   
-   internal_rom rom(
-      .address_i(icache_address),
-      .data_o(rom_data)
    );
    
    data_cache dcache(
