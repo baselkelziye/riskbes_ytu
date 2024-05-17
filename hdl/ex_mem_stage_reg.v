@@ -17,6 +17,10 @@ module ex_mem_stage_reg(
     input [31:0] rs2_ex_mem_i,//data cache'a yazilacak deger
     input is_memory_instruction_ex_mem_i,
     input PC_sel_w_ex_mem_i,
+    input [2:0] funct3_ex_mem_i,
+    input [6:0] funct7_ex_mem_i,
+    input is_load_instr_ex_mem_i,
+    input is_store_instr_ex_mem_i,
     
     output reg [31:0] alu_out_ex_mem_o,
     output reg reg_wb_en_ex_mem_o,
@@ -29,7 +33,11 @@ module ex_mem_stage_reg(
     output reg [3:0] read_write_sel_ex_mem_o, 
     output reg [31:0] rs2_ex_mem_o,
     output reg is_memory_instruction_ex_mem_o,
-    output reg PC_sel_w_ex_mem_o
+    output reg PC_sel_w_ex_mem_o,
+    output reg [2:0] funct3_ex_mem_o,
+    output reg [6:0] funct7_ex_mem_o,
+    output reg is_load_instr_ex_mem_o,
+    output reg is_store_instr_ex_mem_o
     );
     
     always @(posedge clk_i) begin
@@ -46,6 +54,10 @@ module ex_mem_stage_reg(
             rs2_ex_mem_o <= 32'd0;
             is_memory_instruction_ex_mem_o <= 0;
             PC_sel_w_ex_mem_o <= 0;
+            funct3_ex_mem_o <= 3'b0;
+            funct7_ex_mem_o <= 7'b0;
+            is_load_instr_ex_mem_o <= 1'b0;
+            is_store_instr_ex_mem_o <= 1'b0;
         end else if(!busywait) begin
             PC_sel_w_ex_mem_o <= PC_sel_w_ex_mem_i;     
             alu_out_ex_mem_o <= alu_out_ex_mem_i;
@@ -59,6 +71,10 @@ module ex_mem_stage_reg(
             read_write_sel_ex_mem_o <= read_write_sel_ex_mem_i;
             rs2_ex_mem_o <= rs2_ex_mem_i;
             is_memory_instruction_ex_mem_o <= is_memory_instruction_ex_mem_i;
+            funct3_ex_mem_o <= funct3_ex_mem_i;
+            funct7_ex_mem_o <= funct7_ex_mem_i;
+            is_load_instr_ex_mem_o <= is_load_instr_ex_mem_i;
+            is_store_instr_ex_mem_o <= is_store_instr_ex_mem_i;
         end
    end
     
