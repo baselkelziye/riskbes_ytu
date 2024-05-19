@@ -64,6 +64,7 @@ module core(
     wire is_memory_instruction_id_ex_o;
     
     wire [2:0] funct3_id_ex_o;
+    wire [4:0] funct5_id_ex_o;
     wire [6:0] funct7_id_ex_o;
 
     wire is_load_instr_id_ex_o;
@@ -179,6 +180,7 @@ module core(
       .is_memory_instruction_id_ex_o(is_memory_instruction_id_ex_o),
       .is_load_instruction_id_ex_o(is_load_instruction_id_ex_o),
       .funct3_id_ex_o(funct3_id_ex_o),
+      .funct5_id_ex_o(funct5_id_ex_o),
       .funct7_id_ex_o(funct7_id_ex_o),
       .is_load_instr_id_ex_o(is_load_instr_id_ex_o),
       .is_store_instr_id_ex_o(is_store_instr_id_ex_o),
@@ -186,6 +188,16 @@ module core(
       .is_jump_instr_id_ex_o(is_jump_instr_id_ex_o),
       .EX_op_id_ex_o(EX_op_id_ex_o)
    );
+   
+   
+
+
+//sonrasi icin EX asamasinin olusturulmasi
+   
+//   instruction_execution_stage u_ex(
+//       .clk_i(clk_i),
+//       .rst_i(rst_i)
+//   );
             
     //Dallanma birimi (umutuun raporuna bakilmali)
     branch_jump u_branch_jump(
@@ -225,26 +237,42 @@ module core(
     .out(alu_in1_w)
     );
 
+    wire [31:0] rs1_tmp;
+    wire [31:0] shifted_rs1;
+        //EX_Decoder sinyalleri, Sonra yukariya EX Stage sinyallerin altina Aynen tasinsin
+    wire [1:0] chip_select;
+    wire [3:0] ALU_op;
+    wire [4:0] BMU_op;
+    wire [2:0] MDU_op;
+    wire [31:0] ALU_res, MDU_res, BMU_res;
+    wire rs1_shift_sel, rs2_negate_sel;
+    
     mux_2x1 #(
     .DATA_WIDTH(32)
     ) pc_or_rs1_selector (
     .in0(alu_in1_w),             // X0: Most recent rs1 value
     .in1(pc_id_ex_o),            // X1: PC value
     .select(alu_op1_sel_id_ex_o),
-    .out(alu_in1_forwarded_input)
+    .out(rs1_tmp)
     );
-
+    
+    barrel_shifter_32bit u_barrel_shifter (
+        .data_i(rs1_tmp),
+        .ctrl_i(funct3_id_ex_o[2:1]),// upper 2 bits of funct3 tells us the amount of shift
+        .data_o(shifted_rs1)
+    );
+    
+    //mux for Shifting RS1
     mux_2x1 #(
-    .DATA_WIDTH(32)
-    ) imm_or_rs2_selector (
-    .in0(alu_in2_w),                 // X0: Most recent rs2 value
-    .in1(imm_value_id_ex_o),         // X1: Immediate value
-    .select(alu_op2_sel_id_ex_o),
-    .out(alu_in2_forwarded_input)
+        .DATA_WIDTH(32)
+    ) u_rs1_shift_sel_mux(
+        .in0(rs1_tmp),
+        .in1(shifted_rs1),
+        .select(rs1_shift_sel), 
+        .out(alu_in1_forwarded_input)
     );
 
-
-   
+      
     mux_4x1 #(
     .DATA_WIDTH(32)
     ) rs2_latest_value_selector (
@@ -256,33 +284,40 @@ module core(
     .out(alu_in2_w)
     );
 
+    wire [31:0] rs2_tmp;
+    mux_2x1 #(
+    .DATA_WIDTH(32)
+    ) imm_or_rs2_selector (
+    .in0(alu_in2_w),                 // X0: Most recent rs2 value
+    .in1(imm_value_id_ex_o),         // X1: Immediate value
+    .select(alu_op2_sel_id_ex_o),
+    .out(rs2_tmp)
+    );
 
-    
-    //EX_Decoder sinyalleri, Sonra yukariya EX Stage sinyallerin altina Aynen tasinsin
-    wire [1:0] chip_select;
-    wire [4:0] ALU_op;
-    wire [4:0] BMU_op;
-    wire [2:0] MDU_op;
-    wire [31:0] ALU_res, MDU_res, BMU_res;
+    mux_2x1 #(
+        .DATA_WIDTH(32)
+    ) u_rs2_negate_sel_mux(
+        .in0(rs2_tmp),
+        .in1(~rs2_tmp),
+        .select(rs2_negate_sel),
+        .out(alu_in2_forwarded_input)
+    );
+
     
     EX_Decoder u_EX_Decoder(
                    .EX_op (EX_op_id_ex_o), 
                    .funct3(funct3_id_ex_o),
+                   .funct5(funct5_id_ex_o),
                    .funct7(funct7_id_ex_o),
                    .ALU_op(ALU_op),
-                //    .BMU_op(BMU_op),
+                   .BMU_op(BMU_op),
                    .MDU_op(MDU_op),
-                   .chip_select(chip_select)
+                   .chip_select(chip_select),
+                   .rs1_shift_sel(rs1_shift_sel),
+                   .rs2_negate_sel(rs2_negate_sel)
     );
-
-    MDU u_MDU(
-        .alu1_i(alu_in1_w),
-        .alu2_i(alu_in2_w),
-        .chip_select(chip_select),
-        .MDU_op(MDU_op),
-        .result_o(MDU_res)
-    );
-                                   
+    
+    
     alu u_alu(
         .alu1_i(alu_in1_forwarded_input),  //bunlar anlik cikis oldugu icin pipeline'a girmelerine gerek yok.
         .alu2_i(alu_in2_forwarded_input),
@@ -291,13 +326,32 @@ module core(
         .result_o(ALU_res)
     );
 
+    MDU u_MDU(
+        .alu1_i(alu_in1_forwarded_input),
+        .alu2_i(alu_in2_forwarded_input),
+        .chip_select(chip_select),
+        .MDU_op(MDU_op),
+        .result_o(MDU_res)
+    );
+    
+   
+                                   
+
+    
+    BMU u_BMU(
+        .rs1_value_i(alu_in1_forwarded_input),
+        .rs2_value_i(alu_in2_forwarded_input),
+        .BMU_opcode_i(BMU_op),
+        .BMU_result_o(BMU_res)
+    );
+
 
     mux_4x1 #(
     .DATA_WIDTH(32)
     ) u_EX_res_select_mux (
        .in0(ALU_res),        // X0
        .in1(MDU_res),        // X1
-       .in2(32'hdeadbeef),   // X2
+       .in2(BMU_res),   // X2
        .in3(32'hdeadbeef),   // X3
        .select(chip_select),
        .out(alu_out_ex_mem_i)
@@ -307,6 +361,7 @@ module core(
     ex_mem_stage_reg ex_mem(
         .clk_i(clk_i),
         .rst_i(rst_i),
+        
         .busywait(busy_w),
         .alu_out_ex_mem_i(alu_out_ex_mem_i),
         .alu_out_ex_mem_o(alu_out_ex_mem_o),
