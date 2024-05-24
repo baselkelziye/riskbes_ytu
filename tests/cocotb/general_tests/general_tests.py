@@ -49,7 +49,6 @@ async def load_code(dut, file_path):
         dut.ram.data[j].value = qword
 
     await Timer(1, units='ns')
-        
 
 @cocotb.test()
 async def basel_bubblesort(dut):
@@ -104,3 +103,33 @@ async def mem_test(dut):
         assert memory[0x1080 + i] == word2[i] ^ 0xFF
     
     assert get_register_file(dut)[31].value == 1
+
+@cocotb.test()
+async def BMU_test(dut):
+    filename = "bmu_test.txt"
+    dut.rst_i.value = 1
+    await run_clock(dut, 10, 2)
+    dut.rst_i.value = 0
+    register_file = dut.cpu.core.u_id.u_regfile.registers_rw
+    await load_code(dut, filepath + filename)
+    dut._log.info("BMU Test Code loaded")
+    num_cycles = 400
+    await run_clock(dut, num_cycles, period_ns)
+    # Single loop iterating over both expected values and additional registers
+    expected_values = ["0x02", "0x64", "0x1f", "0xfffff000", "0xfffffeef", "0xdeadbeef", "0xc", "0xd", "0x4", "0x00ffff00", "0xefbeadde", "0x0000beef",
+                       "0xffffa000", "0xffffffef", "0x190", "0x19", "0x19", "0x1", "0x1", "0x7ffff000", "0x7ffff000", "0x7ffff000", "0x7ffff000", "0xfffff000", "0xfffff000",
+                       "0x68", "0x6c", "0x74", "0xeef", "0xdeadbfff", "0xffffffff"]
+    
+    
+    additional_registers = [2, 3, 4, 5, 6, 7, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 18, 17, 20, 19, 16, 15, 14, 13, 12, 11, 10, 9, 8, 1]
+    if(len(expected_values) != len(additional_registers)):
+        dut._log.error("Mismatch in the number of expected values and additional registers")
+        return
+    # Single loop iterating over both expected values and additional registers
+    for idx, reg in enumerate(additional_registers):
+        dut_value = register_file[reg].value
+        expected_value = int(expected_values[idx], 16)
+        if dut_value != expected_value:
+            dut._log.error(f"Mismatch at Register {reg}: expected {expected_values[idx]}, got {hex(dut_value)}")
+        else:
+            dut._log.info(f"Register {reg} matches the expected value: {hex(dut_value)}")
