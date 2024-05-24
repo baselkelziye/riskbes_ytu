@@ -227,7 +227,8 @@ module data_cache #(
       end
    endgenerate 
    
-   wire [31:0] data_r = block_data[index];
+   wire [INDEX_WIDTH - 1 : 0] index_r = blocking_n ? index : index_last;
+   wire [31:0] data_r = block_data[index_r];
    wire forward = index == index_last && offset == offset_last;
    
    //Okuma
