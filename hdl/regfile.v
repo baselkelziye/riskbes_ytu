@@ -35,8 +35,8 @@ module regfile(
    //Negative edge okuma
    always @(negedge clk_i) begin
       //Not: Değerler yeni atanıyorsa güncel olan değer rd_data_i'de registers_r'da değil.
-      rs1_data_o <= rs1_i == rd_i ? rd_data_i : registers_r[rs1_i];
-      rs2_data_o <= rs2_i == rd_i ? rd_data_i : registers_r[rs2_i];
+      rs1_data_o <= write_en_i && rs1_i == rd_i ? rd_data_i : registers_r[rs1_i];
+      rs2_data_o <= write_en_i && rs2_i == rd_i ? rd_data_i : registers_r[rs2_i];
    end
 
 endmodule
