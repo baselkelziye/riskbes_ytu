@@ -133,3 +133,24 @@ async def BMU_test(dut):
             dut._log.error(f"Mismatch at Register {reg}: expected {expected_values[idx]}, got {hex(dut_value)}")
         else:
             dut._log.info(f"Register {reg} matches the expected value: {hex(dut_value)}")
+
+@cocotb.test()
+async def pipeline_carpma(dut):
+    filename = "pipeline_carpma.txt"
+    dut.rst_i.value = 1
+    await run_clock(dut, 10,2)
+    dut.rst_i.value = 0
+    register_file = dut.cpu.core.u_id.u_regfile.registers_rw
+    await load_code(dut, filepath + filename)
+    dut._log.info("pipeline carpma code loaded")
+    num_cycles = 400
+    await run_clock(dut, num_cycles, period_ns)
+    expected_values = ["0xffffffff", "0x1", "0x1", "0xfffffffe", "0xabcde000", "0xfffffffd", "0xfffffffd", "0x8"]
+    registers_order = [1,2,3,4,5, 6,7,9]
+    for idx, reg in enumerate(registers_order):
+        dut_value = register_file[reg].value
+        expected_value = int(expected_values[idx], 16)
+        if dut_value != expected_value:
+            dut._log.error(f"Mismatch at Register {reg}: expected {expected_values[idx]}, got {hex(dut_value)}")
+        else:
+            dut._log.info(f"Register {reg} matches the expected value: {hex(dut_value)}")

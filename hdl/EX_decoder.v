@@ -1,4 +1,4 @@
-module EX_Decoder(input  wire [1:0]  EX_op ,
+module EX_Decoder(input  wire [2:0]  EX_op ,
                   input  wire [2:0] funct3 ,
                   input  wire [4:0] funct5 ,
                   input  wire [6:0] funct7 ,
@@ -145,10 +145,10 @@ reg [15:0] ex_signals;
 // chip_select[1:0], ALU_op[3:0], MDU_op[2:0], BMU_op[4:0], rs1_shift_sel, rs2_negate_sel
 always @* begin 
     case (EX_op)
-    2'b00: // Load, Store, Branch, AUIPC, JAL, JALR  komutlar icin. Sadecec Toplama Var
+    3'b000: // Load, Store, Branch, AUIPC, JAL, JALR  komutlar icin. Sadecec Toplama Var
                               ex_signals = 16'b00_0000_XXX_XXXXX_0_0;
 
-    2'b01: //I-Type Komutlar, funct3 e gore Ayrilir, Sonra funct7.
+    3'b001: //I-Type Komutlar, funct3 e gore Ayrilir, Sonra funct7.
         begin
             if(funct3 == 3'b001     )  begin // BMU ve I-Type SHAMT iceren komutlar
                             case (funct7) 
@@ -197,7 +197,7 @@ always @* begin
         end
 
                                         
-    2'b10:  // R-TYPE komutlar, Ilk once FUNCT7 e gore ayrilir
+    3'b010:  // R-TYPE komutlar, Ilk once FUNCT7 e gore ayrilir
         begin
             case (funct7) 
                 7'b0000000: // ADD, SLL, SLT, SLTU, XOR, SRL, OR, AND
@@ -266,6 +266,7 @@ always @* begin
                             
             endcase 
         end
+   3'b011: ex_signals = 16'b00_1100_XXX_XXXXX_0_0; // LUI artik ALU de
     default: ex_signals = 16'bXX_XXXX_XXX_XXXXX_X_X;
     endcase
 end

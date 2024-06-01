@@ -10,12 +10,12 @@ module alu (input [31:0]alu1_i,
             
           wire sum_cOut;
           wire [31:0] sum_result;        
-          cla32 u_cla32(
-             .d1(alu1_i),
-             .d2(alu2_i),
-             .cin(alu_op_i[0]),
-             .sum(sum_result),
-             .cout(sum_cOut)
+          cla_32bit u_cla32(
+             .term1_i(alu1_i),
+             .term2_i(alu2_i),
+             .carry_i(alu_op_i[0]),
+             .result_o(sum_result),
+             .carry_o(sum_cOut)
           );
         /*
         0000 ADD
@@ -29,6 +29,7 @@ module alu (input [31:0]alu1_i,
         1001 OR
         1010 AND
         1011 XNOR
+        1100 LUI
         */
 
           wire [31:0] xor_result;
@@ -59,6 +60,8 @@ module alu (input [31:0]alu1_i,
                 result_r = alu1_i & alu2_i;
                 4'b1011:  //XNOR
                 result_r = ~xor_result;
+                4'b1100: // LUI
+                result_r = alu2_i;
                 endcase
               end else begin
                 result_r = result_o;

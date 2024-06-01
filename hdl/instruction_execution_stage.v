@@ -39,7 +39,7 @@ module instruction_execution_stage(
         input [2:0] funct3_ex_mem_i,
         input [6:0] funct7_ex_mem_i,
         input is_load_instr_ex_mem_i, 
-        input is_store_instr_ex_mem_i,           
+        input is_store_instr_ex_mem_i,    
         output reg reg_wb_en_ex_mem_o,
         output reg [4:0] rd_ex_mem_o,
         output reg [31:0] pc_ex_mem_o,
@@ -74,7 +74,8 @@ module instruction_execution_stage(
         input alu_op1_sel_ex_mem_i,
         input alu_op2_sel_ex_mem_i,
         input [4:0] funct5_ex_mem_i,
-        input [1:0] EX_op_ex_mem_i
+        input [2:0] EX_op_ex_mem_i,
+        output wire mul_stall_o
         );
     
     //sw
@@ -100,6 +101,16 @@ module instruction_execution_stage(
         
         wire [31:0] alu_in1_forwarded_input;
         wire [31:0] alu_in2_forwarded_input;
+        
+        
+        localparam [2:0]    MUL_FUNCT3    = 3'b000,
+                            MULH_FUNCT3   = 3'b001,
+                            MULHSU_FUNCT3 = 3'b010,
+                            MULHU_FUNCT3  = 3'b011,
+                            DIV_FUNCT3    = 3'b100,
+                            DIVU_FUNCT3   = 3'b101,
+                            REM_FUNCT3    = 3'b110,
+                            REMU_FUNCT3   = 3'b111;
         
             //Dallanma birimi (umutuun raporuna bakilmali)
     branch_jump u_branch_jump(
@@ -219,13 +230,18 @@ module instruction_execution_stage(
         .alu_op_i(ALU_op),
         .result_o(ALU_res)
     );
-
+    wire mul_en;
+    assign mul_en = (MDU_op == MUL_FUNCT3 || MDU_op == MULH_FUNCT3 || MDU_op == MULHSU_FUNCT3 || MDU_op == MULHU_FUNCT3) ? 1 : 0;
     MDU u_MDU(
+        .clk_i(clk_i),//clock for pipelined mul/div operations
+        .rst_i(rst_i),
+        .mul_en(mul_en),
         .alu1_i(alu_in1_forwarded_input),
         .alu2_i(alu_in2_forwarded_input),
         .chip_select(chip_select),
         .MDU_op(MDU_op),
-        .result_o(MDU_res)
+        .result_o(MDU_res),
+        .mul_stall(mul_stall_o)
     );
     
    
@@ -251,61 +267,6 @@ module instruction_execution_stage(
        .out(alu_out_ex_mem_i)
     );
 
-    
-//        ex_mem_stage_reg ex_mem(
-//        .clk_i(clk_i), //done
-//        .rst_i(rst_i), //done
-//        .busywait(busy_w), //done
-//        .alu_out_ex_mem_i(alu_out_ex_mem_i),
-//        .alu_out_ex_mem_o(alu_out_ex_mem_o), // done
-        
-//        .reg_wb_en_ex_mem_i(reg_wb_en_ex_mem_i),//done
-//        .reg_wb_en_ex_mem_o(reg_wb_en_ex_mem_o), //done
-        
-//        .rd_ex_mem_i(rd_ex_mem_i), //done
-//        .rd_ex_mem_o(rd_ex_mem_o), // done
-        
-//        .pc_ex_mem_i(pc_ex_mem_i), //donoe
-//        .pc_ex_mem_o(pc_ex_mem_o), //done
-        
-//        .wb_sel_ex_mem_i(wb_sel_ex_mem_i), // done
-//        .wb_sel_ex_mem_o(wb_sel_ex_mem_o), // done
-        
-//        .imm_ex_mem_i(imm_ex_mem_i),//done
-//        .imm_ex_mem_o(imm_ex_mem_o),//done
-        
-//        .rs1_label_ex_mem_i(rs1_label_ex_mem_i), // done
-//        .rs1_label_ex_mem_o(rs1_label_ex_mem_o), //done
-        
-//        .rs2_label_ex_mem_i(rs2_label_ex_mem_i), // done
-//        .rs2_label_ex_mem_o(rs2_label_ex_mem_o), // done
-        
-//        .read_write_sel_ex_mem_i(read_write_sel_ex_mem_i), // done
-//        .read_write_sel_ex_mem_o(read_write_sel_ex_mem_o), //done
-        
-//        .rs2_ex_mem_i(alu_in2_w), 
-        
-//        .rs2_ex_mem_o(rs2_ex_mem_o), // doone
-        
-//        .is_memory_instruction_ex_mem_i(is_memory_instruction_ex_mem_i), //done
-//        .is_memory_instruction_ex_mem_o(is_memory_instruction_ex_mem_o), //done
-        
-//        .PC_sel_w_ex_mem_i(PC_sel_w), 
-//        .PC_sel_w_ex_mem_o(PC_sel_w_ex_mem_o), //done
-        
-//        .funct3_ex_mem_i(funct3_ex_mem_i), //done
-//        .funct3_ex_mem_o(funct3_ex_mem_o), //done
-        
-//        .funct7_ex_mem_i(funct7_ex_mem_i), //done
-//        .funct7_ex_mem_o(funct7_ex_mem_o), //done
-
-//        .is_load_instr_ex_mem_i(is_load_instr_ex_mem_i), // done
-//        .is_load_instr_ex_mem_o(is_load_instr_ex_mem_o), // done
-
-//        .is_store_instr_ex_mem_i(is_store_instr_ex_mem_i), 
-//        .is_store_instr_ex_mem_o(is_store_instr_ex_mem_o)
-//    );
-
     always @(posedge clk_i) begin
         if(rst_i) begin
             alu_out_ex_mem_o <= 32'd0;
@@ -324,7 +285,7 @@ module instruction_execution_stage(
             funct7_ex_mem_o <= 7'b0;
             is_load_instr_ex_mem_o <= 1'b0;
             is_store_instr_ex_mem_o <= 1'b0;
-        end else if(!busywait) begin
+        end else if(!busywait && !mul_stall_o) begin
             PC_sel_w_ex_mem_o <= PC_sel_w;     
             alu_out_ex_mem_o <= alu_out_ex_mem_i;
             reg_wb_en_ex_mem_o <= reg_wb_en_ex_mem_i;
@@ -341,7 +302,7 @@ module instruction_execution_stage(
             funct7_ex_mem_o <= funct7_ex_mem_i;
             is_load_instr_ex_mem_o <= is_load_instr_ex_mem_i;
             is_store_instr_ex_mem_o <= is_store_instr_ex_mem_i;
-        end
+        end 
    end
     
 endmodule
