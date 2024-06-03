@@ -19,8 +19,8 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 module multiplier_top (
-      input  clk,
-      input  rst,
+      input  clk_i,
+      input  rst_i,
       input  [31:0] a,
       input  [31:0] b,
       input start,
@@ -44,69 +44,68 @@ reg [31:0] A;
 reg [31:0] B;
 wire [63:0] P;
 
+wire a31bit, b31bit;
+
+//Pre process the inputs
 always @(*) begin
        case(MDU_op)
       MUL_FUNCT3 : begin
-            neg_result = a[31] ^ b[31];
             A = a[31] ? (~a) + 1 : a;
             B = b[31] ? (~b) + 1 : b;
-//            product = neg_result ? (~P) + 1 : P;
       end
 
       MULH_FUNCT3 : begin
-            neg_result = a[31] ^ b[31];
             A = a[31] ? (~a) + 1 : a;
             B = b[31] ? (~b) + 1 : b;
-//            product = neg_result ? (~P) + 1 : P;
       end
 
       MULHSU_FUNCT3: begin
-            neg_result = a[31];
             A = a[31] ? (~a) + 1 : a;
             B = b;
-//            product = neg_result ? (~P) + 1 : P;
       end
 
       MULHU_FUNCT3: begin
-            neg_result = 1'b0;
             A = a;
             B = b;
-//            product = P;
       end
 
       default: begin
-            neg_result = a[31] ^ b[31];
+
             A = a[31] ? (~a) + 1 : a;
             B = b[31] ? (~b) + 1 : b;
-//            product = neg_result ? (~P) + 1 : P;
       end
 
       endcase
 end
 
+//process the outputs
 always @(*) begin
 
 if(done == 1'b1) begin
 
        case(MDU_op)
       MUL_FUNCT3 : begin
+            neg_result = a31bit ^ b31bit; 
             product = neg_result ? (~P) + 1 : P;
       end
 
       MULH_FUNCT3 : begin
-
+            neg_result = a31bit ^ b31bit; 
             product = neg_result ? (~P) + 1 : P;
       end
 
       MULHSU_FUNCT3: begin
+            neg_result = a31bit;
             product = neg_result ? (~P) + 1 : P;
       end
 
       MULHU_FUNCT3: begin
+            neg_result = 1'b0;
             product = P;
       end
 
       default: begin
+            neg_result = a31bit ^ b31bit; 
             product = neg_result ? (~P) + 1 : P;
       end
 
@@ -118,15 +117,20 @@ end
 
 end
 
+//multiplies 2 numbers, we have to pre-process input's sign according to the instruction
 multiplier_unsigned multiu
 (
-      .clk(clk),
-      .rst(rst),
+      .clk_i(clk_i),
+      .rst_i(rst_i),
       .a(A),
       .b(B),
       .start(start),
       .product(P),
-      .done(done)
+      .done(done),
+      .a31_bit_i(a[31]), // latch sign bits, otherwise forwarding unit distrupts them.
+      .b31_bit_i(b[31]),
+      .a31_bit_o(a31bit),
+      .b31_bit_o(b31bit)
 );
 
 endmodule
