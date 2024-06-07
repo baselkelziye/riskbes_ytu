@@ -189,7 +189,9 @@ module core(
 
 
 
-
+//   wire [31:0] INSTRUCTION_EX = 
+    
+    //sonrasi icin EX asamasinin olusturulmasi
 
    instruction_execution_stage u_ex(
        .clk_i(clk_i),

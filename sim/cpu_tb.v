@@ -31,17 +31,17 @@ initial begin
 
    //BASEL BUBBLESORT
    
-//   wrapper.ram.data[0] = 128'h0090021300a001931000011300000093;
-//   wrapper.ram.data[1] = 128'h006100a3001003130061002300200313;
-//   wrapper.ram.data[2] = 128'h006101a3005003130061012300300313;
-//   wrapper.ram.data[3] = 128'h006102a3007003130061022300400313;  
-//   wrapper.ram.data[4] = 128'h006103a300b003130061032300600313;
-//   wrapper.ram.data[5] = 128'h006104a3008003130061042300900313;
-//   wrapper.ram.data[6] = 128'h002083b302408c630000009304328463;  
-//   wrapper.ram.data[7] = 128'h00945863000704830013871300038403;
-//   wrapper.ram.data[8] = 128'h00900533000008630097002300838023;
-//   wrapper.ram.data[9] = 128'hfc0006e30010809300a3802300870023;
-//   wrapper.ram.data[10] = 128'hfa000ee300128293;
+//   wrapper.ram.data[0] = 128'h00900213_00a00193_10000113_00000093;
+//   wrapper.ram.data[1] = 128'h006100a3_00100313_00610023_00200313;
+//   wrapper.ram.data[2] = 128'h006101a3_00500313_00610123_00300313;
+//   wrapper.ram.data[3] = 128'h006102a3_00700313_00610223_00400313;  
+//   wrapper.ram.data[4] = 128'h006103a3_00b00313_00610323_00600313;
+//   wrapper.ram.data[5] = 128'h006104a3_00800313_00610423_00900313;
+//   wrapper.ram.data[6] = 128'h002083b3_02408c63_00000093_04328463;  
+//   wrapper.ram.data[7] = 128'h00945863_00070483_00138713_00038403;
+//   wrapper.ram.data[8] = 128'h00900533_00000863_00970023_00838023;
+//   wrapper.ram.data[9] = 128'hfc0006e3_00108093_00a38023_00870023;
+//   wrapper.ram.data[10] = 128'hfa000ee_300128293;
 //   wrapper.ram.data[11] = 128'hABCDEF;
 //   wrapper.ram.data[12] = 128'hABCDEF;
 //   wrapper.ram.data[13] = 128'hABCDEF;
@@ -50,7 +50,7 @@ initial begin
 
 
 
-    //BMU TEST
+//    //BMU TEST
 //    wrapper.ram.data[0] = 128'hdeadc2b7_0010c3b3_0010c333_0010c2b3;  // xori x6, x0, 0x ; lui x5, 0xdeadc ; xor x7, x1, x1 ; xor x6, x1, x1
 //    wrapper.ram.data[1] = 128'h00200113_000aa0b7_006283b3_eef04313;  // addi x2, x0, 2 ; lui x1, 0x000AA ; addi x0, x0, 0 ; add x7, x5, x6
 //    wrapper.ram.data[2] = 128'h00000013_fffff2b7_01f00213_06400193;  // addi x0, x0, 0 ; lui x5, 0xFFFFF ; addi x4, x0, 0x1 ; addi x3, x0, 0x6
@@ -65,12 +65,10 @@ initial begin
 
 
 //  MDU icin Carpma ornegi
-    wrapper.ram.data[0] = 128'h021081b3_402000b3_00100113_00000093; // mul x3, x1, x1  ;sub x1, x0, x2 ;addi x2,x0, 1 ;addi x1,x0,0
-    wrapper.ram.data[1] = 128'h0292a333_00800493_abcde2b7_0210b233; // mulhsu x6 x5 x9 ;addi x9 x0 8;lui x5, 0xABCDE ;mulhu x4,x1,x1
-    wrapper.ram.data[2] = 128'h029293b3;  //mulh x7 x5 x9
-//   CLK = 0;
-//   RST = 1;
-//   #10 RST = 0;
+    wrapper.ram.data[0] = 128'h021081b3_402000b3_00100113_00000093;  // mul x3, x1, x1  ; sub x1, x0, x2 ; addi x2,x0, 1    ;addi x1,x0,0
+    wrapper.ram.data[1] = 128'h0292a333_00800493_abcde2b7_0210b233;  // mulhsu x6 x5 x9 ; addi x9 x0 8   ; lui x5, 0xABCDE ;mulhu x4,x1,x1
+    wrapper.ram.data[2] = 128'h0233c5b3_0233d533_02734433_029293b3;  // div x11 x7 x3   ; divu x10 x7 x3 ; div x8 x6 x7    ;mulh x7 x5 x9
+
 end
 
 always begin

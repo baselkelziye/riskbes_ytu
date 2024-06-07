@@ -145,8 +145,8 @@ async def pipeline_carpma(dut):
     dut._log.info("pipeline carpma code loaded")
     num_cycles = 400
     await run_clock(dut, num_cycles, period_ns)
-    expected_values = ["0xffffffff", "0x1", "0x1", "0xfffffffe", "0xabcde000", "0xfffffffd", "0xfffffffd", "0x8"]
-    registers_order = [1,2,3,4,5, 6,7,9]
+    expected_values = ["0xffffffff", "0x1", "0x1", "0xfffffffe", "0xabcde000", "0xfffffffd", "0xfffffffd", "0x8", "0x1", "0xfffffffd", "0xfffffffd"]
+    registers_order = [1,2,3,4,5, 6,7,9,8,10,11]
     for idx, reg in enumerate(registers_order):
         dut_value = register_file[reg].value
         expected_value = int(expected_values[idx], 16)

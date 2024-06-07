@@ -35,7 +35,7 @@ module BMU(
     wire [31:0] binv_res  ; // can be used for BINVI also?
     wire [31:0] bset_res  ; // can be used for BSETI also?
 
-
+// NEW COMMENT
 
     //Utility values and functions
     assign rs1_selected = BMU_opcode_i[0] ? rs1_ters : rs1_value_i; //CTZ ve CLZ icin RS1 i sec.

@@ -230,12 +230,10 @@ module instruction_execution_stage(
         .alu_op_i(ALU_op),
         .result_o(ALU_res)
     );
-    wire mul_en;
-    assign mul_en = (MDU_op == MUL_FUNCT3 || MDU_op == MULH_FUNCT3 || MDU_op == MULHSU_FUNCT3 || MDU_op == MULHU_FUNCT3) ? 1 : 0;
+
     MDU u_MDU(
         .clk_i(clk_i),//clock for pipelined mul/div operations
         .rst_i(rst_i),
-        .mul_en(mul_en),
         .alu1_i(alu_in1_forwarded_input),
         .alu2_i(alu_in2_forwarded_input),
         .chip_select(chip_select),
@@ -302,7 +300,28 @@ module instruction_execution_stage(
             funct7_ex_mem_o <= funct7_ex_mem_i;
             is_load_instr_ex_mem_o <= is_load_instr_ex_mem_i;
             is_store_instr_ex_mem_o <= is_store_instr_ex_mem_i;
-        end 
+        end else begin // Mul stall da Yazma
+//            PC_sel_w_ex_mem_o <= PC_sel_w_ex_mem_o;     
+//            alu_out_ex_mem_o <= alu_out_ex_mem_o;
+//            reg_wb_en_ex_mem_o <= reg_wb_en_ex_mem_o;
+//            rd_ex_mem_o <= rd_ex_mem_o;
+//            pc_ex_mem_o <= pc_ex_mem_o;
+//            wb_sel_ex_mem_o <= wb_sel_ex_mem_o;
+//            imm_ex_mem_o <= imm_ex_mem_o;
+//            rs1_label_ex_mem_o <= rs1_label_ex_mem_o;
+//            rs2_label_ex_mem_o <= rs2_label_ex_mem_o;
+//            read_write_sel_ex_mem_o <= read_write_sel_ex_mem_o;
+//            rs2_ex_mem_o <= rs2_ex_mem_o;
+//            is_memory_instruction_ex_mem_o <= is_memory_instruction_ex_mem_o;
+//            funct3_ex_mem_o <= funct3_ex_mem_o;
+//            funct7_ex_mem_o <= funct7_ex_mem_o;
+//            is_load_instr_ex_mem_o <= is_load_instr_ex_mem_o;
+//            is_store_instr_ex_mem_o <= is_store_instr_ex_mem_o;
+            reg_wb_en_ex_mem_o <= 1'b0;
+            read_write_sel_ex_mem_o <= 4'd0;        
+        end
+        
+        
    end
     
 endmodule
