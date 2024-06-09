@@ -252,7 +252,7 @@ module instruction_execution_stage(
        .out(alu_out_ex_mem_i)
     );
 
-    wire [31:0] csr_value;
+    wire [31:0] csr_read;
 
     csr_unit u_csr(
         .clk_i(clk_i),
@@ -267,7 +267,7 @@ module instruction_execution_stage(
 
         .addr_i(imm_ex_mem_i[11:0]),
 
-        .value_o(csr_value)
+        .read_o(csr_read)
     );
 
     wire [31:0] imm_final; //immediate veya CSR değeri (daha iyi bir isim fena olmayabilir)
@@ -276,7 +276,7 @@ module instruction_execution_stage(
         .DATA_WIDTH(32)
     ) u_imm_select_mux (
         .in0(imm_ex_mem_i),
-        .in1(csr_value),
+        .in1(csr_read),
         .select(is_system_instr_ex_mem_i),
         .out(imm_final)
     );

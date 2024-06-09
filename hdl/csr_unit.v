@@ -11,7 +11,7 @@ module csr_unit (
 
     input [11:0] addr_i,
 
-    output [31:0] value_o
+    output [31:0] read_o
 );
 
     localparam OP_RW = 2'b01;
@@ -40,7 +40,7 @@ module csr_unit (
         endcase
     end
 
-    wire [31:0] mscratch_val;
+    wire [31:0] mscratch_read;
     wire mscratch_ack;
 
     csr_mscratch u_mscratch(
@@ -52,11 +52,11 @@ module csr_unit (
         .set_i(setfield),
         .clear_i(clearfield),
 
-        .value_o(mscratch_val),
+        .read_o(mscratch_read),
         .ack_o(mscratch_ack)
     );
 
-    assign value_o = mscratch_val;
+    assign read_o = mscratch_read;
 
     `ifdef DEBUG
 
