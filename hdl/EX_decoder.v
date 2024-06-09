@@ -12,13 +12,9 @@ module EX_Decoder(input  wire [1:0]  EX_op ,
 
 //ALU_op = 4'b0000 = ADD
 
-//EX_op = 01 I- TYPE
-
-
+//EX_op = 00 various
+//EX_op = 01 I-TYPE
 //EX_OP = 10 R-TYPE
-
-//EX_OP muhtemelen FPU icin olur cunku inlar R4-Type
-
 
 
 //CHIP SELECT

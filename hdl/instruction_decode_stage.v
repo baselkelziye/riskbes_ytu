@@ -56,6 +56,7 @@ module instruction_decode_stage(
    output reg [2:0] funct3_id_ex_o,
    output reg [4:0] funct5_id_ex_o,
    output reg [6:0] funct7_id_ex_o,
+   output reg is_system_instr_id_ex_o,
    output reg is_load_instr_id_ex_o,
    output reg is_store_instr_id_ex_o,
    output reg is_branch_instr_id_ex_o,
@@ -67,7 +68,6 @@ module instruction_decode_stage(
    wire [4:0] rs1_label = instr_i[19:15];
    wire [4:0] rs2_label = instr_i[24:20];
 
-   wire [2:0] imm_sel;
    wire op1_sel;
    wire op2_sel;
    wire [4:0] alu_op;
@@ -80,12 +80,13 @@ module instruction_decode_stage(
    
    
    //New Main Decoder Signals
+   wire is_system_instr;
    wire is_load_instr, is_store_instr;
    wire is_branch_instr, is_jump_instr;
    wire [2:0] funct3 = instr_i[14:12];
    wire [4:0] funct5 = instr_i[24:20];
    wire [6:0] funct7 = instr_i[31:25];
-   wire [2:0] imm_src; //Delete other imm_sel from countrol unit
+   wire [2:0] imm_src; 
    wire [1:0] EX_op;
    
    control_unit control_unit(
@@ -104,6 +105,7 @@ module instruction_decode_stage(
       .wb_sel(wb_sel),
       .op1_sel(op1_sel),
       .op2_sel(op2_sel),
+      .is_system_instr(is_system_instr),
       .is_load_instr(is_load_instr),
       .is_store_instr(is_store_instr),
       .is_branch_instr(is_branch_instr),
@@ -193,6 +195,7 @@ module instruction_decode_stage(
             funct3_id_ex_o <= funct3;
             funct5_id_ex_o <= funct5;
             funct7_id_ex_o <= funct7;
+            is_system_instr_id_ex_o <= is_system_instr;
             is_load_instr_id_ex_o <= is_load_instr;
             is_store_instr_id_ex_o <= is_store_instr;
             is_branch_instr_id_ex_o <= is_branch_instr;
@@ -214,10 +217,11 @@ module instruction_decode_stage(
             is_load_instruction_id_ex_o    <= 1'b0;
             funct3_id_ex_o                 <= 3'b0;
             funct7_id_ex_o                 <= 7'b0;
+            is_system_instr_id_ex_o        <= 1'b0;
             is_load_instr_id_ex_o          <= 1'b0; 
             is_store_instr_id_ex_o         <= 1'b0;
             is_branch_instr_id_ex_o        <= 1'b0;
-            is_jump_instr_id_ex_o          <= 0;
+            is_jump_instr_id_ex_o          <= 1'b0;
             EX_op_id_ex_o                  <= 2'b0;
             funct5_id_ex_o                 <= 5'b0;
          end

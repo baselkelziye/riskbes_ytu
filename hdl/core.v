@@ -67,6 +67,7 @@ module core(
     wire [4:0] funct5_id_ex_o;
     wire [6:0] funct7_id_ex_o;
 
+    wire is_system_instr_id_ex_o;
     wire is_load_instr_id_ex_o;
     wire is_store_instr_id_ex_o;
     wire is_branch_instr_id_ex_o;
@@ -179,6 +180,7 @@ module core(
       .funct3_id_ex_o(funct3_id_ex_o),
       .funct5_id_ex_o(funct5_id_ex_o),
       .funct7_id_ex_o(funct7_id_ex_o),
+      .is_system_instr_id_ex_o(is_system_instr_id_ex_o),
       .is_load_instr_id_ex_o(is_load_instr_id_ex_o),
       .is_store_instr_id_ex_o(is_store_instr_id_ex_o),
       .is_branch_instr_id_ex_o(is_branch_instr_id_ex_o),
@@ -238,6 +240,8 @@ module core(
        .funct7_ex_mem_i(funct7_id_ex_o),
        .funct7_ex_mem_o(funct7_ex_mem_o),
        
+       .is_system_instr_ex_mem_i(is_system_instr_id_ex_o),
+
        .is_load_instr_ex_mem_i(is_load_instr_id_ex_o),
        .is_load_instr_ex_mem_o(is_load_instr_ex_mem_o),
        

@@ -38,6 +38,7 @@ module instruction_execution_stage(
         input        is_memory_instruction_ex_mem_i,
         input [2:0] funct3_ex_mem_i,
         input [6:0] funct7_ex_mem_i,
+        input is_system_instr_ex_mem_i,
         input is_load_instr_ex_mem_i, 
         input is_store_instr_ex_mem_i,           
         output reg reg_wb_en_ex_mem_o,
@@ -251,7 +252,35 @@ module instruction_execution_stage(
        .out(alu_out_ex_mem_i)
     );
 
-    
+    wire [31:0] csr_value;
+
+    csr_unit u_csr(
+        .clk_i(clk_i),
+        .rst_i(rst_i),
+
+        .en_i(is_system_instr_ex_mem_i),
+        .op_i(funct3_ex_mem_i[1:0]),
+        .source_sel_i(funct3_ex_mem_i[2]),
+
+        .rs1_label_i(rs1_label_ex_mem_i),
+        .rs1_value_i(alu_in1_w), //alu_in1_forwarded_input kullanmaya gerek yok. Birkaç mux'u atlıyoruz
+
+        .addr_i(imm_ex_mem_i[11:0]),
+
+        .value_o(csr_value)
+    );
+
+    wire [31:0] imm_final; //immediate veya CSR değeri (daha iyi bir isim fena olmayabilir)
+
+    mux_2x1 #(
+        .DATA_WIDTH(32)
+    ) u_imm_select_mux (
+        .in0(imm_ex_mem_i),
+        .in1(csr_value),
+        .select(is_system_instr_ex_mem_i),
+        .out(imm_final)
+    );
+
 //        ex_mem_stage_reg ex_mem(
 //        .clk_i(clk_i), //done
 //        .rst_i(rst_i), //done
@@ -331,7 +360,7 @@ module instruction_execution_stage(
             rd_ex_mem_o <= rd_ex_mem_i;
             pc_ex_mem_o <= pc_ex_mem_i;
             wb_sel_ex_mem_o <= wb_sel_ex_mem_i;
-            imm_ex_mem_o <= imm_ex_mem_i;
+            imm_ex_mem_o <= imm_final;
             rs1_label_ex_mem_o <= rs1_label_ex_mem_i;
             rs2_label_ex_mem_o <= rs2_label_ex_mem_i;
             read_write_sel_ex_mem_o <= read_write_sel_ex_mem_i;

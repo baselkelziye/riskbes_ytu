@@ -110,7 +110,7 @@ async def BMU_test(dut):
     dut.rst_i.value = 1
     await run_clock(dut, 10, 2)
     dut.rst_i.value = 0
-    register_file = dut.cpu.core.u_id.u_regfile.registers_rw
+    register_file = get_register_file(dut)
     await load_code(dut, filepath + filename)
     dut._log.info("BMU Test Code loaded")
     num_cycles = 400
@@ -133,3 +133,19 @@ async def BMU_test(dut):
             dut._log.error(f"Mismatch at Register {reg}: expected {expected_values[idx]}, got {hex(dut_value)}")
         else:
             dut._log.info(f"Register {reg} matches the expected value: {hex(dut_value)}")
+
+@cocotb.test()
+async def mscratch_test(dut):
+    filename = "mscratch_test.txt"
+    dut.rst_i.value = 1
+    await run_clock(dut, 10, 2)
+    dut.rst_i.value = 0
+    regs = get_register_file(dut)
+    await load_code(dut, filepath + filename)
+    num_cycles = 400
+    await run_clock(dut, num_cycles, period_ns)
+
+    dut._log.info(f"x1 = {hex(regs[1].value)}")
+    dut._log.info(f"x2 = {hex(regs[2].value)}")
+    dut._log.info(f"x3 = {hex(regs[3].value)}")
+
