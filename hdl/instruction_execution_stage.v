@@ -75,7 +75,8 @@ module instruction_execution_stage(
         input alu_op2_sel_ex_mem_i,
         input [4:0] funct5_ex_mem_i,
         input [2:0] EX_op_ex_mem_i,
-        output wire mul_stall_o
+        output wire mul_stall_o,
+        output wire div_stall_o
         );
     
     //sw
@@ -239,7 +240,8 @@ module instruction_execution_stage(
         .chip_select(chip_select),
         .MDU_op(MDU_op),
         .result_o(MDU_res),
-        .mul_stall(mul_stall_o)
+        .mul_stall(mul_stall_o),
+        .div_stall(div_stall_o)
     );
     
    
@@ -283,7 +285,7 @@ module instruction_execution_stage(
             funct7_ex_mem_o <= 7'b0;
             is_load_instr_ex_mem_o <= 1'b0;
             is_store_instr_ex_mem_o <= 1'b0;
-        end else if(!busywait && !mul_stall_o) begin
+        end else if(!busywait && !mul_stall_o && !div_stall_o) begin
             PC_sel_w_ex_mem_o <= PC_sel_w;     
             alu_out_ex_mem_o <= alu_out_ex_mem_i;
             reg_wb_en_ex_mem_o <= reg_wb_en_ex_mem_i;

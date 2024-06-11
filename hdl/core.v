@@ -110,7 +110,8 @@ module core(
     wire [31:0] pc_mem_wb_o_4; 
 
     //************ tmp values *******************\\
-        wire mul_stall;
+    wire mul_stall;
+    wire div_stall_core;
     reg data_cache_blocking_n_last;
     
     always @(posedge clk_i) begin
@@ -119,8 +120,8 @@ module core(
 
     //tmp control signals
     wire load_stall;
-    wire id_stall = load_stall | mul_stall ;
-    wire if_stall = load_stall | ~data_cache_blocking_n_last | ~data_cache_blocking_n_i | mul_stall;
+    wire id_stall = load_stall | mul_stall | div_stall_core ;
+    wire if_stall = load_stall | ~data_cache_blocking_n_last | ~data_cache_blocking_n_i | mul_stall | div_stall_core;
 
     wire [31:0] reg_wb_data_w;
     wire ins_busy_w;
@@ -256,7 +257,8 @@ module core(
        .alu_op2_sel_ex_mem_i(alu_op2_sel_id_ex_o),
        .funct5_ex_mem_i(funct5_id_ex_o),
        .EX_op_ex_mem_i(EX_op_id_ex_o),
-       .mul_stall_o(mul_stall)
+       .mul_stall_o(mul_stall),
+       .div_stall_o(div_stall_core)
      );
     
 
