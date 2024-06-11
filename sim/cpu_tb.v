@@ -17,17 +17,14 @@ initial begin
 
  //  MEM TEST
 
-//   wrapper.ram.data[0] = 128'hfff141930800a103800015b7800000b7;
-//   wrapper.ram.data[1] = 128'h02c1826302c104630805a6030830a023;
-//   wrapper.ram.data[2] = 128'h00321a630800a20308d5a023fff64693;
-//   wrapper.ram.data[3] = 128'h0000006f00100f9300d716630805a703;
-//   wrapper.ram.data[4] = 128'h0000006ffff00f93;
+   wrapper.ram.data[0] = 128'hfff141930800a103800015b7800000b7;
+   wrapper.ram.data[1] = 128'h02c1826302c104630805a6030830a023;
+   wrapper.ram.data[2] = 128'h00321a630800a20308d5a023fff64693;
+   wrapper.ram.data[3] = 128'h0000006f00100f9300d716630805a703;
+   wrapper.ram.data[4] = 128'h0000006ffff00f93;
    
-//   wrapper.ram.data[8] = 128'h01010101;
-//   wrapper.ram.data[264] = 128'hABABABAB;
-  
-   
-//   #5000 RST = 1;
+   wrapper.ram.data[8] = 128'h01010101;
+   wrapper.ram.data[264] = 128'hABABABAB;
 
    //BASEL BUBBLESORT
    
@@ -65,9 +62,9 @@ initial begin
 
 
 //  MDU icin Carpma ornegi
-    wrapper.ram.data[0] = 128'h021081b3_402000b3_00100113_00000093;  // mul x3, x1, x1  ; sub x1, x0, x2 ; addi x2,x0, 1    ;addi x1,x0,0
-    wrapper.ram.data[1] = 128'h0292a333_00800493_abcde2b7_0210b233;  // mulhsu x6 x5 x9 ; addi x9 x0 8   ; lui x5, 0xABCDE ;mulhu x4,x1,x1
-    wrapper.ram.data[2] = 128'h0233c5b3_0233d533_02734433_029293b3;  // div x11 x7 x3   ; divu x10 x7 x3 ; div x8 x6 x7    ;mulh x7 x5 x9
+//    wrapper.ram.data[0] = 128'h021081b3_402000b3_00100113_00000093;  // mul x3, x1, x1  ; sub x1, x0, x2 ; addi x2,x0, 1    ;addi x1,x0,0
+//    wrapper.ram.data[1] = 128'h0292a333_00800493_abcde2b7_0210b233;  // mulhsu x6 x5 x9 ; addi x9 x0 8   ; lui x5, 0xABCDE ;mulhu x4,x1,x1
+//    wrapper.ram.data[2] = 128'h0233c5b3_0233d533_02734433_029293b3;  // div x11 x7 x3   ; divu x10 x7 x3 ; div x8 x6 x7    ;mulh x7 x5 x9
 
 end
 

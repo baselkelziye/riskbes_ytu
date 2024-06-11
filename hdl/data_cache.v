@@ -112,8 +112,11 @@ module data_cache #(
    assign bus_we_o = dirty;
    
    reg start_flushing;
+   reg blocking_n_last;
     
    always @(posedge clk_i) begin
+      blocking_n_last <= blocking_n;
+   
       if (rst_i) begin
          //Tazeleme yapma
          start_flushing <= 0;
@@ -176,13 +179,13 @@ module data_cache #(
          end
          
          //Positive edge geciktirilmiş yazma (data_cache_byte_block.v)
-         if (delayed_access_valid) begin
+         if (blocking_n_last) begin //Son çevrimde bekleme yapılmadı
             tag_last <= tag;
             index_last <= index;
             offset_last <= offset;
             write_en_last <= write_en_i;
             data_w_last <= data_i;
-            en_last <= en_i & blocking_n;
+            en_last <= en_i;
          end
       end
    end
