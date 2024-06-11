@@ -145,7 +145,7 @@ async def mscratch_test(dut):
     num_cycles = 400
     await run_clock(dut, num_cycles, period_ns)
 
-    dut._log.info(f"x1 = {hex(regs[1].value)}")
-    dut._log.info(f"x2 = {hex(regs[2].value)}")
-    dut._log.info(f"x3 = {hex(regs[3].value)}")
+    assert hex(regs[1].value) == "0x1a3"
+    assert hex(regs[2].value) == "0x1bf"
+    assert hex(regs[3].value) == "0x1a0"
 
