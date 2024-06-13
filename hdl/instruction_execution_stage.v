@@ -285,7 +285,7 @@ module instruction_execution_stage(
             funct7_ex_mem_o <= 7'b0;
             is_load_instr_ex_mem_o <= 1'b0;
             is_store_instr_ex_mem_o <= 1'b0;
-        end else if(!busywait && !mul_stall_o && !div_stall_o) begin
+        end else if(!busywait) begin
             if (!mul_stall_o && !div_stall_o) begin
                PC_sel_w_ex_mem_o <= PC_sel_w;     
                alu_out_ex_mem_o <= alu_out_ex_mem_i;
