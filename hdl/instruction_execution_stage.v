@@ -286,41 +286,44 @@ module instruction_execution_stage(
             is_load_instr_ex_mem_o <= 1'b0;
             is_store_instr_ex_mem_o <= 1'b0;
         end else if(!busywait && !mul_stall_o && !div_stall_o) begin
-            PC_sel_w_ex_mem_o <= PC_sel_w;     
-            alu_out_ex_mem_o <= alu_out_ex_mem_i;
-            reg_wb_en_ex_mem_o <= reg_wb_en_ex_mem_i;
-            rd_ex_mem_o <= rd_ex_mem_i;
-            pc_ex_mem_o <= pc_ex_mem_i;
-            wb_sel_ex_mem_o <= wb_sel_ex_mem_i;
-            imm_ex_mem_o <= imm_ex_mem_i;
-            rs1_label_ex_mem_o <= rs1_label_ex_mem_i;
-            rs2_label_ex_mem_o <= rs2_label_ex_mem_i;
-            read_write_sel_ex_mem_o <= read_write_sel_ex_mem_i;
-            rs2_ex_mem_o <= alu_in2_w;
-            is_memory_instruction_ex_mem_o <= is_memory_instruction_ex_mem_i;
-            funct3_ex_mem_o <= funct3_ex_mem_i;
-            funct7_ex_mem_o <= funct7_ex_mem_i;
-            is_load_instr_ex_mem_o <= is_load_instr_ex_mem_i;
-            is_store_instr_ex_mem_o <= is_store_instr_ex_mem_i;
+            if (!mul_stall_o && !div_stall_o) begin
+               PC_sel_w_ex_mem_o <= PC_sel_w;     
+               alu_out_ex_mem_o <= alu_out_ex_mem_i;
+               reg_wb_en_ex_mem_o <= reg_wb_en_ex_mem_i;
+               rd_ex_mem_o <= rd_ex_mem_i;
+               pc_ex_mem_o <= pc_ex_mem_i;
+               wb_sel_ex_mem_o <= wb_sel_ex_mem_i;
+               imm_ex_mem_o <= imm_ex_mem_i;
+               rs1_label_ex_mem_o <= rs1_label_ex_mem_i;
+               rs2_label_ex_mem_o <= rs2_label_ex_mem_i;
+               read_write_sel_ex_mem_o <= read_write_sel_ex_mem_i;
+               rs2_ex_mem_o <= alu_in2_w;
+               is_memory_instruction_ex_mem_o <= is_memory_instruction_ex_mem_i;
+               funct3_ex_mem_o <= funct3_ex_mem_i;
+               funct7_ex_mem_o <= funct7_ex_mem_i;
+               is_load_instr_ex_mem_o <= is_load_instr_ex_mem_i;
+               is_store_instr_ex_mem_o <= is_store_instr_ex_mem_i;
+            end else begin
+               reg_wb_en_ex_mem_o <= 1'b0;
+               read_write_sel_ex_mem_o <= 4'd0;
+            end
         end else begin // Mul stall da Yazma
-//            PC_sel_w_ex_mem_o <= PC_sel_w_ex_mem_o;     
-//            alu_out_ex_mem_o <= alu_out_ex_mem_o;
-//            reg_wb_en_ex_mem_o <= reg_wb_en_ex_mem_o;
-//            rd_ex_mem_o <= rd_ex_mem_o;
-//            pc_ex_mem_o <= pc_ex_mem_o;
-//            wb_sel_ex_mem_o <= wb_sel_ex_mem_o;
-//            imm_ex_mem_o <= imm_ex_mem_o;
-//            rs1_label_ex_mem_o <= rs1_label_ex_mem_o;
-//            rs2_label_ex_mem_o <= rs2_label_ex_mem_o;
-//            read_write_sel_ex_mem_o <= read_write_sel_ex_mem_o;
-//            rs2_ex_mem_o <= rs2_ex_mem_o;
-//            is_memory_instruction_ex_mem_o <= is_memory_instruction_ex_mem_o;
-//            funct3_ex_mem_o <= funct3_ex_mem_o;
-//            funct7_ex_mem_o <= funct7_ex_mem_o;
-//            is_load_instr_ex_mem_o <= is_load_instr_ex_mem_o;
-//            is_store_instr_ex_mem_o <= is_store_instr_ex_mem_o;
-            reg_wb_en_ex_mem_o <= 1'b0;
-            read_write_sel_ex_mem_o <= 4'd0;        
+            PC_sel_w_ex_mem_o <= PC_sel_w_ex_mem_o;     
+            alu_out_ex_mem_o <= alu_out_ex_mem_o;
+            reg_wb_en_ex_mem_o <= reg_wb_en_ex_mem_o;
+            rd_ex_mem_o <= rd_ex_mem_o;
+            pc_ex_mem_o <= pc_ex_mem_o;
+            wb_sel_ex_mem_o <= wb_sel_ex_mem_o;
+            imm_ex_mem_o <= imm_ex_mem_o;
+            rs1_label_ex_mem_o <= rs1_label_ex_mem_o;
+            rs2_label_ex_mem_o <= rs2_label_ex_mem_o;
+            read_write_sel_ex_mem_o <= read_write_sel_ex_mem_o;
+            rs2_ex_mem_o <= rs2_ex_mem_o;
+            is_memory_instruction_ex_mem_o <= is_memory_instruction_ex_mem_o;
+            funct3_ex_mem_o <= funct3_ex_mem_o;
+            funct7_ex_mem_o <= funct7_ex_mem_o;
+            is_load_instr_ex_mem_o <= is_load_instr_ex_mem_o;
+            is_store_instr_ex_mem_o <= is_store_instr_ex_mem_o;    
         end
         
         
