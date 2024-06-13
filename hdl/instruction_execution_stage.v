@@ -303,11 +303,11 @@ module instruction_execution_stage(
                funct7_ex_mem_o <= funct7_ex_mem_i;
                is_load_instr_ex_mem_o <= is_load_instr_ex_mem_i;
                is_store_instr_ex_mem_o <= is_store_instr_ex_mem_i;
-            end else begin
+            end else begin // Mul stall da Yazma
                reg_wb_en_ex_mem_o <= 1'b0;
                read_write_sel_ex_mem_o <= 4'd0;
             end
-        end else begin // Mul stall da Yazma
+        end else begin
             PC_sel_w_ex_mem_o <= PC_sel_w_ex_mem_o;     
             alu_out_ex_mem_o <= alu_out_ex_mem_o;
             reg_wb_en_ex_mem_o <= reg_wb_en_ex_mem_o;
