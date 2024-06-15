@@ -301,12 +301,14 @@ module core(
         .out_o(pc_mem_wb_o_4) // cunku son muxta PC+4 var, su ana kadar sadece PC i ilettik biz, 4 ile toplayip yollamamiz lazim.
     );
 
-    mux #(
-        .DATA_WIDTH(32),    // Set the data width of each input to 32 bits
-        .NUM_INPUTS(4)      // Set the number of inputs to 4 (for a 4-to-1 MUX)
-    ) u_wb_mux (
-        .in_flat({pc_mem_wb_o_4, imm_mem_wb_o, rd_data_mem_wb_o, alu_out_mem_wb_o}), // Concatenate inputs for the mux
-        .select(wb_sel_mem_wb_o),    // Selection signal
-        .out(reg_wb_data_w)          // Output of the MUX
+    mux_4x1 #(
+      .DATA_WIDTH(32)
+    ) writeback_mux (
+      .in0(alu_out_mem_wb_o),
+      .in1(rd_data_mem_wb_o),
+      .in2(imm_mem_wb_o),
+      .in3(pc_mem_wb_o_4),
+      .select(wb_sel_mem_wb_o),    // Selection signal
+      .out(reg_wb_data_w)          // Output of the MUX
     );
 endmodule
