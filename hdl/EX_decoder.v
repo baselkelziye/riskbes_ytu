@@ -2,6 +2,9 @@ module EX_Decoder(input  wire [2:0]  EX_op ,
                   input  wire [2:0] funct3 ,
                   input  wire [4:0] funct5 ,
                   input  wire [6:0] funct7 ,
+                  output wire CSR_en,
+                  output wire [1:0] CSR_op,
+                  output wire CSR_source_sel,
                   output wire [3:0] ALU_op ,
                   output wire [4:0] BMU_op ,
                   output wire [2:0] MDU_op ,
@@ -25,7 +28,7 @@ module EX_Decoder(input  wire [2:0]  EX_op ,
 // 00 ALU
 // 01 MDU
 // 10 BMU
-// 11 FPU
+// 11 CSR
 
 reg [1:0] chip_select_reg;
 
@@ -134,64 +137,70 @@ localparam [6:0]    SH1ADD_FUNCT7       = 7'b0010000,
                     SH2ADD_FUNCT7       = 7'b0010000,
                     SH3ADD_FUNCT7       = 7'b0010000;
 
-localparam [2:0]    SH1ADD_FUNCT3       =3'b010,
-                    SH2ADD_FUNCT3       =3'b100,
-                    SH3ADD_FUNCT3       =3'b110;
+localparam [2:0]    SH1ADD_FUNCT3       = 3'b010,
+                    SH2ADD_FUNCT3       = 3'b100,
+                    SH3ADD_FUNCT3       = 3'b110;
+
+localparam [2:0]    CSRRW_FUNCT3        = 3'b001,
+                    CSRRS_FUNCT3        = 3'b010,
+                    CSRRC_FUNCT3        = 3'b011,
+                    CSRRWI_FUNCT3       = 3'b101,
+                    CSRRSI_FUNCT3       = 3'b110,
+                    CSRRCI_FUNCT3       = 3'b111;
 
 
+reg [19:0] ex_signals;         
 
-reg [15:0] ex_signals;         
-
-// chip_select[1:0], ALU_op[3:0], MDU_op[2:0], BMU_op[4:0], rs1_shift_sel, rs2_negate_sel
+// chip_select[1:0], CSR_en, CSR_op[1:0], CSR_source_sel, ALU_op[3:0], MDU_op[2:0], BMU_op[4:0], rs1_shift_sel, rs2_negate_sel
 always @* begin 
     case (EX_op)
     3'b000: // Load, Store, Branch, AUIPC, JAL, JALR  komutlar icin. Sadecec Toplama Var
-                              ex_signals = 16'b00_0000_XXX_XXXXX_0_0;
+                              ex_signals = 20'b00_0_XX_X_0000_XXX_XXXXX_0_0;
 
     3'b001: //I-Type Komutlar, funct3 e gore Ayrilir, Sonra funct7.
         begin
             if(funct3 == 3'b001     )  begin // BMU ve I-Type SHAMT iceren komutlar
                             case (funct7) 
-                                SLLI_FUNCT7  : ex_signals = 16'b00_0011_XXX_XXXXX_0_0;
+                                SLLI_FUNCT7  : ex_signals = 20'b00_0_XX_X_0011_XXX_XXXXX_0_0;
                                 CLZ_FUNCT7   ,
                                 CTZ_FUNCT7   ,
                                 CPOP_FUNCT7  ,
                                 SEXT_B_FUNCT7: begin //clz,ctz,cpop,sext.b funct5 ile ayirmamiz gerekiyor
                                                 case(funct5) 
-                                                    CLZ_FUNCT5   : ex_signals = 16'b10_XXXX_XXX_00000_0_0;
-                                                    CTZ_FUNCT5   : ex_signals = 16'b10_XXXX_XXX_00001_0_0;
-                                                    CPOP_FUNCT5  : ex_signals = 16'b10_XXXX_XXX_00010_0_0;
-                                                    SEXT_B_FUNCT5: ex_signals = 16'b10_XXXX_XXX_00110_0_0;
-                                                    SEXT_H_FUNCT5: ex_signals = 16'b10_XXXX_XXX_00111_0_0;
-                                                    default      : ex_signals = 16'bXX_XXXX_XXX_XXXXX_X_X;  
+                                                    CLZ_FUNCT5   : ex_signals = 20'b10_0_XX_X_XXXX_XXX_00000_0_0;
+                                                    CTZ_FUNCT5   : ex_signals = 20'b10_0_XX_X_XXXX_XXX_00001_0_0;
+                                                    CPOP_FUNCT5  : ex_signals = 20'b10_0_XX_X_XXXX_XXX_00010_0_0;
+                                                    SEXT_B_FUNCT5: ex_signals = 20'b10_0_XX_X_XXXX_XXX_00110_0_0;
+                                                    SEXT_H_FUNCT5: ex_signals = 20'b10_0_XX_X_XXXX_XXX_00111_0_0;
+                                                    default      : ex_signals = 20'bXX_X_XX_X_XXXX_XXX_XXXXX_X_X;  
                                                 endcase    
                                                 end
-                                BCLRI_FUNCT7 : ex_signals = 16'b10_XXXX_XXX_01011_0_0;
-                                BINVI_FUNCT7 : ex_signals = 16'b10_XXXX_XXX_01101_0_0;
-                                BESTI_FUNCT7 : ex_signals = 16'b10_XXXX_XXX_01110_0_0;      
-                                default      : ex_signals = 16'bXX_XXXX_XXX_XXXXX_X_X;
+                                BCLRI_FUNCT7 : ex_signals = 20'b10_0_XX_X_XXXX_XXX_01011_0_0;
+                                BINVI_FUNCT7 : ex_signals = 20'b10_0_XX_X_XXXX_XXX_01101_0_0;
+                                BESTI_FUNCT7 : ex_signals = 20'b10_0_XX_X_XXXX_XXX_01110_0_0;      
+                                default      : ex_signals = 20'bXX_X_XX_X_XXXX_XXX_XXXXX_X_X;
                             endcase
             end 
             else if(funct3 == 3'b101)  begin // BMU ve I-Type SHAMT iceren komutlar
                             case (funct7)
-                                SRLI_FUNCT7 : ex_signals = 16'b00_0111_XXX_XXXXX_0_0;
-                                SRAI_FUNCT7 : ex_signals = 16'b00_1000_XXX_XXXXX_0_0;
-                                ORC_B_FUNCT7: ex_signals = 16'b10_XXXX_XXX_00011_0_0;
-                                REV8_FUNCT7 : ex_signals = 16'b10_XXXX_XXX_00100_0_0;
-                                RORI_FUNCT7 : ex_signals = 16'b10_XXXX_XXX_01001_0_0;
-                                BEXTI_FUNCT7: ex_signals = 16'b10_XXXX_XXX_01100_0_0;
-                                default     : ex_signals = 16'bXX_XXXX_XXX_XXXXX_X_X;
+                                SRLI_FUNCT7 : ex_signals = 20'b00_0_XX_X_0111_XXX_XXXXX_0_0;
+                                SRAI_FUNCT7 : ex_signals = 20'b00_0_XX_X_1000_XXX_XXXXX_0_0;
+                                ORC_B_FUNCT7: ex_signals = 20'b10_0_XX_X_XXXX_XXX_00011_0_0;
+                                REV8_FUNCT7 : ex_signals = 20'b10_0_XX_X_XXXX_XXX_00100_0_0;
+                                RORI_FUNCT7 : ex_signals = 20'b10_0_XX_X_XXXX_XXX_01001_0_0;
+                                BEXTI_FUNCT7: ex_signals = 20'b10_0_XX_X_XXXX_XXX_01100_0_0;
+                                default     : ex_signals = 20'bXX_X_XX_X_XXXX_XXX_XXXXX_X_X;
                             endcase
             end
             else begin              //Diger I komutlar
                             case (funct3) 
-                                ADDI_FUNCT3 : ex_signals = 16'b00_0000_XXX_XXXXX_0_0;
-                                SLTI_FUNCT3 : ex_signals = 16'b00_0100_XXX_XXXXX_0_0;
-                                SLTIU_FUNCT3: ex_signals = 16'b00_0101_XXX_XXXXX_0_0;
-                                XORI_FUNCT3 : ex_signals = 16'b00_0110_XXX_XXXXX_0_0;
-                                ORI_FUNCT3  : ex_signals = 16'b00_1001_XXX_XXXXX_0_0;
-                                ANDI_FUNCT3 : ex_signals = 16'b00_1010_XXX_XXXXX_0_0;
-                                default     : ex_signals = 16'bXX_XXXX_XXX_XXXXX_0_X;
+                                ADDI_FUNCT3 : ex_signals = 20'b00_0_XX_X_0000_XXX_XXXXX_0_0;
+                                SLTI_FUNCT3 : ex_signals = 20'b00_0_XX_X_0100_XXX_XXXXX_0_0;
+                                SLTIU_FUNCT3: ex_signals = 20'b00_0_XX_X_0101_XXX_XXXXX_0_0;
+                                XORI_FUNCT3 : ex_signals = 20'b00_0_XX_X_0110_XXX_XXXXX_0_0;
+                                ORI_FUNCT3  : ex_signals = 20'b00_0_XX_X_1001_XXX_XXXXX_0_0;
+                                ANDI_FUNCT3 : ex_signals = 20'b00_0_XX_X_1010_XXX_XXXXX_0_0;
+                                default     : ex_signals = 20'bXX_X_XX_X_XXXX_XXX_XXXXX_0_X;
                             endcase
             end       
         end
@@ -202,76 +211,84 @@ always @* begin
             case (funct7) 
                 7'b0000000: // ADD, SLL, SLT, SLTU, XOR, SRL, OR, AND
                             case(funct3)
-                                ADD_FUNCT3    : ex_signals = 16'b00_0000_XXX_XXXXX_0_0;
-                                SLT_FUNCT3    : ex_signals = 16'b00_0100_XXX_XXXXX_0_0;
-                                SLL_FUNCT3    : ex_signals = 16'b00_0011_XXX_XXXXX_0_0; 
-                                SLTU_FUNCT3   : ex_signals = 16'b00_0101_XXX_XXXXX_0_0;
-                                XOR_FUNCT3    : ex_signals = 16'b00_0110_XXX_XXXXX_0_0;
-                                OR_FUNCT3     : ex_signals = 16'b00_1001_XXX_XXXXX_0_0;
-                                AND_FUNCT3    : ex_signals = 16'b00_1010_XXX_XXXXX_0_0;
-                                default       : ex_signals = 16'bXX_XXXX_XXX_XXXXX_X_X;
+                                ADD_FUNCT3    : ex_signals = 20'b00_0_XX_X_0000_XXX_XXXXX_0_0;
+                                SLT_FUNCT3    : ex_signals = 20'b00_0_XX_X_0100_XXX_XXXXX_0_0;
+                                SLL_FUNCT3    : ex_signals = 20'b00_0_XX_X_0011_XXX_XXXXX_0_0; 
+                                SLTU_FUNCT3   : ex_signals = 20'b00_0_XX_X_0101_XXX_XXXXX_0_0;
+                                XOR_FUNCT3    : ex_signals = 20'b00_0_XX_X_0110_XXX_XXXXX_0_0;
+                                OR_FUNCT3     : ex_signals = 20'b00_0_XX_X_1001_XXX_XXXXX_0_0;
+                                AND_FUNCT3    : ex_signals = 20'b00_0_XX_X_1010_XXX_XXXXX_0_0;
+                                default       : ex_signals = 20'bXX_X_XX_X_XXXX_XXX_XXXXX_X_X;
                             endcase
                 7'b0000001: //MUL, MULH, MULHSU, MULHU, DIV,DIVU, REM, REMU
                             case(funct3) 
-                                MUL_FUNCT3    : ex_signals = 16'b01_XXXX_000_XXXXX_0_0;
-                                MULH_FUNCT3   : ex_signals = 16'b01_XXXX_001_XXXXX_0_0;
-                                MULHSU_FUNCT3 : ex_signals = 16'b01_XXXX_010_XXXXX_0_0;
-                                MULHU_FUNCT3  : ex_signals = 16'b01_XXXX_011_XXXXX_0_0;
-                                DIV_FUNCT3    : ex_signals = 16'b01_XXXX_100_XXXXX_0_0;
-                                DIVU_FUNCT3   : ex_signals = 16'b01_XXXX_101_XXXXX_0_0;
-                                REM_FUNCT3    : ex_signals = 16'b01_XXXX_110_XXXXX_0_0;
-                                REMU_FUNCT3   : ex_signals = 16'b01_XXXX_111_XXXXX_0_0;
-                                default       : ex_signals = 16'bXX_XXXX_XXX_XXXXX_X_X;
+                                MUL_FUNCT3    : ex_signals = 20'b01_0_XX_X_XXXX_000_XXXXX_0_0;
+                                MULH_FUNCT3   : ex_signals = 20'b01_0_XX_X_XXXX_001_XXXXX_0_0;
+                                MULHSU_FUNCT3 : ex_signals = 20'b01_0_XX_X_XXXX_010_XXXXX_0_0;
+                                MULHU_FUNCT3  : ex_signals = 20'b01_0_XX_X_XXXX_011_XXXXX_0_0;
+                                DIV_FUNCT3    : ex_signals = 20'b01_0_XX_X_XXXX_100_XXXXX_0_0;
+                                DIVU_FUNCT3   : ex_signals = 20'b01_0_XX_X_XXXX_101_XXXXX_0_0;
+                                REM_FUNCT3    : ex_signals = 20'b01_0_XX_X_XXXX_110_XXXXX_0_0;
+                                REMU_FUNCT3   : ex_signals = 20'b01_0_XX_X_XXXX_111_XXXXX_0_0;
+                                default       : ex_signals = 20'bXX_X_XX_X_XXXX_XXX_XXXXX_X_X;
                             endcase
                 7'b0100000: // SUB, SRA, ANDN, ORN, XNOR
                             case(funct3)
-                                SUB_FUNCT3    : ex_signals = 16'b00_0001_XXX_XXXXX_0_1;
-                                SRA_FUNCT3    : ex_signals = 16'b00_1000_XXX_XXXXX_0_0;
-                                ANDN_FUNCT3   : ex_signals = 16'b00_1010_XXX_XXXXX_0_1;
-                                ORN_FUNCT3    : ex_signals = 16'b00_1001_XXX_XXXXX_0_1;
-                                XNOR_FUNCT3   : ex_signals = 16'b00_1011_XXX_XXXXX_0_0;
-                                default       : ex_signals = 16'bXX_XXXX_XXX_XXXXX_X_X;
+                                SUB_FUNCT3    : ex_signals = 20'b00_0_XX_X_0001_XXX_XXXXX_0_1;
+                                SRA_FUNCT3    : ex_signals = 20'b00_0_XX_X_1000_XXX_XXXXX_0_0;
+                                ANDN_FUNCT3   : ex_signals = 20'b00_0_XX_X_1010_XXX_XXXXX_0_1;
+                                ORN_FUNCT3    : ex_signals = 20'b00_0_XX_X_1001_XXX_XXXXX_0_1;
+                                XNOR_FUNCT3   : ex_signals = 20'b00_0_XX_X_1011_XXX_XXXXX_0_0;
+                                default       : ex_signals = 20'bXX_X_XX_X_XXXX_XXX_XXXXX_X_X;
                             endcase
-                7'b0000100:  /*ZEXT.h Icin*/    ex_signals = 16'b10_XXXX_XXX_00101_0_0;
+                7'b0000100:  /*ZEXT.h Icin*/    ex_signals = 20'b10_0_XX_X_XXXX_XXX_00101_0_0;
                 7'b0110000: // ROL, ROR
                             case(funct3)
-                                ROL_FUNCT3    : ex_signals = 16'b10_XXXX_XXX_01000_0_0;
-                                ROR_FUNCT3    : ex_signals = 16'b10_XXXX_XXX_01001_0_0;
-                                default       : ex_signals = 16'bXX_XXXX_XXX_XXXXX_X_X;
+                                ROL_FUNCT3    : ex_signals = 20'b10_0_XX_X_XXXX_XXX_01000_0_0;
+                                ROR_FUNCT3    : ex_signals = 20'b10_0_XX_X_XXXX_XXX_01001_0_0;
+                                default       : ex_signals = 20'bXX_X_XX_X_XXXX_XXX_XXXXX_X_X;
                             endcase 
                 7'b0100100: //BCLR, BEXT
                             case(funct3)
-                                BCLR_FUNCT3   : ex_signals = 16'b10_XXXX_XXX_01011_0_0;
-                                BEXT_FUNCT3   : ex_signals = 16'b10_XXXX_XXX_01100_0_0;
-                                default       : ex_signals = 16'bXX_XXXX_XXX_XXXXX_X_X;
+                                BCLR_FUNCT3   : ex_signals = 20'b10_0_XX_X_XXXX_XXX_01011_0_0;
+                                BEXT_FUNCT3   : ex_signals = 20'b10_0_XX_X_XXXX_XXX_01100_0_0;
+                                default       : ex_signals = 20'bXX_X_XX_X_XXXX_XXX_XXXXX_X_X;
                             endcase 
-                7'b0110100: /* BINV*/           ex_signals = 16'b10_XXXX_XXX_01101_0_0;
-                7'b0010100: /*BSET*/            ex_signals = 16'b10_XXXX_XXX_01110_0_0;
+                7'b0110100: /* BINV*/           ex_signals = 20'b10_0_XX_X_XXXX_XXX_01101_0_0;
+                7'b0010100: /*BSET*/            ex_signals = 20'b10_0_XX_X_XXXX_XXX_01110_0_0;
                 7'b0000101: //MAX,MAXU, MIN,MINU
                             case(funct3)
-                                MAX_FUNCT3    : ex_signals = 16'b10_XXXX_XXX_01010_0_0;
-                                MAXU_FUNCT3   : ex_signals = 16'b10_XXXX_XXX_01111_0_0;
-                                MIN_FUNCT3    : ex_signals = 16'b10_XXXX_XXX_10000_0_0;
-                                MINU_FUNCT3   : ex_signals = 16'b10_XXXX_XXX_10001_0_0;
-                                default       : ex_signals = 16'bXX_XXXX_XXX_XXXXX_X_X;
+                                MAX_FUNCT3    : ex_signals = 20'b10_0_XX_X_XXXX_XXX_01010_0_0;
+                                MAXU_FUNCT3   : ex_signals = 20'b10_0_XX_X_XXXX_XXX_01111_0_0;
+                                MIN_FUNCT3    : ex_signals = 20'b10_0_XX_X_XXXX_XXX_10000_0_0;
+                                MINU_FUNCT3   : ex_signals = 20'b10_0_XX_X_XXXX_XXX_10001_0_0;
+                                default       : ex_signals = 20'bXX_X_XX_X_XXXX_XXX_XXXXX_X_X;
                             endcase
                 7'b0010000: //SH1ADD,SH2ADD,SH3ADD
                             case(funct3)
-                                SH1ADD_FUNCT3 : ex_signals = 16'b00_0000_XXX_XXXXX_1_0; 
-                                SH2ADD_FUNCT3 : ex_signals = 16'b00_0000_XXX_XXXXX_1_0;
-                                SH3ADD_FUNCT3 : ex_signals = 16'b00_0000_XXX_XXXXX_1_0;
-                                default       : ex_signals = 16'bXX_XXXX_XXX_XXXXX_X_X;
+                                SH1ADD_FUNCT3 : ex_signals = 20'b00_0_XX_X_0000_XXX_XXXXX_1_0; 
+                                SH2ADD_FUNCT3 : ex_signals = 20'b00_0_XX_X_0000_XXX_XXXXX_1_0;
+                                SH3ADD_FUNCT3 : ex_signals = 20'b00_0_XX_X_0000_XXX_XXXXX_1_0;
+                                default       : ex_signals = 20'bXX_X_XX_X_XXXX_XXX_XXXXX_X_X;
                             endcase
-            default: ex_signals = 16'bXX_XXXX_XXX_XXXXX_X_X;
+            default: ex_signals = 20'bXX_X_XX_X_XXXX_XXX_XXXXX_X_X;
                             
             endcase 
         end
-   3'b011: ex_signals = 16'b00_1100_XXX_XXXXX_0_0; // LUI artik ALU de
-    default: ex_signals = 16'bXX_XXXX_XXX_XXXXX_X_X;
-    endcase
+   3'b011: ex_signals = 20'b00_0_XX_X_1100_XXX_XXXXX_0_0; // LUI artik ALU de
+   3'b100: case(funct3)
+         CSRRW_FUNCT3 :  ex_signals = 20'b11_1_01_0_XXXX_XXX_XXXXX_X_X;
+         CSRRS_FUNCT3 :  ex_signals = 20'b11_1_10_0_XXXX_XXX_XXXXX_X_X;
+         CSRRC_FUNCT3 :  ex_signals = 20'b11_1_11_0_XXXX_XXX_XXXXX_X_X;
+         CSRRWI_FUNCT3 : ex_signals = 20'b11_1_01_1_XXXX_XXX_XXXXX_X_X;
+         CSRRSI_FUNCT3 : ex_signals = 20'b11_1_10_1_XXXX_XXX_XXXXX_X_X;
+         CSRRCI_FUNCT3 : ex_signals = 20'b11_1_11_1_XXXX_XXX_XXXXX_X_X;
+      endcase
+   default: ex_signals = 20'bXX_X_XX_X_XXXX_XXX_XXXXX_X_X;
+   endcase
 end
 
-assign {chip_select,ALU_op, MDU_op, BMU_op, rs1_shift_sel, rs2_negate_sel} = ex_signals;
+assign {chip_select, CSR_en, CSR_op, CSR_source_sel, ALU_op, MDU_op, BMU_op, rs1_shift_sel, rs2_negate_sel} = ex_signals;
 
 endmodule
 

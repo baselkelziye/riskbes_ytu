@@ -144,83 +144,79 @@ module instruction_decode_stage(
         .imm_src(imm_src),
         .imm_o(imm)
     );                   
-   
-   always @(*) begin //posedge olmasi gerekmez mi?
-        if(rst_i || flush) begin
-            #0.1;
-            pc_id_ex_o                     <= 30'd0;
-            rs1_value_id_ex_o              <= 32'd0;
-            rs2_value_id_ex_o              <= 32'd0;
-            imm_value_id_ex_o              <= 32'd0;
-            alu_op1_sel_id_ex_o            <= 0;
-            alu_op2_sel_id_ex_o            <= 0;
-            read_write_sel_id_ex_o         <= 4'd0;
-            wb_sel_id_ex_o                 <= 2'd0;
-            reg_wb_en_id_ex_o              <= 0;
-            rd_id_ex_o                     <= 5'd0;
-            rs1_label_id_ex_o              <= 5'd0;
-            is_memory_instruction_id_ex_o  <= 1'b0;
-            is_load_instruction_id_ex_o    <= 1'b0;
-            funct3_id_ex_o                 <= 3'b0;
-            funct7_id_ex_o                 <= 7'b0;
-            is_load_instr_id_ex_o          <= 1'b0; 
-            is_store_instr_id_ex_o         <= 1'b0;
-            is_branch_instr_id_ex_o        <= 1'b0;
-            is_jump_instr_id_ex_o          <= 0;
-            EX_op_id_ex_o                  <= 2'b0;
-            funct5_id_ex_o                 <= 5'b0;
-        end
-    end
     
     always @(posedge clk_i)begin
-      if(!rst_i && !busywait) begin
-         if(!stall_id_i)begin
-            pc_id_ex_o  <= pc_i;
-            rs1_value_id_ex_o <= rs1_value;
-            rs2_value_id_ex_o <= rs2_value;
-            imm_value_id_ex_o <= imm; 
-            alu_op1_sel_id_ex_o <= op1_sel;
-            alu_op2_sel_id_ex_o <= op2_sel;
-            read_write_sel_id_ex_o <= read_write;
-            wb_sel_id_ex_o <= wb_sel;
-            reg_wb_en_id_ex_o <= reg_wr_en;  
-            rd_id_ex_o <= rd_label;
-            rs1_label_id_ex_o <= rs1_label;
-            rs2_label_id_ex_o <= rs2_label;
-            is_memory_instruction_id_ex_o <= is_memory_instruction;
-            is_load_instruction_id_ex_o <= is_load_instruction;
-            funct3_id_ex_o <= funct3;
-            funct5_id_ex_o <= funct5;
-            funct7_id_ex_o <= funct7;
-            is_load_instr_id_ex_o <= is_load_instr;
-            is_store_instr_id_ex_o <= is_store_instr;
-            is_branch_instr_id_ex_o <= is_branch_instr;
-            is_jump_instr_id_ex_o <= is_jump_instr;
-            EX_op_id_ex_o <= EX_op;
-         end else if(load_stall_o) begin
-            pc_id_ex_o                     <= 30'd0;
-            rs1_value_id_ex_o              <= 32'd0;
-            rs2_value_id_ex_o              <= 32'd0;
-            imm_value_id_ex_o              <= 32'd0;
-            alu_op1_sel_id_ex_o            <= 0;
-            alu_op2_sel_id_ex_o            <= 0;
-            read_write_sel_id_ex_o         <= 4'd0;
-            wb_sel_id_ex_o                 <= 2'd0;
-            reg_wb_en_id_ex_o              <= 0;
-            rd_id_ex_o                     <= 5'd0;
-            rs1_label_id_ex_o              <= 5'd0;
-            is_memory_instruction_id_ex_o  <= 1'b0;
-            is_load_instruction_id_ex_o    <= 1'b0;
-            funct3_id_ex_o                 <= 3'b0;
-            funct7_id_ex_o                 <= 7'b0;
-            is_load_instr_id_ex_o          <= 1'b0; 
-            is_store_instr_id_ex_o         <= 1'b0;
-            is_branch_instr_id_ex_o        <= 1'b0;
-            is_jump_instr_id_ex_o          <= 0;
-            EX_op_id_ex_o                  <= 2'b0;
-            funct5_id_ex_o                 <= 5'b0;         ;
-         end
-       end
+      if(!rst_i && !flush) begin
+         if(!busywait) begin
+            if(!stall_id_i)begin
+               pc_id_ex_o  <= pc_i;
+               rs1_value_id_ex_o <= rs1_value;
+               rs2_value_id_ex_o <= rs2_value;
+               imm_value_id_ex_o <= imm; 
+               alu_op1_sel_id_ex_o <= op1_sel;
+               alu_op2_sel_id_ex_o <= op2_sel;
+               read_write_sel_id_ex_o <= read_write;
+               wb_sel_id_ex_o <= wb_sel;
+               reg_wb_en_id_ex_o <= reg_wr_en;  
+               rd_id_ex_o <= rd_label;
+               rs1_label_id_ex_o <= rs1_label;
+               rs2_label_id_ex_o <= rs2_label;
+               is_memory_instruction_id_ex_o <= is_memory_instruction;
+               is_load_instruction_id_ex_o <= is_load_instruction;
+               funct3_id_ex_o <= funct3;
+               funct5_id_ex_o <= funct5;
+               funct7_id_ex_o <= funct7;
+               is_load_instr_id_ex_o <= is_load_instr;
+               is_store_instr_id_ex_o <= is_store_instr;
+               is_branch_instr_id_ex_o <= is_branch_instr;
+               is_jump_instr_id_ex_o <= is_jump_instr;
+               EX_op_id_ex_o <= EX_op;
+            end else if(load_stall_o) begin
+               pc_id_ex_o                     <= 30'd0;
+               rs1_value_id_ex_o              <= 32'd0;
+               rs2_value_id_ex_o              <= 32'd0;
+               imm_value_id_ex_o              <= 32'd0;
+               alu_op1_sel_id_ex_o            <= 0;
+               alu_op2_sel_id_ex_o            <= 0;
+               read_write_sel_id_ex_o         <= 4'd0;
+               wb_sel_id_ex_o                 <= 2'd0;
+               reg_wb_en_id_ex_o              <= 0;
+               rd_id_ex_o                     <= 5'd0;
+               rs1_label_id_ex_o              <= 5'd0;
+               is_memory_instruction_id_ex_o  <= 1'b0;
+               is_load_instruction_id_ex_o    <= 1'b0;
+               funct3_id_ex_o                 <= 3'b0;
+               funct7_id_ex_o                 <= 7'b0;
+               is_load_instr_id_ex_o          <= 1'b0; 
+               is_store_instr_id_ex_o         <= 1'b0;
+               is_branch_instr_id_ex_o        <= 1'b0;
+               is_jump_instr_id_ex_o          <= 0;
+               EX_op_id_ex_o                  <= 2'b0;
+               funct5_id_ex_o                 <= 5'b0;         ;
+            end
+          end
+       end else begin
+         pc_id_ex_o                     <= 30'd0;
+         rs1_value_id_ex_o              <= 32'd0;
+         rs2_value_id_ex_o              <= 32'd0;
+         imm_value_id_ex_o              <= 32'd0;
+         alu_op1_sel_id_ex_o            <= 0;
+         alu_op2_sel_id_ex_o            <= 0;
+         read_write_sel_id_ex_o         <= 4'd0;
+         wb_sel_id_ex_o                 <= 2'd0;
+         reg_wb_en_id_ex_o              <= 0;
+         rd_id_ex_o                     <= 5'd0;
+         rs1_label_id_ex_o              <= 5'd0;
+         is_memory_instruction_id_ex_o  <= 1'b0;
+         is_load_instruction_id_ex_o    <= 1'b0;
+         funct3_id_ex_o                 <= 3'b0;
+         funct7_id_ex_o                 <= 7'b0;
+         is_load_instr_id_ex_o          <= 1'b0; 
+         is_store_instr_id_ex_o         <= 1'b0;
+         is_branch_instr_id_ex_o        <= 1'b0;
+         is_jump_instr_id_ex_o          <= 0;
+         EX_op_id_ex_o                  <= 2'b0;
+         funct5_id_ex_o                 <= 5'b0;
+      end
     end
-
 endmodule

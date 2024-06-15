@@ -93,6 +93,9 @@ module instruction_execution_stage(
         wire [31:0] shifted_rs1;
             //EX_Decoder sinyalleri, Sonra yukariya EX Stage sinyallerin altina Aynen tasinsin
         wire [1:0] chip_select;
+        wire CSR_en;
+        wire [1:0] CSR_op;
+        wire CSR_source_sel;
         wire [3:0] ALU_op;
         wire [4:0] BMU_op;
         wire [2:0] MDU_op;
@@ -215,6 +218,9 @@ module instruction_execution_stage(
                    .funct3(funct3_ex_mem_i),
                    .funct5(funct5_ex_mem_i),
                    .funct7(funct7_ex_mem_i),
+                   .CSR_en(CSR_en),
+                   .CSR_op(CSR_op),
+                   .CSR_source_sel(CSR_source_sel),
                    .ALU_op(ALU_op),
                    .BMU_op(BMU_op),
                    .MDU_op(MDU_op),
@@ -244,17 +250,31 @@ module instruction_execution_stage(
         .div_stall(div_stall_o)
     );
     
-   
-                                   
-
-    
     BMU u_BMU(
         .rs1_value_i(alu_in1_forwarded_input),
         .rs2_value_i(alu_in2_forwarded_input),
         .BMU_opcode_i(BMU_op),
         .BMU_result_o(BMU_res)
     );
-
+    
+    wire [11:0] CSR_addr = imm_ex_mem_i[11:0];
+    wire [31:0] CSR_res;
+    
+    csr_unit u_CSR(
+      .clk_i(clk_i),
+      .rst_i(rst_i),
+      
+      .en_i(CSR_en),
+      .op_i(CSR_op),
+      .source_sel_i(CSR_source_sel),
+      
+      .rs1_label_i(rs1_label_ex_mem_i),
+      .rs1_value_i(alu_in1_w), //Most recent RS1 value
+      
+      .addr_i(CSR_addr),
+      
+      .read_o(CSR_res)
+    );
 
     mux_4x1 #(
     .DATA_WIDTH(32)
@@ -262,7 +282,7 @@ module instruction_execution_stage(
        .in0(ALU_res),        // X0
        .in1(MDU_res),        // X1
        .in2(BMU_res),   // X2
-       .in3(32'hdeadbeef),   // X3
+       .in3(CSR_res),   // X3
        .select(chip_select),
        .out(alu_out_ex_mem_i)
     );
