@@ -116,7 +116,7 @@ module data_cache #(
     
    always @(posedge clk_i) begin
       blocking_n_last <= blocking_n;
-
+   
       if (rst_i) begin
          //Tazeleme yapma
          start_flushing <= 0;
@@ -179,13 +179,13 @@ module data_cache #(
          end
          
          //Positive edge geciktirilmiş yazma (data_cache_byte_block.v)
-         if (blocking_n_last) begin
+         if (blocking_n_last) begin //Son çevrimde bekleme yapılmadı
             tag_last <= tag;
             index_last <= index;
             offset_last <= offset;
             write_en_last <= write_en_i;
             data_w_last <= data_i;
-            en_last <= en_i & blocking_n;
+            en_last <= en_i;
          end
       end
    end
@@ -230,8 +230,7 @@ module data_cache #(
       end
    endgenerate 
    
-   wire [INDEX_WIDTH - 1 : 0] index_r = blocking_n ? index : index_last;
-   wire [31:0] data_r = block_data[index_r];
+   wire [31:0] data_r = block_data[index];
    wire forward = index == index_last && offset == offset_last;
    
    //Okuma

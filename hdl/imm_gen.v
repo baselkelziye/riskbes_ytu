@@ -7,9 +7,7 @@ module imm_gen(
     );
     
     reg [31:0]imm_r; 
-    wire [2:0] funct3_w = instr_i[7:5];
-   
-
+ 
     always @* begin
 
         case (imm_src)
@@ -18,12 +16,7 @@ module imm_gen(
             3'b010: imm_r = { {32{instr_i[24]}}, {instr_i[23:18]}, {instr_i[4:0]}};  // STORE
             3'b011: imm_r = { {32{instr_i[24]}}, {instr_i[0]}, {instr_i[23:18]},{instr_i[4:1]}, {1'b0} }; //Branch
             3'b100: imm_r = { {32{instr_i[24]}}, {instr_i[24:13]} }; // Signed I-Type. (For Load, And JALR), The remaining ALU will be decided in switch case 
-            3'b101: if(funct3_w == 3'b001 || funct3_w == 3'b101) //SRAI,SLLI vb komutlar icin. BMU da da eklenebilir biseyler
-                    begin
-                    imm_r = { {32{instr_i[24]}}, {instr_i[17:13]} };
-                    end else begin
-                    imm_r = { {32{instr_i[24]}}, {instr_i[24:13]} };    
-                    end
+            3'b101: imm_r = { {32{instr_i[24]}}, {instr_i[24:13]} }; 
         endcase
     end
     

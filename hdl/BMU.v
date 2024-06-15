@@ -54,8 +54,8 @@ module BMU(
 
 
     //Rotate instructions
-    assign ror_res = (rs1_value_i >> rs2_value_i) | (rs1_value_i << (32 - rs2_value_i));
-    assign rol_res = (rs1_value_i << rs2_value_i) | (rs1_value_i >> (32 - rs2_value_i));
+    assign ror_res = (rs1_value_i >> rs2_value_i[4:0]) | (rs1_value_i << (32 - rs2_value_i[4:0]));
+    assign rol_res = (rs1_value_i << rs2_value_i) | (rs1_value_i >> (32 - rs2_value_i[4:0]));
     //Zbb Instructions
 
 
@@ -81,9 +81,9 @@ module BMU(
 
 
     //Zbs Instructions
-    assign bit_mask = 32'b1 << rs2_value_i; //Index haric hepsi 0.   
+    assign bit_mask = 32'b1 << rs2_value_i[4:0]; //Index haric hepsi 0.   
     assign bclr_res = rs1_value_i & ~bit_mask; // index = 0, digerleri 1
-    assign bext_res = (rs1_value_i >> rs2_value_i) & 1; 
+    assign bext_res = (rs1_value_i >> rs2_value_i[4:0]) & 1; 
     assign binv_res = rs1_value_i ^ bit_mask;
     assign bset_res = rs1_value_i | bit_mask;
 

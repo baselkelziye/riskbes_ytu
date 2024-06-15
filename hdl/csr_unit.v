@@ -3,7 +3,7 @@ module csr_unit (
     input rst_i,
 
     input en_i,
-    input [1:0] op_i, //00 = ECALL/EBREAK, 01 = RW, 10 = RS, 11 = RC
+    input [1:0] op_i, // 01 = RW, 10 = RS, 11 = RC
     input source_sel_i, //0 = rs1, 1 = uimm
 
     input [4:0] rs1_label_i,
@@ -25,18 +25,21 @@ module csr_unit (
     always @(*) begin
         case (op_i)
             OP_RW: begin
-                setfield = source;
-                clearfield = ~source;
+               setfield = source;
+               clearfield = ~source;
             end
             OP_RS: begin
-                setfield = source;
-                clearfield = 0;
+               setfield = source;
+               clearfield = 0;
             end
             OP_RC: begin
-                setfield = 0;
-                clearfield = source;
+               setfield = 0;
+               clearfield = source;
             end
-            default: ; //TO-DO: ECALL ~ EBREAK
+            default: begin
+               setfield= 32'bx;
+               clearfield = 32'bx;
+            end
         endcase
     end
 

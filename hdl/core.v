@@ -67,12 +67,11 @@ module core(
     wire [4:0] funct5_id_ex_o;
     wire [6:0] funct7_id_ex_o;
 
-    wire is_system_instr_id_ex_o;
     wire is_load_instr_id_ex_o;
     wire is_store_instr_id_ex_o;
     wire is_branch_instr_id_ex_o;
     wire is_jump_instr_id_ex_o;
-    wire [1:0] EX_op_id_ex_o;
+    wire [2:0] EX_op_id_ex_o;
     
     //*****************EX-MEM******************
     wire [31:0] alu_out_ex_mem_i; // for alu output
@@ -111,7 +110,8 @@ module core(
     wire [31:0] pc_mem_wb_o_4; 
 
     //************ tmp values *******************\\
-
+    wire mul_stall;
+    wire div_stall_core;
     reg data_cache_blocking_n_last;
     
     always @(posedge clk_i) begin
@@ -119,8 +119,9 @@ module core(
     end
 
     //tmp control signals
-    wire id_stall;
-    wire if_stall = id_stall | ~data_cache_blocking_n_last | ~data_cache_blocking_n_i;
+    wire load_stall;
+    wire id_stall = load_stall | mul_stall | div_stall_core ;
+    wire if_stall = load_stall | ~data_cache_blocking_n_last | ~data_cache_blocking_n_i | mul_stall | div_stall_core;
 
     wire [31:0] reg_wb_data_w;
     wire ins_busy_w;
@@ -145,7 +146,7 @@ module core(
      .pc_o(pc_if_id_o)
    );
     
-        
+   wire [31:0] INSTRUCTION_ID = {instruction_if_id_o, 2'b11};
    wire [31:2] u_id_pc_o;  
    assign pc_id_ex_o = {u_id_pc_o, 2'b00};   
    instruction_decode_stage u_id(
@@ -155,15 +156,13 @@ module core(
       .instr_i(instruction_if_id_o),
       .busywait(busy_w),
       .flush(PC_sel_w_ex_mem_o),
-      .stall(id_stall),
-      
+      .stall_id_i(id_stall),
+      .load_stall_o(load_stall),
       .rd_label_i(rd_mem_wb_o),
       .rd_data_i(reg_wb_data_w),
       .rd_enable_i(reg_wb_en_mem_wb_o),
-      
       .pc_i(pc_if_id_o),
-      .pc_id_ex_o(u_id_pc_o),
-        
+      .pc_id_ex_o(u_id_pc_o),        
       .rs1_value_id_ex_o(rs1_value_id_ex_o),
       .rs2_value_id_ex_o(rs2_value_id_ex_o),
       .imm_value_id_ex_o(imm_value_id_ex_o),
@@ -180,7 +179,6 @@ module core(
       .funct3_id_ex_o(funct3_id_ex_o),
       .funct5_id_ex_o(funct5_id_ex_o),
       .funct7_id_ex_o(funct7_id_ex_o),
-      .is_system_instr_id_ex_o(is_system_instr_id_ex_o),
       .is_load_instr_id_ex_o(is_load_instr_id_ex_o),
       .is_store_instr_id_ex_o(is_store_instr_id_ex_o),
       .is_branch_instr_id_ex_o(is_branch_instr_id_ex_o),
@@ -193,9 +191,7 @@ module core(
 
 
 
-    
-    //sonrasi icin EX asamasinin olusturulmasi
-   
+
    instruction_execution_stage u_ex(
        .clk_i(clk_i),
        .rst_i(rst_i),
@@ -240,8 +236,6 @@ module core(
        .funct7_ex_mem_i(funct7_id_ex_o),
        .funct7_ex_mem_o(funct7_ex_mem_o),
        
-       .is_system_instr_ex_mem_i(is_system_instr_id_ex_o),
-
        .is_load_instr_ex_mem_i(is_load_instr_id_ex_o),
        .is_load_instr_ex_mem_o(is_load_instr_ex_mem_o),
        
@@ -262,7 +256,9 @@ module core(
        .alu_op1_sel_ex_mem_i(alu_op1_sel_id_ex_o),
        .alu_op2_sel_ex_mem_i(alu_op2_sel_id_ex_o),
        .funct5_ex_mem_i(funct5_id_ex_o),
-       .EX_op_ex_mem_i(EX_op_id_ex_o)
+       .EX_op_ex_mem_i(EX_op_id_ex_o),
+       .mul_stall_o(mul_stall),
+       .div_stall_o(div_stall_core)
      );
     
 
@@ -305,12 +301,14 @@ module core(
         .out_o(pc_mem_wb_o_4) // cunku son muxta PC+4 var, su ana kadar sadece PC i ilettik biz, 4 ile toplayip yollamamiz lazim.
     );
 
-    mux #(
-        .DATA_WIDTH(32),    // Set the data width of each input to 32 bits
-        .NUM_INPUTS(4)      // Set the number of inputs to 4 (for a 4-to-1 MUX)
-    ) u_wb_mux (
-        .in_flat({pc_mem_wb_o_4, imm_mem_wb_o, rd_data_mem_wb_o, alu_out_mem_wb_o}), // Concatenate inputs for the mux
-        .select(wb_sel_mem_wb_o),    // Selection signal
-        .out(reg_wb_data_w)          // Output of the MUX
+    mux_4x1 #(
+      .DATA_WIDTH(32)
+    ) writeback_mux (
+      .in0(alu_out_mem_wb_o),
+      .in1(rd_data_mem_wb_o),
+      .in2(imm_mem_wb_o),
+      .in3(pc_mem_wb_o_4),
+      .select(wb_sel_mem_wb_o),    // Selection signal
+      .out(reg_wb_data_w)          // Output of the MUX
     );
 endmodule
