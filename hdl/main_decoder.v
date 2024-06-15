@@ -24,7 +24,8 @@ localparam [6:0] R_TYPE  = 7'b0110011,
                  JALR    = 7'b1100111,
                  JAL     = 7'b1101111,
                  AUIPC   = 7'b0010111,
-                 LUI     = 7'b0110111;
+                 LUI     = 7'b0110111,
+                 SYSTEM  = 7'b1110011;
 
 
 always @(opcode_i) begin 
@@ -39,7 +40,8 @@ always @(opcode_i) begin
         JALR   :  control_signals = 15'b1_11_0_1_0_0_1_0_100_000;
         LUI    :  control_signals = 15'b1_00_X_1_0_0_0_0_000_011;
         AUIPC  :  control_signals = 15'b1_00_1_1_0_0_0_0_000_000;
-        default:  control_signals = 15'bX_XX_X_X_X_X_X_X_XXX_0XX;
+        SYSTEM :  control_signals = 15'b1_00_X_X_0_0_0_0_101_100;
+        default:  control_signals = 15'bX_XX_X_X_X_X_X_X_XXX_XXX;
     endcase
 end
 
