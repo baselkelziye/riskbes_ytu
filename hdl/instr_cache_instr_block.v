@@ -20,16 +20,16 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module instr_cache_word_block #(
+module instr_cache_instr_block #(
    parameter ADDR_WIDTH = 3
 )(
    input clk_i,
    input rst_i,
    
    input [ADDR_WIDTH - 1 : 0] addr_i,
-   output reg [31:0] data_o,
+   output reg [31:2] instr_o,
   
-   input [31:0] flush_data_i,
+   input [31:2] flush_instr_i,
    input [WORD_COUNT - 1 : 0] flushing_n_i
 );
    genvar I;
@@ -37,17 +37,17 @@ module instr_cache_word_block #(
    localparam BUS_DATA_WIDTH_SHIFT = 4;
    localparam WORD_COUNT = 2 ** ADDR_WIDTH;
    
-   reg [31:0] words[0 : WORD_COUNT - 1];
+   reg [31:2] words[0 : WORD_COUNT - 1];
    
    always @(*) begin
-      data_o = words[addr_i];
+      instr_o = words[addr_i];
    end
    
    generate
       for(I = 0; I < WORD_COUNT; I = I + 1) begin
          always @(posedge clk_i) begin
             if(!flushing_n_i[I]) begin
-               words[I] <= flush_data_i;
+               words[I] <= flush_instr_i;
             end
          end
       end

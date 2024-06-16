@@ -29,11 +29,9 @@ module cpu #(
    localparam BUS_DATA_WIDTH = (2 ** BUS_DATA_WIDTH_SHIFT) * 8;
 
    wire [31:2] icache_address;
-   wire [31:0] icache_data;
+   wire [31:2] icache_instr;
    wire icache_blocking_n;
-   
-   wire [31:0] core_instr_data = icache_data;
-   
+
    wire [31:2] dcache_address;
    wire [31:0] dcache_data_r, dcache_data_w;
    wire dcache_blocking_n;
@@ -44,7 +42,7 @@ module cpu #(
       .clk_i(clk_i),
       .rst_i(rst_i),
       
-      .instr_cache_data_i(core_instr_data),
+      .instr_cache_instr_i(icache_instr),
       .instr_cache_address_o(icache_address),
       .instr_cache_blocking_n_i(icache_blocking_n),
       
@@ -96,7 +94,7 @@ module cpu #(
       .rst_i(rst_i),
    
       .address_i(icache_address[BUS_ADDRESS_WIDTH - 1 : 2]),
-      .data_o(icache_data),
+      .instr_o(icache_instr),
       
       .bus_addr_o(icache_bus_addr_o),
       .bus_data_i(bus_data_i),     

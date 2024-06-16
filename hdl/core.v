@@ -17,7 +17,7 @@ module core(
    input instr_cache_blocking_n_i,
    input data_cache_blocking_n_i,
    
-   input [31:0] instr_cache_data_i,
+   input [31:2] instr_cache_instr_i,
    input [31:0] data_cache_data_i,
    
    output [31:2] instr_cache_address_o,
@@ -135,7 +135,7 @@ module core(
      .clk_i(clk_i),
      .rst_i(rst_i),
      .cache_blocking_n_i(instr_cache_blocking_n_i),
-     .cache_data_i(instr_cache_data_i[31:2]),
+     .cache_data_i(instr_cache_instr_i),
      .cache_address_o(instr_cache_address_o),
      .ins_busywait_o(ins_busy_w),
 
