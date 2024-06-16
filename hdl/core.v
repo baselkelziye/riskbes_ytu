@@ -270,13 +270,15 @@ module core(
       .data_cache_blocking_n_i(data_cache_blocking_n_i),
       
       .data_cache_data_i(data_cache_data_i),
-      .op_type_i(read_write_sel_ex_mem_o),
+      .funct3_i(funct3_ex_mem_o),
       .reg_wb_en_i(reg_wb_en_ex_mem_o),
       .rd_label_i(rd_ex_mem_o),
       .alu_out_i(alu_out_ex_mem_o),
       .wb_sel_i(wb_sel_ex_mem_o),
       .imm_i(imm_ex_mem_o),
       .pc_i(pc_ex_mem_o),
+      .is_load_instruction_i(is_load_instr_ex_mem_o),
+      .is_store_instruction_i(is_store_instr_ex_mem_o),
       .is_memory_instruction_i(is_memory_instruction_ex_mem_o),
       .rs2_data_i(rs2_ex_mem_o),
       
