@@ -47,7 +47,7 @@ always @(*) begin
       SB_FUNCT3: core_normalized_data_o = {4{core_raw_data_i[7:0]}};
       SH_FUNCT3: core_normalized_data_o = {2{core_raw_data_i[15:0]}};
       SW_FUNCT3: core_normalized_data_o = core_raw_data_i;
-      default:   core_normalized_data_o = 'X;
+      default:   core_normalized_data_o = 32'hXXXXXXXX;
    endcase
 end
 
