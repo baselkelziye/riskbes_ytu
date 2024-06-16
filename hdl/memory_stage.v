@@ -28,7 +28,9 @@ module memory_stage(
    //input data_cache_blocking_n_last,
     
    input [31:0] data_cache_data_i,
-   input [3:0] op_type_i,
+   input is_load_instruction_i,
+   input is_store_instruction_i,
+   input [2:0] funct3_i,
    input reg_wb_en_i,
    input [4:0] rd_label_i,
    input [31:0] alu_out_i,
@@ -60,13 +62,14 @@ module memory_stage(
  
    wire [31:0] load_val_next;
    
-   cache_access_unit cau(
+   memory_access_unit mau(
       .clk_i(clk_i),
       .rst_i(rst_i),
       .addr_align_i(alu_out_i[1:0]),
       .core_raw_data_i(rs2_data_i),
       .cache_raw_data_i(data_cache_data_i),
-      .op_type_i(op_type_i),
+      .is_store_instruction_i(is_store_instruction_i),
+      .funct3_i(funct3_i),
       .write_en_o(data_cache_write_en_o),
       .core_normalized_data_o(data_cache_data_o),
       .cache_normalized_data_o(load_val_next)
