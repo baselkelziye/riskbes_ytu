@@ -162,7 +162,7 @@ async def mscratch_test(dut):
     await run_clock(dut, 10, 2)
     dut.rst_i.value = 0
     await load_code(dut, filepath + filename)
-    num_cycles = 400
+    num_cycles = 100
     await run_clock(dut, num_cycles, period_ns)
 
     register_file = get_register_file(dut)
@@ -177,3 +177,17 @@ async def mscratch_test(dut):
         else:
             dut._log.info(f"Register {reg} matches the expected value: {hex(dut_value)}")
 
+
+@cocotb.test()
+async def flush_test(dut):
+    filename = "flush_test.txt"
+    dut.rst_i.value = 1
+    await run_clock(dut, 10, 2)
+    dut.rst_i.value = 0
+    await load_code(dut, filepath + filename)
+    num_cycles = 100
+    await run_clock(dut, num_cycles, period_ns)
+
+    register_file = get_register_file(dut)
+
+    assert register_file[1] == 0xFFFF_FFFF
