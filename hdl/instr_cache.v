@@ -9,7 +9,7 @@ module instr_cache #(
    input rst_i,
 
    input [BUS_ADDRESS_WIDTH - 1 : 2] address_i, //İşlemcinin okuduğu adres
-   output [31:0] data_o, //İşlemciye giden buyruk
+   output [31:2] instr_o, //İşlemciye giden buyruk
    
    output [BUS_ADDRESS_WIDTH - 1 : BUS_DATA_WIDTH_SHIFT] bus_addr_o,
    input [BUS_DATA_WIDTH - 1 : 0] bus_data_i,
@@ -20,7 +20,7 @@ module instr_cache #(
    output blocking_n_o,
    output flushing_n_o
 );
-   genvar I;   
+   genvar I; 
    
    localparam BUS_DATA_WIDTH_SHIFT = 4;
    localparam BUS_DATA_WIDTH = (2 ** BUS_DATA_WIDTH_SHIFT) * 8;
@@ -107,7 +107,7 @@ module instr_cache #(
     
    localparam BLOCK_COUNT = 2 ** INDEX_WIDTH;
     
-   wire [31:0] block_data [0 : BLOCK_COUNT - 1];
+   wire [31:2] block_instr [0 : BLOCK_COUNT - 1];
    
    reg [TAG_WIDTH - 1 : 0] block_tag [0 : BLOCK_COUNT - 1];
    assign flush_tag = block_tag[flush_index];
@@ -118,16 +118,41 @@ module instr_cache #(
    generate
       for (I = 0; I < BLOCK_COUNT; I = I + 1) begin
          wire [QWORD_PER_BLOCK_COUNT - 1 : 0] fn = flush_index == I ? qword_flushing_n : {QWORD_PER_BLOCK_COUNT{1'b1}};
-      
-         instr_cache_qword_block #(
+
+         wire [31:2] flush_instr0, flush_instr1, flush_instr2, flush_instr3;
+
+         instr_validator iv0(
+            .data_i(bus_data_i[31:0]),
+            .instr_o(flush_instr0)
+         );
+
+         instr_validator iv1(
+            .data_i(bus_data_i[63:32]),
+            .instr_o(flush_instr1)
+         );
+
+         instr_validator iv2(
+            .data_i(bus_data_i[95:64]),
+            .instr_o(flush_instr2)
+         );
+
+         instr_validator iv3(
+            .data_i(bus_data_i[127:96]),
+            .instr_o(flush_instr3)
+         );
+
+         instr_cache_qinstr_block #(
             .ADDR_WIDTH(OFFSET_WIDTH)
          ) block (
             .clk_i(clk_i),
             .rst_i(rst_i),
             .addr_i(offset),
-            .data_o(block_data[I]),
+            .instr_o(block_instr[I]),
             .flushing_n_i(fn),
-            .flush_data_i(bus_data_i)
+            .flush_instr0_i(flush_instr0),
+            .flush_instr1_i(flush_instr1),
+            .flush_instr2_i(flush_instr2),
+            .flush_instr3_i(flush_instr3)
          );
          
          if (I != 0) begin
@@ -143,6 +168,6 @@ module instr_cache #(
    assign blocking_n_o = 
       (qword_flushing_n[offset[OFFSET_WIDTH - 1 : 2]] | (index != flush_index))
       & access_valid;
-   assign data_o = block_data[index];
+   assign instr_o = block_instr[index];
     
 endmodule

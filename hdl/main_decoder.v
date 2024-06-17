@@ -1,5 +1,5 @@
 module main_decoder(
-    input [6:0] opcode_i,
+    input [6:2] opcode_i,
     output wire reg_wr_en,
     output wire [1:0] wb_sel,
     output wire op1_sel,
@@ -16,16 +16,16 @@ module main_decoder(
 reg [14:0] control_signals;
 
 
-localparam [6:0] R_TYPE  = 7'b0110011,
-                 I_TYPE  = 7'b0010011,
-                 STORE   = 7'b0100011,
-                 LOAD    = 7'b0000011,
-                 BRANCH  = 7'b1100011,
-                 JALR    = 7'b1100111,
-                 JAL     = 7'b1101111,
-                 AUIPC   = 7'b0010111,
-                 LUI     = 7'b0110111,
-                 SYSTEM  = 7'b1110011;
+localparam [6:2] R_TYPE  = 5'b01100,
+                 I_TYPE  = 5'b00100,
+                 STORE   = 5'b01000,
+                 LOAD    = 5'b00000,
+                 BRANCH  = 5'b11000,
+                 JALR    = 5'b11001,
+                 JAL     = 5'b11011,
+                 AUIPC   = 5'b00101,
+                 LUI     = 5'b01101,
+                 SYSTEM  = 5'b11100;
 
 
 always @(opcode_i) begin 

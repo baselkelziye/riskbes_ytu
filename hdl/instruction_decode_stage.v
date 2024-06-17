@@ -98,7 +98,7 @@ module instruction_decode_stage(
    
    
    main_decoder u_main_decoder(
-      .opcode_i({instr_i[6:2], 2'b11}),
+      .opcode_i(instr_i[6:2]),
       .reg_wr_en(reg_wr_en),
       .wb_sel(wb_sel),
       .op1_sel(op1_sel),
