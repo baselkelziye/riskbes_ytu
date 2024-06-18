@@ -73,7 +73,6 @@ module instruction_execution_stage(
         input [31:0] rd_data_mem_wb_o,
         input alu_op1_sel_ex_mem_i,
         input alu_op2_sel_ex_mem_i,
-        input [4:0] funct5_ex_mem_i,
         input [2:0] EX_op_ex_mem_i,
         output wire mul_stall_o,
         output wire div_stall_o
@@ -98,6 +97,7 @@ module instruction_execution_stage(
         wire CSR_source_sel;
         wire [3:0] ALU_op;
         wire [4:0] BMU_op;
+        wire MDU_en;
         wire [2:0] MDU_op;
         wire [31:0] ALU_res, MDU_res, BMU_res;
         wire rs1_shift_sel, rs2_negate_sel;
@@ -216,13 +216,16 @@ module instruction_execution_stage(
     EX_Decoder u_EX_Decoder(
                    .EX_op (EX_op_ex_mem_i), 
                    .funct3(funct3_ex_mem_i),
-                   .funct5(funct5_ex_mem_i),
                    .funct7(funct7_ex_mem_i),
+                   .rd_label(rd_ex_mem_i),
+                   .rs1_label(rs1_label_ex_mem_i),
+                   .rs2_label(rs2_label_ex_mem_i),
                    .CSR_en(CSR_en),
                    .CSR_op(CSR_op),
                    .CSR_source_sel(CSR_source_sel),
                    .ALU_op(ALU_op),
                    .BMU_op(BMU_op),
+                   .MDU_en(MDU_en),
                    .MDU_op(MDU_op),
                    .chip_select(chip_select),
                    .rs1_shift_sel(rs1_shift_sel),
@@ -243,7 +246,7 @@ module instruction_execution_stage(
         .rst_i(rst_i),
         .alu1_i(alu_in1_forwarded_input),
         .alu2_i(alu_in2_forwarded_input),
-        .chip_select(chip_select),
+        .en_i(MDU_en),
         .MDU_op(MDU_op),
         .result_o(MDU_res),
         .mul_stall(mul_stall_o),

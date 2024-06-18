@@ -55,7 +55,6 @@ module instruction_decode_stage(
    output reg is_memory_instruction_id_ex_o,
    output reg is_load_instruction_id_ex_o,
    output reg [2:0] funct3_id_ex_o,
-   output reg [4:0] funct5_id_ex_o,
    output reg [6:0] funct7_id_ex_o,
    output reg is_load_instr_id_ex_o,
    output reg is_store_instr_id_ex_o,
@@ -82,9 +81,8 @@ module instruction_decode_stage(
    wire is_load_instr, is_store_instr;
    wire is_branch_instr, is_jump_instr;
    wire [2:0] funct3 = instr_i[14:12];
-   wire [4:0] funct5 = instr_i[24:20];
    wire [6:0] funct7 = instr_i[31:25];
-   wire [2:0] imm_src; //Delete other imm_sel from countrol unit
+   wire [2:0] imm_src;
    wire [2:0] EX_op;
    
    control_unit control_unit(
@@ -164,7 +162,6 @@ module instruction_decode_stage(
                is_memory_instruction_id_ex_o <= is_memory_instruction;
                is_load_instruction_id_ex_o <= is_load_instruction;
                funct3_id_ex_o <= funct3;
-               funct5_id_ex_o <= funct5;
                funct7_id_ex_o <= funct7;
                is_load_instr_id_ex_o <= is_load_instr;
                is_store_instr_id_ex_o <= is_store_instr;
@@ -192,7 +189,6 @@ module instruction_decode_stage(
                is_branch_instr_id_ex_o        <= 1'b0;
                is_jump_instr_id_ex_o          <= 0;
                EX_op_id_ex_o                  <= 2'b0;
-               funct5_id_ex_o                 <= 5'b0;         ;
             end
           end
        end else begin
@@ -216,7 +212,6 @@ module instruction_decode_stage(
          is_branch_instr_id_ex_o        <= 1'b0;
          is_jump_instr_id_ex_o          <= 0;
          EX_op_id_ex_o                  <= 2'b0;
-         funct5_id_ex_o                 <= 5'b0;
       end
     end
 endmodule

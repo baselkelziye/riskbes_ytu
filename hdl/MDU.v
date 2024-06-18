@@ -1,11 +1,10 @@
 module MDU(
             input clk_i,
             input rst_i,
-//            input mul_en,
+            input en_i,
             input [31:0]alu1_i,
             input [31:0]alu2_i,
             input [2:0] MDU_op,
-            input [1:0] chip_select,
             output [31:0]result_o,
             output reg mul_stall,
             output reg div_stall
@@ -77,7 +76,9 @@ assign div_en = (MDU_op == DIV_FUNCT3 || MDU_op == DIVU_FUNCT3 || MDU_op == REM_
         end else begin
             if(mul_en & !mul_done) begin
                 mul_stall = 1'b1;
+                div_stall = 1'b0;
             end else if ( div_en & !div_done) begin
+                mul_stall = 1'b0;
                 div_stall = 1'b1;
             end else begin
                 mul_stall = 1'b0;
@@ -90,7 +91,7 @@ assign div_en = (MDU_op == DIV_FUNCT3 || MDU_op == DIVU_FUNCT3 || MDU_op == REM_
 
 //---Process The Outputs---------------------------------------------------
     always @(*) begin
-        if(chip_select == 2'b01) begin
+        if(en_i) begin
             case(MDU_op)
                 MUL_FUNCT3   :  result_r =  product[31:0 ];           
                 MULH_FUNCT3  :  result_r =  product[63:32];          

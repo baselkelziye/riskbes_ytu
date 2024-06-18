@@ -64,7 +64,6 @@ module core(
     wire is_memory_instruction_id_ex_o;
     
     wire [2:0] funct3_id_ex_o;
-    wire [4:0] funct5_id_ex_o;
     wire [6:0] funct7_id_ex_o;
 
     wire is_load_instr_id_ex_o;
@@ -177,7 +176,6 @@ module core(
       .is_memory_instruction_id_ex_o(is_memory_instruction_id_ex_o),
       .is_load_instruction_id_ex_o(is_load_instruction_id_ex_o),
       .funct3_id_ex_o(funct3_id_ex_o),
-      .funct5_id_ex_o(funct5_id_ex_o),
       .funct7_id_ex_o(funct7_id_ex_o),
       .is_load_instr_id_ex_o(is_load_instr_id_ex_o),
       .is_store_instr_id_ex_o(is_store_instr_id_ex_o),
@@ -255,7 +253,6 @@ module core(
        .rd_data_mem_wb_o(rd_data_mem_wb_o),
        .alu_op1_sel_ex_mem_i(alu_op1_sel_id_ex_o),
        .alu_op2_sel_ex_mem_i(alu_op2_sel_id_ex_o),
-       .funct5_ex_mem_i(funct5_id_ex_o),
        .EX_op_ex_mem_i(EX_op_id_ex_o),
        .mul_stall_o(mul_stall),
        .div_stall_o(div_stall_core)
