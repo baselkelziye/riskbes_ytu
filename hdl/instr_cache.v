@@ -166,7 +166,7 @@ module instr_cache #(
    endgenerate
    
    assign blocking_n_o = 
-      (qword_flushing_n[offset[OFFSET_WIDTH - 1 : 2]] | (index != flush_index))
+      ((&qword_flushing_n) | qword_flushing_n[offset[OFFSET_WIDTH - 1 : 2]] | (index != flush_index))
       & access_valid;
    assign instr_o = block_instr[index];
     

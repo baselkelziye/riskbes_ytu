@@ -23,8 +23,7 @@
 module branch_jump(
     input [31:0]in1_i,
     input [31:0]in2_i,
-    input is_branch_instr,
-    input is_jump_instr,
+    input [1:0] branch_jump_op_i,
     input [2:0] funct3_i,
     output PC_sel_o
     );
@@ -43,7 +42,8 @@ module branch_jump(
 
     reg out_sel_r;
 
-
+    wire is_branch_instr = branch_jump_op_i[1];
+    wire is_jump_instr = branch_jump_op_i[0];
     
     always @* begin
       if(is_branch_instr) begin

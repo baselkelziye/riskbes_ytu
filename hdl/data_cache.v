@@ -243,7 +243,7 @@ module data_cache #(
     
    assign blocking_n = 
       !start_flushing //Tazeleme başlamak üzere değil
-      & (qword_flushing_n[offset[OFFSET_WIDTH - 1 : 2]] | (index != flush_index))  //Erişeceğimiz hücre taze
+      & ((&qword_flushing_n) | qword_flushing_n[offset[OFFSET_WIDTH - 1 : 2]] | (index != flush_index))  //Erişeceğimiz hücre taze
       & access_valid //Erişeceğimiz hücre geçerli
       & delayed_access_valid; //Bir önceki hücrenin erişimi tamamlanmaya hazır. 
    

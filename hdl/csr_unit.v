@@ -58,17 +58,80 @@ module csr_unit (
         .read_o(mscratch_read),
         .ack_o(mscratch_ack)
     );
+    
+    wire [31:0] mstatus_read;
+    wire mstatus_ack;
+    
+    //TODO: FS, XS and SD fields
+    csr_mstatus u_mstatus(
+        .clk_i(clk_i),
+        .rst_i(rst_i),
+        .en_i(en_i),
 
-    assign read_o = mscratch_read;
+        .addr_i(addr_i),
+        .set_i(setfield),
+        .clear_i(clearfield),
+
+        .read_o(mstatus_read),
+        .ack_o(mstatus_ack)
+    );
+    
+    wire mstatush_ack;
+    
+    csr_zero #(
+      .ADDRESS(12'h310)
+    ) u_mstatush (
+      .en_i(en_i),
+      .addr_i(addr_i),
+      .ack_o(mstatush_ack)
+    );
+    
+    wire [31:0] mepc_read;
+    wire mepc_ack;
+    
+    csr_mepc u_mepc(
+        .clk_i(clk_i),
+        .rst_i(rst_i),
+        .en_i(en_i),
+
+        .addr_i(addr_i),
+        .set_i(setfield),
+        .clear_i(clearfield),
+
+        .read_o(mepc_read),
+        .ack_o(mepc_ack)
+    );
+    
+    wire [31:0] mtvec_read;
+    wire mtvec_ack;
+    
+    csr_mtvec u_mtvec(
+        .clk_i(clk_i),
+        .rst_i(rst_i),
+        .en_i(en_i),
+
+        .addr_i(addr_i),
+        .set_i(setfield),
+        .clear_i(clearfield),
+
+        .read_o(mtvec_read),
+        .ack_o(mtvec_ack)
+    );
+    
+
+    assign read_o = mscratch_read | mstatus_read | mepc_read | mtvec_read;
 
     `ifdef DEBUG
 
        integer ack_count;
    
        always @(negedge clk_i) begin // DEBUG
-           ack_count = 0;
-   
-           ack_count = ack_count + mscratch_ack;
+           ack_count = 
+            mscratch_ack 
+            + mstatus_ack 
+            + mstatush_ack
+            + mepc_ack
+            + mtvec_ack;
    
            if((en_i == 0 && ack_count != 0) || (en_i == 1 && ack_count != 1)) begin
                $display("WARNING: Bad en_i and ack_count values: %d, %d",en_i , ack_count);
