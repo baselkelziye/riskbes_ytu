@@ -65,7 +65,7 @@ module instruction_fetch_stage(
    wire [1:0] branch_jump_op;
    wire [2:0] imm_src;
 
-   main_decoder u_main_decoder(
+   quick_decoder u_quick_decoder(
       .opcode_i(cache_data_i[6:2]),
       .branch_jump_op_o(branch_jump_op),
       .imm_src_o(imm_src)

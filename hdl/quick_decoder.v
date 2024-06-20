@@ -1,4 +1,4 @@
-module main_decoder(
+module quick_decoder(
     input [6:2] opcode_i,
 
     output [1:0] branch_jump_op_o,

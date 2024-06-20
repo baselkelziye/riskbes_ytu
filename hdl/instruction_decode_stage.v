@@ -95,7 +95,7 @@ module instruction_decode_stage(
    wire reg_wr_en;
    wire is_load_instruction;
 
-   EX_Decoder u_EX_Decoder(
+   full_decoder u_full_decoder(
       .instr_i(instr_i),
 
       .privjump_o(privjump),
