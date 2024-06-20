@@ -70,7 +70,18 @@ module core(
     wire is_store_instr_id_ex_o;
     wire is_branch_instr_id_ex_o;
     wire is_jump_instr_id_ex_o;
-    wire [2:0] EX_op_id_ex_o;
+    
+    wire [1:0] privjump_id_ex_o;
+    wire CSR_en_id_ex_o;
+    wire [1:0] CSR_op_id_ex_o;
+    wire CSR_source_sel_id_ex_o;
+    wire [3:0] ALU_op_id_ex_o;
+    wire [4:0] BMU_op_id_ex_o;
+    wire MDU_en_id_ex_o;
+    wire [2:0] MDU_op_id_ex_o;
+    wire [1:0] chip_select_id_ex_o;
+    wire rs1_shift_sel_id_ex_o;
+    wire rs2_negate_sel_id_ex_o;
     
     //*****************EX-MEM******************
     wire [31:0] alu_out_ex_mem_i; // for alu output
@@ -163,103 +174,117 @@ module core(
       .rd_data_i(reg_wb_data_w),
       .rd_enable_i(reg_wb_en_mem_wb_o),
       .pc_i(pc_if_id_o),
-      .pc_id_ex_o(u_id_pc_o),        
-      .rs1_value_id_ex_o(rs1_value_id_ex_o),
-      .rs2_value_id_ex_o(rs2_value_id_ex_o),
-      .imm_value_id_ex_o(imm_value_id_ex_o),
-      .alu_op1_sel_id_ex_o(alu_op1_sel_id_ex_o),
-      .alu_op2_sel_id_ex_o(alu_op2_sel_id_ex_o),
-      .read_write_sel_id_ex_o(read_write_sel_id_ex_o),
-      .wb_sel_id_ex_o(wb_sel_id_ex_o),
-      .reg_wb_en_id_ex_o(reg_wb_en_id_ex_o),
-      .rd_id_ex_o(rd_id_ex_o),
-      .rs1_label_id_ex_o(rs1_label_id_ex_o),
-      .rs2_label_id_ex_o(rs2_label_id_ex_o),
-      .is_memory_instruction_id_ex_o(is_memory_instruction_id_ex_o),
-      .is_load_instruction_id_ex_o(is_load_instruction_id_ex_o),
-      .funct3_id_ex_o(funct3_id_ex_o),
-      .funct7_id_ex_o(funct7_id_ex_o),
-      .is_load_instr_id_ex_o(is_load_instr_id_ex_o),
-      .is_store_instr_id_ex_o(is_store_instr_id_ex_o),
-      .is_branch_instr_id_ex_o(is_branch_instr_id_ex_o),
-      .is_jump_instr_id_ex_o(is_jump_instr_id_ex_o),
-      //.EX_op_id_ex_o(EX_op_id_ex_o)
-      .opcode_id_ex_o(opcode_id_ex_o)
+      .pc_o(u_id_pc_o),        
+      .rs1_value_o(rs1_value_id_ex_o),
+      .rs2_value_o(rs2_value_id_ex_o),
+      .imm_value_o(imm_value_id_ex_o),
+      .alu_op1_sel_o(alu_op1_sel_id_ex_o),
+      .alu_op2_sel_o(alu_op2_sel_id_ex_o),
+      .read_write_sel_o(read_write_sel_id_ex_o),
+      .wb_sel_o(wb_sel_id_ex_o),
+      .reg_wb_en_o(reg_wb_en_id_ex_o),
+      .rd_o(rd_id_ex_o),
+      .rs1_label_o(rs1_label_id_ex_o),
+      .rs2_label_o(rs2_label_id_ex_o),
+      .is_memory_instruction_o(is_memory_instruction_id_ex_o),
+      .is_load_instruction_o(is_load_instruction_id_ex_o),
+      .funct3_o(funct3_id_ex_o),
+      .funct7_o(funct7_id_ex_o),
+      .is_load_instr_o(is_load_instr_id_ex_o),
+      .is_store_instr_o(is_store_instr_id_ex_o),
+      .is_branch_instr_o(is_branch_instr_id_ex_o),
+      .is_jump_instr_o(is_jump_instr_id_ex_o),
+
+      .privjump_o(privjump_id_ex_o),
+      .CSR_en_o(CSR_en_id_ex_o),
+      .CSR_op_o(CSR_op_id_ex_o),
+      .CSR_source_sel_o(CSR_source_sel_id_ex_o),
+      .ALU_op_o(ALU_op_id_ex_o),
+      .BMU_op_o(BMU_op_id_ex_o),
+      .MDU_en_o(MDU_en_id_ex_o),
+      .MDU_op_o(MDU_op_id_ex_o),
+      .chip_select_o(chip_select_id_ex_o),
+      .rs1_shift_sel_o(rs1_shift_sel_id_ex_o),
+      .rs2_negate_sel_o(rs2_negate_sel_id_ex_o)
    );
-   
-   
-
-
-
-
 
    instruction_execution_stage u_ex(
-       .clk_i(clk_i),
-       .rst_i(rst_i),
-       .busywait(busy_w),
-       .alu_out_ex_mem_o(alu_out_ex_mem_o),//internal
-       
-       .reg_wb_en_ex_mem_i(reg_wb_en_id_ex_o),
-       .reg_wb_en_ex_mem_o(reg_wb_en_ex_mem_o),
-       
-       .rd_ex_mem_i(rd_id_ex_o), //in_id nin cikisini ver buraya
-       .rd_ex_mem_o(rd_ex_mem_o),
-       
-       
-       .imm_ex_mem_i(imm_value_id_ex_o),
-       .imm_ex_mem_o(imm_ex_mem_o),
-       
-       .pc_ex_mem_i(pc_id_ex_o),
-       .pc_ex_mem_o(pc_ex_mem_o),
-       
-       .wb_sel_ex_mem_i(wb_sel_id_ex_o),
-       .wb_sel_ex_mem_o(wb_sel_ex_mem_o),
-       
-       .rs1_label_ex_mem_i(rs1_label_id_ex_o), 
-       .rs1_label_ex_mem_o(rs1_label_ex_mem_o),
-       
-       .rs2_label_ex_mem_i(rs2_label_id_ex_o),
-       .rs2_label_ex_mem_o(rs2_label_ex_mem_o),
-       
-       .read_write_sel_ex_mem_i(read_write_sel_id_ex_o),
-       .read_write_sel_ex_mem_o(read_write_sel_ex_mem_o),
-       
-       .rs2_ex_mem_o(rs2_ex_mem_o),
-       
-       .is_memory_instruction_ex_mem_i(is_memory_instruction_id_ex_o),
-       .is_memory_instruction_ex_mem_o(is_memory_instruction_ex_mem_o),
-       
-       .PC_sel_w_ex_mem_o(PC_sel_w_ex_mem_o),
-    
-       .funct3_ex_mem_i(funct3_id_ex_o),
-       .funct3_ex_mem_o(funct3_ex_mem_o),
-       
-       .funct7_ex_mem_i(funct7_id_ex_o),
-       .funct7_ex_mem_o(funct7_ex_mem_o),
-       
-       .is_load_instr_ex_mem_i(is_load_instr_id_ex_o),
-       .is_load_instr_ex_mem_o(is_load_instr_ex_mem_o),
-       
-       .is_store_instr_ex_mem_i(is_store_instr_id_ex_o), 
-       .is_store_instr_ex_mem_o(is_store_instr_ex_mem_o),
-       
-       //inputs for the EX stage from prev
-       .is_branch_instr_i(is_branch_instr_id_ex_o),
-       .is_jump_instr_i(is_jump_instr_id_ex_o),
-       
-       .rd_mem_wb_o(rd_mem_wb_o),
-       .reg_wb_en_mem_wb_o(reg_wb_en_mem_wb_o),
-       .is_memory_instruction_mem_wb_o(is_memory_instruction_mem_wb_o),
-       .rs1_value_ex_mem_i(rs1_value_id_ex_o),
-       .rs2_value_ex_mem_i(rs2_value_id_ex_o),
-       .alu_out_mem_wb_o(alu_out_mem_wb_o),
-       .rd_data_mem_wb_o(rd_data_mem_wb_o),
-       .alu_op1_sel_ex_mem_i(alu_op1_sel_id_ex_o),
-       .alu_op2_sel_ex_mem_i(alu_op2_sel_id_ex_o),
-       .opcode_ex_mem_i(opcode_id_ex_o),
-       //.EX_op_ex_mem_i(EX_op_id_ex_o),
-       .mul_stall_o(mul_stall),
-       .div_stall_o(div_stall_core)
+      .clk_i(clk_i),
+      .rst_i(rst_i),
+      .busywait(busy_w),
+      .alu_out_ex_mem_o(alu_out_ex_mem_o),//internal
+      
+      .reg_wb_en_ex_mem_i(reg_wb_en_id_ex_o),
+      .reg_wb_en_ex_mem_o(reg_wb_en_ex_mem_o),
+      
+      .rd_ex_mem_i(rd_id_ex_o), //in_id nin cikisini ver buraya
+      .rd_ex_mem_o(rd_ex_mem_o),
+      
+      
+      .imm_ex_mem_i(imm_value_id_ex_o),
+      .imm_ex_mem_o(imm_ex_mem_o),
+      
+      .pc_ex_mem_i(pc_id_ex_o),
+      .pc_ex_mem_o(pc_ex_mem_o),
+      
+      .wb_sel_ex_mem_i(wb_sel_id_ex_o),
+      .wb_sel_ex_mem_o(wb_sel_ex_mem_o),
+      
+      .rs1_label_ex_mem_i(rs1_label_id_ex_o), 
+      .rs1_label_ex_mem_o(rs1_label_ex_mem_o),
+      
+      .rs2_label_ex_mem_i(rs2_label_id_ex_o),
+      .rs2_label_ex_mem_o(rs2_label_ex_mem_o),
+      
+      .read_write_sel_ex_mem_i(read_write_sel_id_ex_o),
+      .read_write_sel_ex_mem_o(read_write_sel_ex_mem_o),
+      
+      .rs2_ex_mem_o(rs2_ex_mem_o),
+      
+      .is_memory_instruction_ex_mem_i(is_memory_instruction_id_ex_o),
+      .is_memory_instruction_ex_mem_o(is_memory_instruction_ex_mem_o),
+      
+      .PC_sel_w_ex_mem_o(PC_sel_w_ex_mem_o),
+  
+      .funct3_ex_mem_i(funct3_id_ex_o),
+      .funct3_ex_mem_o(funct3_ex_mem_o),
+      
+      .funct7_ex_mem_i(funct7_id_ex_o),
+      .funct7_ex_mem_o(funct7_ex_mem_o),
+      
+      .is_load_instr_ex_mem_i(is_load_instr_id_ex_o),
+      .is_load_instr_ex_mem_o(is_load_instr_ex_mem_o),
+      
+      .is_store_instr_ex_mem_i(is_store_instr_id_ex_o), 
+      .is_store_instr_ex_mem_o(is_store_instr_ex_mem_o),
+      
+      //inputs for the EX stage from prev
+      .is_branch_instr_i(is_branch_instr_id_ex_o),
+      .is_jump_instr_i(is_jump_instr_id_ex_o),
+      
+      .rd_mem_wb_o(rd_mem_wb_o),
+      .reg_wb_en_mem_wb_o(reg_wb_en_mem_wb_o),
+      .is_memory_instruction_mem_wb_o(is_memory_instruction_mem_wb_o),
+      .rs1_value_ex_mem_i(rs1_value_id_ex_o),
+      .rs2_value_ex_mem_i(rs2_value_id_ex_o),
+      .alu_out_mem_wb_o(alu_out_mem_wb_o),
+      .rd_data_mem_wb_o(rd_data_mem_wb_o),
+      .alu_op1_sel_ex_mem_i(alu_op1_sel_id_ex_o),
+      .alu_op2_sel_ex_mem_i(alu_op2_sel_id_ex_o),
+      .mul_stall_o(mul_stall),
+      .div_stall_o(div_stall_core),
+
+      .privjump_i(privjump_id_ex_o),
+      .CSR_en_i(CSR_en_id_ex_o),
+      .CSR_op_i(CSR_op_id_ex_o),
+      .CSR_source_sel_i(CSR_source_sel_id_ex_o),
+      .ALU_op_i(ALU_op_id_ex_o),
+      .BMU_op_i(BMU_op_id_ex_o),
+      .MDU_en_i(MDU_en_id_ex_o),
+      .MDU_op_i(MDU_op_id_ex_o),
+      .chip_select_i(chip_select_id_ex_o),
+      .rs1_shift_sel_i(rs1_shift_sel_id_ex_o),
+      .rs2_negate_sel_i(rs2_negate_sel_id_ex_o)
      );
     
 

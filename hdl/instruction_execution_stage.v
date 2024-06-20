@@ -40,6 +40,19 @@ module instruction_execution_stage(
         input [6:0] funct7_ex_mem_i,
         input is_load_instr_ex_mem_i, 
         input is_store_instr_ex_mem_i,    
+
+        input [1:0] privjump_i,
+        input CSR_en_i,
+        input [1:0] CSR_op_i,
+        input CSR_source_sel_i,
+        input [3:0] ALU_op_i,
+        input [4:0] BMU_op_i,
+        input MDU_en_i,
+        input [2:0] MDU_op_i,
+        input [1:0] chip_select_i,
+        input rs1_shift_sel_i,
+        input rs2_negate_sel_i,
+
         output reg [31:2] branch_target_o,
         output reg reg_wb_en_ex_mem_o,
         output reg [4:0] rd_ex_mem_o,
@@ -74,7 +87,6 @@ module instruction_execution_stage(
         input [31:0] rd_data_mem_wb_o,
         input alu_op1_sel_ex_mem_i,
         input alu_op2_sel_ex_mem_i,
-        input [6:2] opcode_ex_mem_i,
         output wire mul_stall_o,
         output wire div_stall_o
         );
@@ -91,19 +103,19 @@ module instruction_execution_stage(
         wire [1:0]  forwardB;
         wire [31:0] rs1_tmp;
         wire [31:0] shifted_rs1;
-            //EX_Decoder sinyalleri, Sonra yukariya EX Stage sinyallerin altina Aynen tasinsin
-        wire [1:0] chip_select;
-        wire CSR_en;
-        wire [1:0] CSR_op;
-        wire CSR_source_sel;
-        wire [1:0] privjump;
-        wire [3:0] ALU_op;
-        wire [4:0] BMU_op;
-        wire MDU_en;
-        wire [2:0] MDU_op;
-        wire [31:0] ALU_res, MDU_res, BMU_res;
-        wire rs1_shift_sel, rs2_negate_sel;
+
+        wire [1:0] chip_select_i;
+        wire CSR_en_i;
+        wire [1:0] CSR_op_i;
+        wire CSR_source_sel_i;
+        wire [1:0] privjump_i;
+        wire [3:0] ALU_op_i;
+        wire [4:0] BMU_op_i;
+        wire MDU_en_i;
+        wire [2:0] MDU_op_i;
+        wire rs1_shift_sel_i, rs2_negate_sel_i;
         
+        wire [31:0] ALU_res, MDU_res, BMU_res;
         
         wire [31:0] alu_in1_forwarded_input;
         wire [31:0] alu_in2_forwarded_input;
@@ -176,10 +188,10 @@ module instruction_execution_stage(
     //mux for Shifting RS1
     mux_2x1 #(
         .DATA_WIDTH(32)
-    ) u_rs1_shift_sel_mux(
+    ) u_rs1_shift_sel_i_mux(
         .in0(rs1_tmp),
         .in1(shifted_rs1),
-        .select(rs1_shift_sel), 
+        .select(rs1_shift_sel_i), 
         .out(alu_in1_forwarded_input)
     );
 
@@ -207,40 +219,18 @@ module instruction_execution_stage(
 
     mux_2x1 #(
         .DATA_WIDTH(32)
-    ) u_rs2_negate_sel_mux(
+    ) u_rs2_negate_sel_i_mux(
         .in0(rs2_tmp),
         .in1(~rs2_tmp),
-        .select(rs2_negate_sel),
+        .select(rs2_negate_sel_i),
         .out(alu_in2_forwarded_input)
     );
-
-    
-    EX_Decoder u_EX_Decoder(
-                   .opcode(opcode_ex_mem_i), 
-                   .funct3(funct3_ex_mem_i),
-                   .funct7(funct7_ex_mem_i),
-                   .rd_label(rd_ex_mem_i),
-                   .rs1_label(rs1_label_ex_mem_i),
-                   .rs2_label(rs2_label_ex_mem_i),
-                   .privjump(privjump),
-                   .CSR_en(CSR_en),
-                   .CSR_op(CSR_op),
-                   .CSR_source_sel(CSR_source_sel),
-                   .ALU_op(ALU_op),
-                   .BMU_op(BMU_op),
-                   .MDU_en(MDU_en),
-                   .MDU_op(MDU_op),
-                   .chip_select(chip_select),
-                   .rs1_shift_sel(rs1_shift_sel),
-                   .rs2_negate_sel(rs2_negate_sel)
-    );
-    
     
     alu u_alu(
         .alu1_i(alu_in1_forwarded_input),  //bunlar anlik cikis oldugu icin pipeline'a girmelerine gerek yok.
         .alu2_i(alu_in2_forwarded_input),
-        .chip_select(chip_select),
-        .alu_op_i(ALU_op),
+        .chip_select(chip_select_i),
+        .alu_op_i(ALU_op_i),
         .result_o(ALU_res)
     );
 
@@ -249,8 +239,8 @@ module instruction_execution_stage(
         .rst_i(rst_i),
         .alu1_i(alu_in1_forwarded_input),
         .alu2_i(alu_in2_forwarded_input),
-        .en_i(MDU_en),
-        .MDU_op(MDU_op),
+        .en_i(MDU_en_i),
+        .MDU_op(MDU_op_i),
         .result_o(MDU_res),
         .mul_stall(mul_stall_o),
         .div_stall(div_stall_o)
@@ -259,7 +249,7 @@ module instruction_execution_stage(
     BMU u_BMU(
         .rs1_value_i(alu_in1_forwarded_input),
         .rs2_value_i(alu_in2_forwarded_input),
-        .BMU_opcode_i(BMU_op),
+        .BMU_opcode_i(BMU_op_i),
         .BMU_result_o(BMU_res)
     );
     
@@ -270,9 +260,9 @@ module instruction_execution_stage(
       .clk_i(clk_i),
       .rst_i(rst_i),
       
-      .en_i(CSR_en),
-      .op_i(CSR_op),
-      .source_sel_i(CSR_source_sel),
+      .en_i(CSR_en_i),
+      .op_i(CSR_op_i),
+      .source_sel_i(CSR_source_sel_i),
       
       .rs1_label_i(rs1_label_ex_mem_i),
       .rs1_value_i(alu_in1_w), //Most recent RS1 value
@@ -289,7 +279,7 @@ module instruction_execution_stage(
        .in1(MDU_res),        // X1
        .in2(BMU_res),   // X2
        .in3(CSR_res),   // X3
-       .select(chip_select),
+       .select(chip_select_i),
        .out(alu_out_ex_mem_i)
     );
 

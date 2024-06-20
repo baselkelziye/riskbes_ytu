@@ -36,33 +36,45 @@ module instruction_decode_stage(
    
    output load_stall_o,
    
-   output reg [31:2] pc_id_ex_o,
+   output reg [31:2] pc_o,
     
-   output reg [31:0] rs1_value_id_ex_o,
-   output reg [31:0] rs2_value_id_ex_o,  
-   
-   output reg [31:0] imm_value_id_ex_o,      
+   output reg [31:0] rs1_value_o,
+   output reg [31:0] rs2_value_o,  
+   output reg [31:0] imm_value_o,      
   
-   output reg alu_op1_sel_id_ex_o,
-   output reg alu_op2_sel_id_ex_o,
-   output reg [3:0] read_write_sel_id_ex_o,
-   output reg [1:0] wb_sel_id_ex_o,
-   output reg reg_wb_en_id_ex_o,
-   output reg [4:0] rd_id_ex_o,
-   output reg [4:0] rs1_label_id_ex_o,
-   output reg [4:0] rs2_label_id_ex_o,   
-   output reg [6:2] opcode_id_ex_o,  
-   output reg is_memory_instruction_id_ex_o,
-   output reg is_load_instruction_id_ex_o,
-   output reg [2:0] funct3_id_ex_o,
-   output reg [6:0] funct7_id_ex_o,
-   output reg is_load_instr_id_ex_o,
-   output reg is_store_instr_id_ex_o,
-   output reg is_branch_instr_id_ex_o,
-   output reg is_jump_instr_id_ex_o,
-   output reg [2:0] EX_op_id_ex_o
+   output reg alu_op1_sel_o,
+   output reg alu_op2_sel_o,
+   output reg [3:0] read_write_sel_o,
+   output reg [1:0] wb_sel_o,
+   output reg reg_wb_en_o,
+   output reg [4:0] rd_o,
+   output reg [4:0] rs1_label_o,
+   output reg [4:0] rs2_label_o,   
+   output reg is_memory_instruction_o,
+   output reg is_load_instruction_o,
+   output reg is_load_instr_o,
+   output reg is_store_instr_o,
+   output reg is_branch_instr_o,
+   output reg is_jump_instr_o,
 
+   output reg [2:0] funct3_o,
+   output reg [6:0] funct7_o,
+
+   output reg [1:0] privjump_o,
+   output reg CSR_en_o,
+   output reg [1:0] CSR_op_o,
+   output reg CSR_source_sel_o,
+   output reg [3:0] ALU_op_o ,
+   output reg [4:0] BMU_op_o ,
+   output reg MDU_en_o,
+   output reg [2:0] MDU_op_o ,
+   output reg [1:0] chip_select_o,
+   output reg rs1_shift_sel_o,
+   output reg rs2_negate_sel_o
 );
+   wire [6:2] opcode = instr_i[6:2];
+   wire [2:0] funct3 = instr_i[14:12];
+   wire [6:0] funct7 = instr_i[31:25];
    wire [4:0] rd_label = instr_i[11:7];
    wire [4:0] rs1_label = instr_i[19:15];
    wire [4:0] rs2_label = instr_i[24:20];
@@ -80,10 +92,21 @@ module instruction_decode_stage(
    //New Main Decoder Signals
    wire is_load_instr, is_store_instr;
    wire is_branch_instr, is_jump_instr;
-   wire [2:0] funct3 = instr_i[14:12];
-   wire [6:0] funct7 = instr_i[31:25];
    wire [2:0] imm_src;
    wire [2:0] EX_op;
+
+   //EX_Decoder sinyalleri, Sonra yukariya EX Stage sinyallerin altina Aynen tasinsin
+   wire [1:0] chip_select;
+   wire CSR_en;
+   wire [1:0] CSR_op;
+   wire CSR_source_sel;
+   wire [1:0] privjump;
+   wire [3:0] ALU_op;
+   wire [4:0] BMU_op;
+   wire MDU_en;
+   wire [2:0] MDU_op;
+   wire [31:0] ALU_res, MDU_res, BMU_res;
+   wire rs1_shift_sel, rs2_negate_sel;
    
    control_unit control_unit(
       .opcode_i({instr_i[6:2], 2'b11}),
@@ -93,7 +116,6 @@ module instruction_decode_stage(
       .is_memory_instruction_o(is_memory_instruction),
       .is_load_instruction(is_load_instruction) 
    );
-   
    
    main_decoder u_main_decoder(
       .opcode_i(instr_i[6:2]),
@@ -108,7 +130,23 @@ module instruction_decode_stage(
       .imm_src(imm_src),
       .EX_op(EX_op)
       );
-      
+
+   EX_Decoder u_EX_Decoder(
+      .instr_i(instr_i),
+
+      .privjump_o(privjump),
+      .CSR_en_o(CSR_en),
+      .CSR_op_o(CSR_op),
+      .CSR_source_sel_o(CSR_source_sel),
+      .ALU_op_o(ALU_op),
+      .BMU_op_o(BMU_op),
+      .MDU_en_o(MDU_en),
+      .MDU_op_o(MDU_op),
+      .chip_select_o(chip_select),
+      .rs1_shift_sel_o(rs1_shift_sel),
+      .rs2_negate_sel_o(rs2_negate_sel)
+   );      
+
    wire [31:0] rs1_value, rs2_value;
    //Yazmaclarin durdugu yer
    regfile u_regfile
@@ -127,91 +165,122 @@ module instruction_decode_stage(
        // Load Data Hazard durumlarindaki Pipeline'i stall etmek icin
    hazard_detection_unit hazard_detection_unit
    (
-       .is_load_instruction(is_load_instruction_id_ex_o), // EX asamasinda LOAD islemi var
-       .rd_label_id_ex_o(rd_id_ex_o), // EX asamasinda RD
-       .rs1_label_if_id_o(rs1_label), // ID rs1 numarasi
-       .rs2_label_if_id_o(rs2_label), // ID rs2 numarasi
-       .stall(load_stall_o)  // cikis stall sinyali
+       .is_load_instruction_ex_i(is_load_instruction_o), // EX asamasinda LOAD islemi var
+       .rd_label_ex_i(rd_o), // EX asamasinda RD
+       .rs1_label_id_i(rs1_label), // ID rs1 numarasi
+       .rs2_label_id_i(rs2_label), // ID rs2 numarasi
+
+       .stall_o(load_stall_o)  // cikis stall sinyali
    );
    
    wire [31:0] imm;
    
    //Anlik genisletme birimi (umutun ara raporuna bakilmali)
-    imm_gen u_imm_gen(
-        .instr_i(instr_i[31:7]),
-        .imm_src(imm_src),
-        .imm_o(imm)
-    );                   
+   imm_gen u_imm_gen(
+      .instr_i(instr_i[31:7]),
+      .imm_src(imm_src),
+      .imm_o(imm)
+   );                   
     
-    always @(posedge clk_i)begin
+   always @(posedge clk_i)begin
       if(!rst_i && !flush) begin
          if(!busywait) begin
             if(!stall_id_i)begin
-               pc_id_ex_o  <= pc_i;
-               rs1_value_id_ex_o <= rs1_value;
-               rs2_value_id_ex_o <= rs2_value;
-               imm_value_id_ex_o <= imm; 
-               alu_op1_sel_id_ex_o <= op1_sel;
-               alu_op2_sel_id_ex_o <= op2_sel;
-               read_write_sel_id_ex_o <= read_write;
-               wb_sel_id_ex_o <= wb_sel;
-               reg_wb_en_id_ex_o <= reg_wr_en;  
-               rd_id_ex_o <= rd_label;
-               rs1_label_id_ex_o <= rs1_label;
-               rs2_label_id_ex_o <= rs2_label;
-               is_memory_instruction_id_ex_o <= is_memory_instruction;
-               is_load_instruction_id_ex_o <= is_load_instruction;
-               funct3_id_ex_o <= funct3;
-               funct7_id_ex_o <= funct7;
-               is_load_instr_id_ex_o <= is_load_instr;
-               is_store_instr_id_ex_o <= is_store_instr;
-               is_branch_instr_id_ex_o <= is_branch_instr;
-               is_jump_instr_id_ex_o <= is_jump_instr;
-               opcode_id_ex_o <= instr_i[6:2];
+               pc_o  <= pc_i;
+               rs1_value_o <= rs1_value;
+               rs2_value_o <= rs2_value;
+               imm_value_o <= imm; 
+               alu_op1_sel_o <= op1_sel;
+               alu_op2_sel_o <= op2_sel;
+               read_write_sel_o <= read_write;
+               wb_sel_o <= wb_sel;
+               reg_wb_en_o <= reg_wr_en;  
+               rd_o <= rd_label;
+               rs1_label_o <= rs1_label;
+               rs2_label_o <= rs2_label;
+               is_memory_instruction_o <= is_memory_instruction;
+               is_load_instruction_o <= is_load_instruction;
+               funct3_o <= funct3;
+               funct7_o <= funct7;
+               is_load_instr_o <= is_load_instr;
+               is_store_instr_o <= is_store_instr;
+               is_branch_instr_o <= is_branch_instr;
+               is_jump_instr_o <= is_jump_instr;
+               privjump_o <= privjump;
+               CSR_en_o <= CSR_en;
+               CSR_op_o <= CSR_op;
+               CSR_source_sel_o <= CSR_source_sel;
+               ALU_op_o <= ALU_op;
+               BMU_op_o <= BMU_op;
+               MDU_en_o <= MDU_en;
+               MDU_op_o <= MDU_op;
+               chip_select_o <= chip_select;
+               rs1_shift_sel_o <= rs1_shift_sel;
+               rs2_negate_sel_o <= rs2_negate_sel;
             end else if(load_stall_o) begin
-               pc_id_ex_o                     <= 30'd0;
-               rs1_value_id_ex_o              <= 32'd0;
-               rs2_value_id_ex_o              <= 32'd0;
-               imm_value_id_ex_o              <= 32'd0;
-               alu_op1_sel_id_ex_o            <= 0;
-               alu_op2_sel_id_ex_o            <= 0;
-               read_write_sel_id_ex_o         <= 4'd0;
-               wb_sel_id_ex_o                 <= 2'd0;
-               reg_wb_en_id_ex_o              <= 0;
-               rd_id_ex_o                     <= 5'd0;
-               rs1_label_id_ex_o              <= 5'd0;
-               is_memory_instruction_id_ex_o  <= 1'b0;
-               is_load_instruction_id_ex_o    <= 1'b0;
-               funct3_id_ex_o                 <= 3'b0;
-               funct7_id_ex_o                 <= 7'b0;
-               is_load_instr_id_ex_o          <= 1'b0; 
-               is_store_instr_id_ex_o         <= 1'b0;
-               is_branch_instr_id_ex_o        <= 1'b0;
-               is_jump_instr_id_ex_o          <= 0;
-               opcode_id_ex_o                 <= 5'b0;
+               pc_o                     <= 0;
+               rs1_value_o              <= 0;
+               rs2_value_o              <= 0;
+               imm_value_o              <= 0;
+               alu_op1_sel_o            <= 0;
+               alu_op2_sel_o            <= 0;
+               read_write_sel_o         <= 0;
+               wb_sel_o                 <= 0;
+               reg_wb_en_o              <= 0;
+               rd_o                     <= 0;
+               rs1_label_o              <= 0;
+               is_memory_instruction_o  <= 0;
+               is_load_instruction_o    <= 0;
+               funct3_o                 <= 0;
+               funct7_o                 <= 0;
+               is_load_instr_o          <= 0; 
+               is_store_instr_o         <= 0;
+               is_branch_instr_o        <= 0;
+               is_jump_instr_o          <= 0;
+               privjump_o               <= 0;
+               CSR_en_o                 <= 0;
+               CSR_op_o                 <= 0;
+               CSR_source_sel_o         <= 0;
+               ALU_op_o                 <= 0;
+               BMU_op_o                 <= 0;
+               MDU_en_o                 <= 0;
+               MDU_op_o                 <= 0;
+               chip_select_o            <= 0;
+               rs1_shift_sel_o          <= 0;
+               rs2_negate_sel_o         <= 0;
             end
           end
-       end else begin
-         pc_id_ex_o                     <= 30'd0;
-         rs1_value_id_ex_o              <= 32'd0;
-         rs2_value_id_ex_o              <= 32'd0;
-         imm_value_id_ex_o              <= 32'd0;
-         alu_op1_sel_id_ex_o            <= 0;
-         alu_op2_sel_id_ex_o            <= 0;
-         read_write_sel_id_ex_o         <= 4'd0;
-         wb_sel_id_ex_o                 <= 2'd0;
-         reg_wb_en_id_ex_o              <= 0;
-         rd_id_ex_o                     <= 5'd0;
-         rs1_label_id_ex_o              <= 5'd0;
-         is_memory_instruction_id_ex_o  <= 1'b0;
-         is_load_instruction_id_ex_o    <= 1'b0;
-         funct3_id_ex_o                 <= 3'b0;
-         funct7_id_ex_o                 <= 7'b0;
-         is_load_instr_id_ex_o          <= 1'b0; 
-         is_store_instr_id_ex_o         <= 1'b0;
-         is_branch_instr_id_ex_o        <= 1'b0;
-         is_jump_instr_id_ex_o          <= 0;
-         opcode_id_ex_o                 <= 5'b0;
+      end else begin
+         pc_o                     <= 0;
+         rs1_value_o              <= 0;
+         rs2_value_o              <= 0;
+         imm_value_o              <= 0;
+         alu_op1_sel_o            <= 0;
+         alu_op2_sel_o            <= 0;
+         read_write_sel_o         <= 0;
+         wb_sel_o                 <= 0;
+         reg_wb_en_o              <= 0;
+         rd_o                     <= 0;
+         rs1_label_o              <= 0;
+         is_memory_instruction_o  <= 0;
+         is_load_instruction_o    <= 0;
+         funct3_o                 <= 0;
+         funct7_o                 <= 0;
+         is_load_instr_o          <= 0; 
+         is_store_instr_o         <= 0;
+         is_branch_instr_o        <= 0;
+         is_jump_instr_o          <= 0;
+         privjump_o               <= 0;
+         CSR_en_o                 <= 0;
+         CSR_op_o                 <= 0;
+         CSR_source_sel_o         <= 0;
+         ALU_op_o                 <= 0;
+         BMU_op_o                 <= 0;
+         MDU_en_o                 <= 0;
+         MDU_op_o                 <= 0;
+         chip_select_o            <= 0;
+         rs1_shift_sel_o          <= 0;
+         rs2_negate_sel_o         <= 0;
       end
-    end
+   end
 endmodule
