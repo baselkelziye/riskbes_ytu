@@ -34,11 +34,16 @@ module instruction_fetch_stage(
    input [31:1] branch_pc,
    
    output reg [31:2] instr_o,
-   output reg [31:2] pc_o
+   output reg [31:2] pc_o,
+
+   output reg [1:0] branch_jump_op_o,
+   output reg [2:0] imm_src_o
 );
    
    localparam FETCH_WIDTH = 29;
    localparam [31:2] INSTR_NOP = 30'b000000000000000000000000000100;
+   localparam [1:0] BRANCH_JUMP_NOP = 2'b00;
+   localparam [2:0] IMM_SRC_NOP = 3'bXXX;
    
    reg [FETCH_WIDTH - 1:0] fetch_counter;
 
@@ -57,23 +62,44 @@ module instruction_fetch_stage(
        .carry_o(fetch_counter_carry)
    );
 
+   wire [1:0] branch_jump_op;
+   wire [2:0] imm_src;
+
+   main_decoder u_main_decoder(
+      .opcode_i(cache_data_i[6:2]),
+      .branch_jump_op_o(branch_jump_op),
+      .imm_src_o(imm_src)
+   );
+
    always @(posedge clk_i) begin
       if(!rst_i) begin
          if(!stall_i) begin
             if(branching) begin
                fetch_counter <= branch_fetch_counter;
+
                instr_o <= INSTR_NOP;
+               branch_jump_op_o <= BRANCH_JUMP_NOP;
+               imm_src_o <= IMM_SRC_NOP;
             end else if(cache_blocking_n_i) begin
                fetch_counter <= fetch_counter_next;
+
                instr_o <= cache_data_i;
+               branch_jump_op_o <= branch_jump_op;
+               imm_src_o <= imm_src;
+
                pc_o <= fetch_counter;
             end else begin
                instr_o <= INSTR_NOP;
+               branch_jump_op_o <= branch_jump_op;
+               imm_src_o <= imm_src;
             end
          end
       end else begin
          fetch_counter <= {FETCH_WIDTH{1'b0}};
+
          instr_o <= INSTR_NOP;
+         branch_jump_op_o <= BRANCH_JUMP_NOP;
+         imm_src_o <= IMM_SRC_NOP;
       end
    end
 

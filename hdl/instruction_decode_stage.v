@@ -24,6 +24,9 @@ module instruction_decode_stage(
    input clk_i, rst_i,
 
    input [31:2] instr_i,
+   input [1:0] branch_jump_op_i,
+   input [2:0] imm_src_i,
+
    input busywait,
    input flush,
    
@@ -73,10 +76,6 @@ module instruction_decode_stage(
    wire [4:0] rs1_label = instr_i[19:15];
    wire [4:0] rs2_label = instr_i[24:20];
 
-   //New Main Decoder Signals
-   wire [1:0] branch_jump_op;
-   wire [2:0] imm_src;
-
    //EX_Decoder sinyalleri, Sonra yukariya EX Stage sinyallerin altina Aynen tasinsin
    wire [1:0] chip_select;
    wire CSR_en;
@@ -95,12 +94,6 @@ module instruction_decode_stage(
    wire [1:0] wb_sel;
    wire reg_wr_en;
    wire is_load_instruction;
-   
-   main_decoder u_main_decoder(
-      .opcode_i(instr_i[6:2]),
-      .branch_jump_op_o(branch_jump_op),
-      .imm_src_o(imm_src)
-      );
 
    EX_Decoder u_EX_Decoder(
       .instr_i(instr_i),
@@ -154,7 +147,7 @@ module instruction_decode_stage(
    //Anlik genisletme birimi (umutun ara raporuna bakilmali)
    imm_gen u_imm_gen(
       .instr_i(instr_i[31:7]),
-      .imm_src(imm_src),
+      .imm_src_i(imm_src_i),
       .imm_o(imm)
    );
 
@@ -187,7 +180,7 @@ module instruction_decode_stage(
                funct7_o <= funct7;
                is_load_instr_o <= is_load_instr;
                is_store_instr_o <= is_store_instr;
-               branch_jump_op_o <= branch_jump_op;
+               branch_jump_op_o <= branch_jump_op_i;
                privjump_o <= privjump;
                CSR_en_o <= CSR_en;
                CSR_op_o <= CSR_op;

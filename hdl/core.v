@@ -30,6 +30,9 @@ module core(
    //***********IF-ID STAGE VARIABLES************
    wire [31:2] pc_if_id_o; //ID asamasina giren PC olduugu icin PC_ID_O isimlend
    wire [31:2] instruction_if_id_o;
+
+   wire [1:0] branch_jump_op_if_id_o;
+   wire [2:0] imm_src_if_id_o;
     
    wire [4:0] rd_if_id_o  = instruction_if_id_o[11:7]; 
    wire [4:0] rs1_if_id_o = instruction_if_id_o[19:15]; 
@@ -140,6 +143,8 @@ module core(
      .branching(PC_sel_w_ex_mem_o),
      .branch_pc(alu_out_ex_mem_o[31:1]),
      .instr_o(instruction_if_id_o),
+     .branch_jump_op_o(branch_jump_op_if_id_o),
+     .imm_src_o(imm_src_if_id_o),
      .pc_o(pc_if_id_o)
    );
   
@@ -151,6 +156,8 @@ module core(
       .rst_i(rst_i),
       
       .instr_i(instruction_if_id_o),
+      .branch_jump_op_i(branch_jump_op_if_id_o),
+      .imm_src_i(imm_src_if_id_o),
       .busywait(busy_w),
       .flush(PC_sel_w_ex_mem_o),
       .stall_id_i(id_stall),
