@@ -55,13 +55,10 @@ module core(
 
     wire [1:0] wb_sel_id_ex_o;
 
-    wire reg_wb_en_id_ex_o;  
-    
     wire [4:0] rd_id_ex_o; //pass rd label for the writeback   
     wire [4:0] rs1_label_id_ex_o; //forwarding unit
     
-    wire [4:0] rs2_label_id_ex_o;    
-    wire is_memory_instruction_id_ex_o;
+    wire [4:0] rs2_label_id_ex_o;
     
     wire [2:0] funct3_id_ex_o;
     wire [6:0] funct7_id_ex_o;
@@ -85,7 +82,6 @@ module core(
     //*****************EX-MEM******************
     wire [31:0] alu_out_ex_mem_i; // for alu output
     wire [31:0] alu_out_ex_mem_o;
-    wire reg_wb_en_ex_mem_o;
     wire [4:0] rd_ex_mem_o;  
     wire [31:0] pc_ex_mem_o;  
     wire [1:0] wb_sel_ex_mem_o; // control signal to WB                              
@@ -93,8 +89,7 @@ module core(
     wire [3:0] read_write_sel_ex_mem_o;
     wire [4:0] rs1_label_ex_mem_o;
     wire [4:0] rs2_label_ex_mem_o;   
-    wire [31:0] rs2_ex_mem_o; 
-    wire is_memory_instruction_ex_mem_o;  
+    wire [31:0] rs2_ex_mem_o;
     wire PC_sel_w_ex_mem_o;
     
 // forwarding unit                   
@@ -106,15 +101,14 @@ module core(
     wire is_load_instr_ex_mem_o;
     wire is_store_instr_ex_mem_o;
     
-    //    *********** MEM-WB STAGE ***************
-    wire reg_wb_en_mem_wb_o;  
+    //    *********** MEM-WB STAGE *************** 
     wire [4:0] rd_mem_wb_o;  
     wire [31:0] alu_out_mem_wb_o;  
     wire [1:0] wb_sel_mem_wb_o; // control signal to write back to reg file (which value) 
     wire [31:0] rd_data_mem_wb_o; 
     wire [31:0] imm_mem_wb_o;
     wire [31:0] pc_mem_wb_o;
-    wire is_memory_instruction_mem_wb_o; 
+    wire is_load_instr_mem_wb_o; 
     wire [31:0] rs2_mem_wb_o;   
     wire [31:0] pc_mem_wb_o_4; 
 
@@ -135,10 +129,8 @@ module core(
     wire [31:0] reg_wb_data_w;
     wire ins_busy_w;
     wire busy_w;
-    wire write_en_w;
     
     assign busy_w = ins_busy_w | ~data_cache_blocking_n_last | ~data_cache_blocking_n_i;
-    assign write_en_w = (reg_wb_en_mem_wb_o & ~busy_w); //reg i mem_wb_o yapmak laizm en son
 
    instruction_fetch_stage u_if(
      .clk_i(clk_i),
@@ -156,8 +148,6 @@ module core(
    );
   
    wire [6:2] opcode_id_ex_o; //TEMPORARY
-   
-   wire [31:0] INSTRUCTION_ID = {instruction_if_id_o, 2'b11};
    wire [31:2] u_id_pc_o;  
    assign pc_id_ex_o = {u_id_pc_o, 2'b00};   
    instruction_decode_stage u_id(
@@ -171,7 +161,6 @@ module core(
       .load_stall_o(load_stall),
       .rd_label_i(rd_mem_wb_o),
       .rd_data_i(reg_wb_data_w),
-      .rd_enable_i(reg_wb_en_mem_wb_o),
       .pc_i(pc_if_id_o),
       .pc_o(u_id_pc_o),        
       .rs1_value_o(rs1_value_id_ex_o),
@@ -181,12 +170,9 @@ module core(
       .alu_op2_sel_o(alu_op2_sel_id_ex_o),
       .read_write_sel_o(read_write_sel_id_ex_o),
       .wb_sel_o(wb_sel_id_ex_o),
-      .reg_wb_en_o(reg_wb_en_id_ex_o),
       .rd_o(rd_id_ex_o),
       .rs1_label_o(rs1_label_id_ex_o),
       .rs2_label_o(rs2_label_id_ex_o),
-      .is_memory_instruction_o(is_memory_instruction_id_ex_o),
-      .is_load_instruction_o(is_load_instruction_id_ex_o),
       .funct3_o(funct3_id_ex_o),
       .funct7_o(funct7_id_ex_o),
       .is_load_instr_o(is_load_instr_id_ex_o),
@@ -212,9 +198,6 @@ module core(
       .busywait(busy_w),
       .alu_out_ex_mem_o(alu_out_ex_mem_o),//internal
       
-      .reg_wb_en_ex_mem_i(reg_wb_en_id_ex_o),
-      .reg_wb_en_ex_mem_o(reg_wb_en_ex_mem_o),
-      
       .rd_ex_mem_i(rd_id_ex_o), //in_id nin cikisini ver buraya
       .rd_ex_mem_o(rd_ex_mem_o),
       
@@ -239,9 +222,6 @@ module core(
       
       .rs2_ex_mem_o(rs2_ex_mem_o),
       
-      .is_memory_instruction_ex_mem_i(is_memory_instruction_id_ex_o),
-      .is_memory_instruction_ex_mem_o(is_memory_instruction_ex_mem_o),
-      
       .PC_sel_w_ex_mem_o(PC_sel_w_ex_mem_o),
   
       .funct3_ex_mem_i(funct3_id_ex_o),
@@ -259,9 +239,8 @@ module core(
       //inputs for the EX stage from prev
       .branch_jump_op_i(branch_jump_op_id_ex_o),
       
-      .rd_mem_wb_o(rd_mem_wb_o),
-      .reg_wb_en_mem_wb_o(reg_wb_en_mem_wb_o),
-      .is_memory_instruction_mem_wb_o(is_memory_instruction_mem_wb_o),
+      .rd_mem_wb_i(rd_mem_wb_o),
+      .is_load_instr_mem_wb_i(is_load_instr_mem_wb_o),
       .rs1_value_ex_mem_i(rs1_value_id_ex_o),
       .rs2_value_ex_mem_i(rs2_value_id_ex_o),
       .alu_out_mem_wb_o(alu_out_mem_wb_o),
@@ -294,7 +273,6 @@ module core(
       
       .data_cache_data_i(data_cache_data_i),
       .funct3_i(funct3_ex_mem_o),
-      .reg_wb_en_i(reg_wb_en_ex_mem_o),
       .rd_label_i(rd_ex_mem_o),
       .alu_out_i(alu_out_ex_mem_o),
       .wb_sel_i(wb_sel_ex_mem_o),
@@ -302,7 +280,6 @@ module core(
       .pc_i(pc_ex_mem_o),
       .is_load_instruction_i(is_load_instr_ex_mem_o),
       .is_store_instruction_i(is_store_instr_ex_mem_o),
-      .is_memory_instruction_i(is_memory_instruction_ex_mem_o),
       .rs2_data_i(rs2_ex_mem_o),
       
       .data_cache_data_o(data_cache_data_o),
@@ -310,14 +287,13 @@ module core(
       .data_cache_address_o(data_cache_address_o),
       .data_cache_enabled_o(data_cache_enabled_o),
       .load_val_o(rd_data_mem_wb_o),
-      
-      .reg_wb_en_o(reg_wb_en_mem_wb_o),
+
       .rd_label_o(rd_mem_wb_o),
       .alu_out_o(alu_out_mem_wb_o),
       .wb_sel_o(wb_sel_mem_wb_o),
       .imm_o(imm_mem_wb_o),
       .pc_o(pc_mem_wb_o),
-      .is_memory_instruction_o(is_memory_instruction_mem_wb_o),
+      .is_load_instruction_o(is_load_instr_mem_wb_o),
       .rs2_data_o(rs2_mem_wb_o)
    );
 
@@ -336,4 +312,15 @@ module core(
       .select(wb_sel_mem_wb_o),    // Selection signal
       .out(reg_wb_data_w)          // Output of the MUX
     );
+    `define DEBUG 1
+      `ifdef DEBUG
+         wire [31:0] INSTRUCTION_ID = {instruction_if_id_o, 2'b11};
+         reg [31:0] INSTRUCTION_EX;
+         reg [31:0] INSTRUCTION_MEM;
+         
+         always @(posedge clk_i) begin
+            INSTRUCTION_EX <= INSTRUCTION_ID;
+            INSTRUCTION_MEM <= INSTRUCTION_EX;
+         end
+      `endif
 endmodule

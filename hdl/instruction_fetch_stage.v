@@ -27,8 +27,8 @@ module instruction_fetch_stage(
    input [31:2] cache_data_i,
    output [31:2] cache_address_o,
    input cache_blocking_n_i,
-   
    output ins_busywait_o,
+
    input stall_i,
    
    input branching,
@@ -38,7 +38,6 @@ module instruction_fetch_stage(
    output reg [31:2] pc_o
 );
    reg branched;
-   
    assign ins_busywait_o = branched ^ branching;
    
    localparam FETCH_WIDTH = 29;
@@ -64,7 +63,7 @@ module instruction_fetch_stage(
    always @(posedge clk_i) begin
       if(!rst_i) begin
          if(!stall_i) begin
-            if(cache_blocking_n_i) begin         
+            if(cache_blocking_n_i) begin
                branched <= branching;
                if(branching) begin
                   fetch_counter <= branch_fetch_counter;

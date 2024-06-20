@@ -37,10 +37,10 @@ localparam [2:0]    MUL_FUNCT3    = 3'b000,
 
 //--Multiplier and Divider Start Signals------------------------------
 wire mul_en;
-assign mul_en = (MDU_op == MUL_FUNCT3 || MDU_op == MULH_FUNCT3 || MDU_op == MULHSU_FUNCT3 || MDU_op == MULHU_FUNCT3) ? 1 : 0;
+assign mul_en = (MDU_op == MUL_FUNCT3 || MDU_op == MULH_FUNCT3 || MDU_op == MULHSU_FUNCT3 || MDU_op == MULHU_FUNCT3) && en_i ? 1 : 0;
 
 wire div_en;
-assign div_en = (MDU_op == DIV_FUNCT3 || MDU_op == DIVU_FUNCT3 || MDU_op == REM_FUNCT3 || MDU_op == REMU_FUNCT3) ? 1 : 0;
+assign div_en = (MDU_op == DIV_FUNCT3 || MDU_op == DIVU_FUNCT3 || MDU_op == REM_FUNCT3 || MDU_op == REMU_FUNCT3) && en_i ? 1 : 0;
 //--------------------------------------------------------------------
 
 //---------------Modules Instantiations-------------------------------

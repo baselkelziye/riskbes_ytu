@@ -26,7 +26,6 @@ module instruction_execution_stage(
         input        busywait,
         
         //Inputs and Outputs for the Pipeline Register
-        input        reg_wb_en_ex_mem_i,
         input [4:0 ] rd_ex_mem_i,
         input [31:0] pc_ex_mem_i,
         input [1:0 ] wb_sel_ex_mem_i,
@@ -35,12 +34,12 @@ module instruction_execution_stage(
         input [4:0 ] rs2_label_ex_mem_i,
         input [3:0 ] read_write_sel_ex_mem_i,
 //        input [31:0] rs2_ex_mem_i, locally
-        input        is_memory_instruction_ex_mem_i,
         input [2:0] funct3_ex_mem_i,
         input [6:0] funct7_ex_mem_i,
         input is_load_instr_ex_mem_i, 
         input is_store_instr_ex_mem_i,    
 
+        input [1:0] branch_jump_op_i,
         input [1:0] privjump_i,
         input CSR_en_i,
         input [1:0] CSR_op_i,
@@ -54,7 +53,6 @@ module instruction_execution_stage(
         input rs2_negate_sel_i,
 
         output reg [31:2] branch_target_o,
-        output reg reg_wb_en_ex_mem_o,
         output reg [4:0] rd_ex_mem_o,
         output reg [31:0] pc_ex_mem_o,
         output reg [1:0] wb_sel_ex_mem_o,
@@ -62,7 +60,6 @@ module instruction_execution_stage(
         output reg [4:0] rs1_label_ex_mem_o,
         output reg [4:0] rs2_label_ex_mem_o,
         output reg [3:0] read_write_sel_ex_mem_o,
-        output reg       is_memory_instruction_ex_mem_o,
         output reg [2:0] funct3_ex_mem_o,
         output reg [6:0] funct7_ex_mem_o,
         output reg is_load_instr_ex_mem_o,
@@ -74,10 +71,8 @@ module instruction_execution_stage(
         output reg PC_sel_w_ex_mem_o,
         
         //inputs required from prev stage to ex stage
-        input [1:0] branch_jump_op_i,
-        input [4:0] rd_mem_wb_o,
-        input reg_wb_en_mem_wb_o,
-        input is_memory_instruction_mem_wb_o,
+        input [4:0] rd_mem_wb_i,
+        input is_load_instr_mem_wb_i,
         
         //Inputs for Forwarding Unit
         input [31:0] rs1_value_ex_mem_i,
@@ -141,15 +136,13 @@ module instruction_execution_stage(
     
     
      forwarding_unit forwarding_unit(
-        .rd_label_ex_mem_o(rd_ex_mem_o),
-        .rd_label_mem_wb_o(rd_mem_wb_o),
-        .rs1_label_id_ex_o(rs1_label_ex_mem_i),
-        .rs2_label_id_ex_o(rs2_label_ex_mem_i),
-        .reg_wb_en_ex_mem_o(reg_wb_en_ex_mem_o),
-        .reg_wb_en_mem_wb_o(reg_wb_en_mem_wb_o),
-        .is_memory_instruction_mem_wb_o(is_memory_instruction_mem_wb_o),
-        .forwardA(forwardA),
-        .forwardB(forwardB)
+        .rd_label_ex_mem_i(rd_ex_mem_o),
+        .rd_label_mem_wb_i(rd_mem_wb_i),
+        .rs1_label_i(rs1_label_ex_mem_i),
+        .rs2_label_i(rs2_label_ex_mem_i),
+        .is_load_instr_mem_wb_i(is_load_instr_mem_wb_i),
+        .forwardA_o(forwardA),
+        .forwardB_o(forwardB)
     );
     
     
@@ -284,7 +277,6 @@ module instruction_execution_stage(
     always @(posedge clk_i) begin
         if(rst_i) begin
             alu_out_ex_mem_o <= 32'd0;
-            reg_wb_en_ex_mem_o <= 0;
             rd_ex_mem_o <= 5'd0;
             pc_ex_mem_o <= 32'd0;
             wb_sel_ex_mem_o <= 2'd0;
@@ -293,7 +285,6 @@ module instruction_execution_stage(
             rs2_label_ex_mem_o <= 5'd0;
             read_write_sel_ex_mem_o <= 4'd0;
             rs2_ex_mem_o <= 32'd0;
-            is_memory_instruction_ex_mem_o <= 0;
             PC_sel_w_ex_mem_o <= 0;
             funct3_ex_mem_o <= 3'b0;
             funct7_ex_mem_o <= 7'b0;
@@ -303,7 +294,6 @@ module instruction_execution_stage(
             if (!mul_stall_o && !div_stall_o) begin
                PC_sel_w_ex_mem_o <= PC_sel_w;     
                alu_out_ex_mem_o <= alu_out_ex_mem_i;
-               reg_wb_en_ex_mem_o <= reg_wb_en_ex_mem_i;
                rd_ex_mem_o <= rd_ex_mem_i;
                pc_ex_mem_o <= pc_ex_mem_i;
                wb_sel_ex_mem_o <= wb_sel_ex_mem_i;
@@ -312,14 +302,13 @@ module instruction_execution_stage(
                rs2_label_ex_mem_o <= rs2_label_ex_mem_i;
                read_write_sel_ex_mem_o <= read_write_sel_ex_mem_i;
                rs2_ex_mem_o <= alu_in2_w;
-               is_memory_instruction_ex_mem_o <= is_memory_instruction_ex_mem_i;
                funct3_ex_mem_o <= funct3_ex_mem_i;
                funct7_ex_mem_o <= funct7_ex_mem_i;
                is_load_instr_ex_mem_o <= is_load_instr_ex_mem_i;
                is_store_instr_ex_mem_o <= is_store_instr_ex_mem_i;
             end else begin // Mul stall da Yazma
-               reg_wb_en_ex_mem_o <= 1'b0;
-               read_write_sel_ex_mem_o <= 4'd0;
+               rd_ex_mem_o <= 0;
+               read_write_sel_ex_mem_o <= 0;
             end
         end     
    end

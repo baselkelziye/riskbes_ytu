@@ -1,5 +1,4 @@
 `timescale 1ns / 1ps
-
 module cpu_tb();
 
 reg CLK; 
@@ -14,6 +13,11 @@ initial begin
    RST = 1;
    
    #10 RST = 0;
+   
+ // MSCRATCH TEST
+
+//   wrapper.ram.data[0] = 128'h340fe0f3340f90730def8f930badcfb7;
+//   wrapper.ram.data[1] = 128'h0000006f340021f3340ff173;
 
  //  MEM TEST
 

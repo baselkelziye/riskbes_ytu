@@ -29,7 +29,6 @@ module instruction_decode_stage(
    
    input [31:0] rd_data_i,
    input [4:0] rd_label_i,
-   input rd_enable_i,
 
    input [31:2] pc_i,
    input stall_id_i,
@@ -46,12 +45,9 @@ module instruction_decode_stage(
    output reg alu_op2_sel_o,
    output reg [3:0] read_write_sel_o,
    output reg [1:0] wb_sel_o,
-   output reg reg_wb_en_o,
    output reg [4:0] rd_o,
    output reg [4:0] rs1_label_o,
    output reg [4:0] rs2_label_o,   
-   output reg is_memory_instruction_o,
-   output reg is_load_instruction_o,
    output reg is_load_instr_o,
    output reg is_store_instr_o,
    output reg [1:0] branch_jump_op_o,
@@ -100,17 +96,7 @@ module instruction_decode_stage(
    wire [3:0] read_write;
    wire [1:0] wb_sel;
    wire reg_wr_en;
-   wire is_memory_instruction;
    wire is_load_instruction;
-   
-   control_unit control_unit(
-      .opcode_i({instr_i[6:2], 2'b11}),
-      .funct3_i(funct3),
-      .funct7_i(funct7),
-      .read_write_o(read_write),
-      .is_memory_instruction_o(is_memory_instruction),
-      .is_load_instruction(is_load_instruction) 
-   );
    
    main_decoder u_main_decoder(
       .opcode_i(instr_i[6:2]),
@@ -146,7 +132,6 @@ module instruction_decode_stage(
    (
       .clk_i(clk_i),
       .rst_i(rst_i),
-      .write_en_i(rd_enable_i),//yazmaca yaz sinyali (mem/wb asamasindan gelir)
       .rd_i(rd_label_i),//rd yazmac numarasi
       .rd_data_i(rd_data_i),//rd yazmac degeri
       .rs1_i(rs1_label),//rs1 yazmac numarasi (okumak icin)
@@ -158,7 +143,7 @@ module instruction_decode_stage(
        // Load Data Hazard durumlarindaki Pipeline'i stall etmek icin
    hazard_detection_unit hazard_detection_unit
    (
-       .is_load_instruction_ex_i(is_load_instruction_o), // EX asamasinda LOAD islemi var
+       .is_load_instruction_ex_i(is_load_instr_o), // EX asamasinda LOAD islemi var
        .rd_label_ex_i(rd_o), // EX asamasinda RD
        .rs1_label_id_i(rs1_label), // ID rs1 numarasi
        .rs2_label_id_i(rs2_label), // ID rs2 numarasi
@@ -173,6 +158,17 @@ module instruction_decode_stage(
       .instr_i(instr_i[31:7]),
       .imm_src(imm_src),
       .imm_o(imm)
+   );
+
+   wire [4:0] rd_label_final;
+
+   mux_2x1 #(
+      .DATA_WIDTH(5)
+   ) u_rd_label_sel(
+      .in0(5'b0),
+      .in1(rd_label),
+      .select(reg_wr_en),
+      .out(rd_label_final)
    );                   
     
    always @(posedge clk_i)begin
@@ -187,12 +183,9 @@ module instruction_decode_stage(
                alu_op2_sel_o <= op2_sel;
                read_write_sel_o <= read_write;
                wb_sel_o <= wb_sel;
-               reg_wb_en_o <= reg_wr_en;  
-               rd_o <= rd_label;
+               rd_o <= rd_label_final;
                rs1_label_o <= rs1_label;
                rs2_label_o <= rs2_label;
-               is_memory_instruction_o <= is_memory_instruction;
-               is_load_instruction_o <= is_load_instruction;
                funct3_o <= funct3;
                funct7_o <= funct7;
                is_load_instr_o <= is_load_instr;
@@ -218,11 +211,8 @@ module instruction_decode_stage(
                alu_op2_sel_o            <= 0;
                read_write_sel_o         <= 0;
                wb_sel_o                 <= 0;
-               reg_wb_en_o              <= 0;
                rd_o                     <= 0;
                rs1_label_o              <= 0;
-               is_memory_instruction_o  <= 0;
-               is_load_instruction_o    <= 0;
                funct3_o                 <= 0;
                funct7_o                 <= 0;
                is_load_instr_o          <= 0; 
@@ -250,11 +240,8 @@ module instruction_decode_stage(
          alu_op2_sel_o            <= 0;
          read_write_sel_o         <= 0;
          wb_sel_o                 <= 0;
-         reg_wb_en_o              <= 0;
          rd_o                     <= 0;
          rs1_label_o              <= 0;
-         is_memory_instruction_o  <= 0;
-         is_load_instruction_o    <= 0;
          funct3_o                 <= 0;
          funct7_o                 <= 0;
          is_load_instr_o          <= 0; 

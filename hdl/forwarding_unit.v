@@ -10,92 +10,55 @@
 
 
 module forwarding_unit(
-    input [4:0] rd_label_ex_mem_o,
-    input [4:0] rd_label_mem_wb_o,
-    input [4:0] rs1_label_id_ex_o,
-    input [4:0] rs2_label_id_ex_o,
-    
-    input reg_wb_en_ex_mem_o,
-    input reg_wb_en_mem_wb_o,
-    input is_memory_instruction_mem_wb_o,
-    output reg [1:0]  forwardA,
-    output reg  [1:0]  forwardB
+    input [4:0] rd_label_ex_mem_i,
+    input [4:0] rd_label_mem_wb_i,
+    input [4:0] rs1_label_i,
+    input [4:0] rs2_label_i,
+    input is_load_instr_mem_wb_i,
+    output reg [1:0]  forwardA_o,
+    output reg [1:0]  forwardB_o
     );
     
-    always @(rs1_label_id_ex_o, reg_wb_en_ex_mem_o, reg_wb_en_mem_wb_o, rd_label_ex_mem_o, rd_label_mem_wb_o,is_memory_instruction_mem_wb_o) begin
-    
-    if (    reg_wb_en_mem_wb_o && //wb writes to destination
-           (rd_label_mem_wb_o != 0) &&  //rd is not r0 
-           (rd_label_mem_wb_o == rs1_label_id_ex_o) && // rd (in mem/wb) = r1 
-            !(reg_wb_en_ex_mem_o && (rd_label_ex_mem_o != 0) && (rd_label_ex_mem_o == rs1_label_id_ex_o)) && // double data forwarding problem
-            //if ex/mem and mem/wb forwards to same register, we should take the newest (ex/mem)
-            // EX: add x3,x2,x1
-            //MEM: add x1, x4,x0
-            //WB: add x1, x5,x0
-            // data should be forwarded from MEM because its the UPDATED VALUE
-            !is_memory_instruction_mem_wb_o //is mem/wb stage the instruction is not load (data will come from alu out)
-            ) begin
-            forwardA = 2'b01; 
-        end
-     else  if(  reg_wb_en_mem_wb_o &&   //Everything is the same but here its LOAD instruction. (data comes form the data loaded from memory)
-               (rd_label_mem_wb_o != 0) &&  
-               (rd_label_mem_wb_o == rs1_label_id_ex_o) && 
-               !(reg_wb_en_ex_mem_o && (rd_label_ex_mem_o != 0) && (rd_label_ex_mem_o == rs1_label_id_ex_o)) &&
-                is_memory_instruction_mem_wb_o)
-                begin
-                 forwardA = 2'b11;
-                end
-        
-        else if(rd_label_ex_mem_o != 5'b0  && //rd != 0
-           reg_wb_en_ex_mem_o && // instruction writes to destınation register
-           rd_label_ex_mem_o == rs1_label_id_ex_o) //
-           begin
-            forwardA = 2'b10;//RS1 = EX/MEM RD
-           end
-                
-        else 
-            begin
-            forwardA = 2'b00; //no forwarding
-            end 
-    end
-    
-    
-    //every thing is the same here but instead of rs1, we compare RS2
-        always @(rs2_label_id_ex_o, reg_wb_en_ex_mem_o, reg_wb_en_mem_wb_o, rd_label_ex_mem_o, rd_label_mem_wb_o,is_memory_instruction_mem_wb_o) begin    
+// 00 -> no forwarding
+// 01 -> forward MEM/WB (not LOAD)
+// 10 -> forward EX/MEM
+// 11 -> forward MEM/WB (LOAD)
 
-        if(rd_label_ex_mem_o  && 
-           reg_wb_en_ex_mem_o &&
-           rd_label_ex_mem_o == rs2_label_id_ex_o)
-            begin                               
-                    forwardB = 2'b10; // RS2 = EX/MEM  RD
-            end         
-                 
-        else if(reg_wb_en_mem_wb_o &&  //yaz sinyali = 1
-               (rd_label_mem_wb_o != 0) &&   // kaynak yazmac != 0
-               (rd_label_mem_wb_o == rs2_label_id_ex_o) && // kaynak yazmac su an EX asamasinda var
-        !(reg_wb_en_ex_mem_o && (rd_label_ex_mem_o != 0) && (rd_label_ex_mem_o == rs2_label_id_ex_o)) &&
-            !is_memory_instruction_mem_wb_o) begin  
-            forwardB = 2'b01;   //RS2 = MEM/WB RD
-        end
-     else  if(reg_wb_en_mem_wb_o &&  //yaz sinyali = 1
-               (rd_label_mem_wb_o != 0) &&   // kaynak yazmac != 0
-               (rd_label_mem_wb_o == rs2_label_id_ex_o) && // kaynak yazmac su an EX asamasinda var
-        !(reg_wb_en_ex_mem_o && (rd_label_ex_mem_o != 0) && (rd_label_ex_mem_o == rs2_label_id_ex_o)) &&
-            is_memory_instruction_mem_wb_o)
-                begin
-                 forwardB = 2'b11;
-                end
-        else
-            begin
-            forwardB = 2'b00; //no forwarding
-            end
-    end
-    endmodule
+   localparam [1:0]  NO_FORWARDING              = 2'b00,
+                     FORWARD_MEM_WB_NO_LOAD     = 2'b01,
+                     FORWARD_EX_MEM             = 2'b10,
+                     FORWARD_MEM_WB_WITH_LOAD   = 2'b11;
 
+   always @(*) begin
+      if(rs1_label_i == 0) begin
+         forwardA_o = NO_FORWARDING;
+      end else if (rs1_label_i == rd_label_ex_mem_i) begin
+         forwardA_o = FORWARD_EX_MEM;
+      end else if (rs1_label_i == rd_label_mem_wb_i) begin
+         if (is_load_instr_mem_wb_i) begin
+            forwardA_o = FORWARD_MEM_WB_WITH_LOAD;
+         end else begin
+            forwardA_o = FORWARD_MEM_WB_NO_LOAD;
+         end
+      end else begin
+         forwardA_o = NO_FORWARDING;
+      end
+   end
 
+   always @(*) begin
+      if(rs2_label_i == 0) begin
+         forwardB_o = NO_FORWARDING;
+      end else if (rs2_label_i == rd_label_ex_mem_i) begin
+         forwardB_o = FORWARD_EX_MEM;
+      end else if (rs2_label_i == rd_label_mem_wb_i) begin
+         if (is_load_instr_mem_wb_i) begin
+            forwardB_o = FORWARD_MEM_WB_WITH_LOAD;
+         end else begin
+            forwardB_o = FORWARD_MEM_WB_NO_LOAD;
+         end     
+      end else begin
+         forwardB_o = NO_FORWARDING;
+      end
+   end
 
-
-    
-
-//endmodule
-
+endmodule

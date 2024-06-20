@@ -337,10 +337,10 @@ module EX_Decoder(
             PRIVJUMP_FUNCT3 :  begin
                 if(rd_label == 0 && rs1_label == 0) begin
                     case (funct12)
-                        ECALL_FUNCT12 :     ex_signals = 31'b1_XX_0_XX_X_10_XXXX_0_XXX_XXXXX_X_X_1_00_X_X_0_0;
-                        EBREAK_FUNCT12 :    ex_signals = 31'b1_XX_0_XX_X_11_XXXX_0_XXX_XXXXX_X_X_1_00_X_X_0_0;
-                        MRET_FUNCT12 :      ex_signals = 31'b1_XX_0_XX_X_01_XXXX_0_XXX_XXXXX_X_X_1_00_X_X_0_0;
-                        WFI_FUNCT12 :       ex_signals = 31'b1_XX_0_XX_X_00_XXXX_0_XXX_XXXXX_X_X_1_00_X_X_0_0; //WFI=NOP
+                        ECALL_FUNCT12 :     ex_signals = 31'b1_XX_0_XX_X_10_XXXX_0_XXX_XXXXX_X_X_0_XX_X_X_0_0;
+                        EBREAK_FUNCT12 :    ex_signals = 31'b1_XX_0_XX_X_11_XXXX_0_XXX_XXXXX_X_X_0_XX_X_X_0_0;
+                        MRET_FUNCT12 :      ex_signals = 31'b1_XX_0_XX_X_01_XXXX_0_XXX_XXXXX_X_X_0_XX_X_X_0_0;
+                        WFI_FUNCT12 :       ex_signals = 31'b1_XX_0_XX_X_00_XXXX_0_XXX_XXXXX_X_X_0_XX_X_X_0_0; //WFI=NOP
                         default:            ex_signals = 31'b0_XX_X_XX_X_XX_XXXX_X_XXX_XXXXX_X_X_X_XX_X_X_X_X;
                     endcase
                 end else begin
