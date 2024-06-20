@@ -119,12 +119,6 @@ module instruction_decode_stage(
    
    main_decoder u_main_decoder(
       .opcode_i(instr_i[6:2]),
-      .reg_wr_en(reg_wr_en),
-      .wb_sel(wb_sel),
-      .op1_sel(op1_sel),
-      .op2_sel(op2_sel),
-      .is_load_instr(is_load_instr),
-      .is_store_instr(is_store_instr),
       .is_branch_instr(is_branch_instr),
       .is_jump_instr(is_jump_instr),
       .imm_src(imm_src),
@@ -144,7 +138,13 @@ module instruction_decode_stage(
       .MDU_op_o(MDU_op),
       .chip_select_o(chip_select),
       .rs1_shift_sel_o(rs1_shift_sel),
-      .rs2_negate_sel_o(rs2_negate_sel)
+      .rs2_negate_sel_o(rs2_negate_sel),
+      .reg_wr_en_o(reg_wr_en),
+      .wb_sel_o(wb_sel),
+      .op1_sel_o(op1_sel),
+      .op2_sel_o(op2_sel),
+      .is_load_instr_o(is_load_instr),
+      .is_store_instr_o(is_store_instr)
    );      
 
    wire [31:0] rs1_value, rs2_value;
