@@ -1,4 +1,4 @@
-module EX_Decoder(input  wire [2:0]  EX_op ,
+module EX_Decoder(input  wire [6:2] opcode,
                   input  wire [2:0] funct3 ,
                   input  wire [6:0] funct7 ,
                   input  wire [4:0] rd_label,
@@ -304,7 +304,7 @@ always @* begin
                     ECALL_FUNCT12 :     ex_signals = 23'bXX_0_XX_X_10_XXXX_0_XXX_XXXXX_X_X;
                     EBREAK_FUNCT12 :    ex_signals = 23'bXX_0_XX_X_11_XXXX_0_XXX_XXXXX_X_X;
                     MRET_FUNCT12 :      ex_signals = 23'bXX_0_XX_X_01_XXXX_0_XXX_XXXXX_X_X;
-                    WFI_FUNCT12 :       ex_signals = 23'bXX_0_XX_X_00_XXXX_0_XXX_XXXXX_X_X; //NOP
+                    WFI_FUNCT12 :       ex_signals = 23'bXX_0_XX_X_00_XXXX_0_XXX_XXXXX_X_X; //WFI=NOP
                     default:            ex_signals = 23'bXX_X_XX_X_XX_XXXX_X_XXX_XXXXX_X_X;
                 endcase
             end else begin

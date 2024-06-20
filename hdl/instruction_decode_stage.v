@@ -51,7 +51,7 @@ module instruction_decode_stage(
    output reg [4:0] rd_id_ex_o,
    output reg [4:0] rs1_label_id_ex_o,
    output reg [4:0] rs2_label_id_ex_o,   
-//   output reg [6:0] opcode_id_ex_o,  
+   output reg [6:2] opcode_id_ex_o,  
    output reg is_memory_instruction_id_ex_o,
    output reg is_load_instruction_id_ex_o,
    output reg [2:0] funct3_id_ex_o,
@@ -167,7 +167,7 @@ module instruction_decode_stage(
                is_store_instr_id_ex_o <= is_store_instr;
                is_branch_instr_id_ex_o <= is_branch_instr;
                is_jump_instr_id_ex_o <= is_jump_instr;
-               EX_op_id_ex_o <= EX_op;
+               opcode_id_ex_o <= instr_i[6:2];
             end else if(load_stall_o) begin
                pc_id_ex_o                     <= 30'd0;
                rs1_value_id_ex_o              <= 32'd0;
@@ -188,7 +188,7 @@ module instruction_decode_stage(
                is_store_instr_id_ex_o         <= 1'b0;
                is_branch_instr_id_ex_o        <= 1'b0;
                is_jump_instr_id_ex_o          <= 0;
-               EX_op_id_ex_o                  <= 2'b0;
+               opcode_id_ex_o                 <= 5'b0;
             end
           end
        end else begin
@@ -211,7 +211,7 @@ module instruction_decode_stage(
          is_store_instr_id_ex_o         <= 1'b0;
          is_branch_instr_id_ex_o        <= 1'b0;
          is_jump_instr_id_ex_o          <= 0;
-         EX_op_id_ex_o                  <= 2'b0;
+         opcode_id_ex_o                 <= 5'b0;
       end
     end
 endmodule
