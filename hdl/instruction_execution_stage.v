@@ -230,7 +230,7 @@ module instruction_execution_stage(
         .rst_i(rst_i),
         .alu1_i(alu_in1_forwarded_input),
         .alu2_i(alu_in2_forwarded_input),
-        .en_i(MDU_en_i),
+        .en_i(MDU_en_i && !PC_sel_w_ex_mem_o && !busywait),
         .MDU_op(MDU_op_i),
         .result_o(MDU_res),
         .mul_stall(mul_stall_o),
@@ -251,7 +251,7 @@ module instruction_execution_stage(
       .clk_i(clk_i),
       .rst_i(rst_i),
       
-      .en_i(CSR_en_i),
+      .en_i(CSR_en_i && !PC_sel_w_ex_mem_o && !busywait),
       .op_i(CSR_op_i),
       .source_sel_i(CSR_source_sel_i),
       
@@ -275,7 +275,7 @@ module instruction_execution_stage(
     );
 
     always @(posedge clk_i) begin
-        if(rst_i) begin
+        if(rst_i || PC_sel_w_ex_mem_o) begin
             alu_out_ex_mem_o <= 32'd0;
             rd_ex_mem_o <= 5'd0;
             pc_ex_mem_o <= 32'd0;

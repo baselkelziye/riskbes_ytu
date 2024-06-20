@@ -16,19 +16,19 @@ initial begin
    
  // MSCRATCH TEST
 
-//   wrapper.ram.data[0] = 128'h340fe0f3340f90730def8f930badcfb7;
-//   wrapper.ram.data[1] = 128'h0000006f340021f3340ff173;
+   wrapper.ram.data[0] = 128'h340fe0f3340f90730def8f930badcfb7;
+   wrapper.ram.data[1] = 128'h0000006f340021f3340ff173;
 
  //  MEM TEST
 
-   wrapper.ram.data[0] = 128'hfff141930800a103800015b7800000b7;
-   wrapper.ram.data[1] = 128'h02c1826302c104630805a6030830a023;
-   wrapper.ram.data[2] = 128'h00321a630800a20308d5a023fff64693;
-   wrapper.ram.data[3] = 128'h0000006f00100f9300d716630805a703;
-   wrapper.ram.data[4] = 128'h0000006ffff00f93;
+//   wrapper.ram.data[0] = 128'hfff141930800a103800015b7800000b7;
+//   wrapper.ram.data[1] = 128'h02c1826302c104630805a6030830a023;
+//   wrapper.ram.data[2] = 128'h00321a630800a20308d5a023fff64693;
+//   wrapper.ram.data[3] = 128'h0000006f00100f9300d716630805a703;
+//   wrapper.ram.data[4] = 128'h0000006ffff00f93;
    
-   wrapper.ram.data[8] = 128'h01010101;
-   wrapper.ram.data[264] = 128'hABABABAB;
+//   wrapper.ram.data[8] = 128'h01010101;
+//   wrapper.ram.data[264] = 128'hABABABAB;
 
    //BASEL BUBBLESORT
    

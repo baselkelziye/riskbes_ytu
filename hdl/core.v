@@ -127,10 +127,9 @@ module core(
     wire if_stall = load_stall | ~data_cache_blocking_n_last | ~data_cache_blocking_n_i | mul_stall | div_stall_core;
 
     wire [31:0] reg_wb_data_w;
-    wire ins_busy_w;
     wire busy_w;
     
-    assign busy_w = ins_busy_w | ~data_cache_blocking_n_last | ~data_cache_blocking_n_i;
+    assign busy_w = ~data_cache_blocking_n_last | ~data_cache_blocking_n_i;
 
    instruction_fetch_stage u_if(
      .clk_i(clk_i),
@@ -138,7 +137,6 @@ module core(
      .cache_blocking_n_i(instr_cache_blocking_n_i),
      .cache_data_i(instr_cache_instr_i),
      .cache_address_o(instr_cache_address_o),
-     .ins_busywait_o(ins_busy_w),
 
      .stall_i(if_stall),
      .branching(PC_sel_w_ex_mem_o),

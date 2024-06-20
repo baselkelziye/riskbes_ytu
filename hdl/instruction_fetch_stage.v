@@ -27,7 +27,6 @@ module instruction_fetch_stage(
    input [31:2] cache_data_i,
    output [31:2] cache_address_o,
    input cache_blocking_n_i,
-   output ins_busywait_o,
 
    input stall_i,
    
@@ -37,8 +36,6 @@ module instruction_fetch_stage(
    output reg [31:2] instr_o,
    output reg [31:2] pc_o
 );
-   reg branched;
-   assign ins_busywait_o = branched ^ branching;
    
    localparam FETCH_WIDTH = 29;
    localparam [31:2] INSTR_NOP = 30'b000000000000000000000000000100;
@@ -63,16 +60,12 @@ module instruction_fetch_stage(
    always @(posedge clk_i) begin
       if(!rst_i) begin
          if(!stall_i) begin
-            if(cache_blocking_n_i) begin
-               branched <= branching;
-               if(branching) begin
-                  fetch_counter <= branch_fetch_counter;
-                  instr_o <= INSTR_NOP;
-               end else begin
-                  fetch_counter <= fetch_counter_next;
-                  instr_o <= cache_data_i;
-               end
-                 
+            if(branching) begin
+               fetch_counter <= branch_fetch_counter;
+               instr_o <= INSTR_NOP;
+            end else if(cache_blocking_n_i) begin
+               fetch_counter <= fetch_counter_next;
+               instr_o <= cache_data_i;
                pc_o <= fetch_counter;
             end else begin
                instr_o <= INSTR_NOP;
@@ -81,7 +74,6 @@ module instruction_fetch_stage(
       end else begin
          fetch_counter <= {FETCH_WIDTH{1'b0}};
          instr_o <= INSTR_NOP;
-         branched <= 0;
       end
    end
 
