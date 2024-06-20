@@ -54,8 +54,7 @@ module instruction_decode_stage(
    output reg is_load_instruction_o,
    output reg is_load_instr_o,
    output reg is_store_instr_o,
-   output reg is_branch_instr_o,
-   output reg is_jump_instr_o,
+   output reg [1:0] branch_jump_op_o,
 
    output reg [2:0] funct3_o,
    output reg [6:0] funct7_o,
@@ -79,21 +78,9 @@ module instruction_decode_stage(
    wire [4:0] rs1_label = instr_i[19:15];
    wire [4:0] rs2_label = instr_i[24:20];
 
-   wire op1_sel;
-   wire op2_sel;
-
-   wire [3:0] read_write;
-   wire [1:0] wb_sel;
-   wire reg_wr_en;
-   wire is_memory_instruction;
-   wire is_load_instruction;
-   
-   
    //New Main Decoder Signals
-   wire is_load_instr, is_store_instr;
-   wire is_branch_instr, is_jump_instr;
+   wire [1:0] branch_jump_op;
    wire [2:0] imm_src;
-   wire [2:0] EX_op;
 
    //EX_Decoder sinyalleri, Sonra yukariya EX Stage sinyallerin altina Aynen tasinsin
    wire [1:0] chip_select;
@@ -105,8 +92,16 @@ module instruction_decode_stage(
    wire [4:0] BMU_op;
    wire MDU_en;
    wire [2:0] MDU_op;
-   wire [31:0] ALU_res, MDU_res, BMU_res;
    wire rs1_shift_sel, rs2_negate_sel;
+   wire is_load_instr, is_store_instr;
+   wire op1_sel;
+   wire op2_sel;
+
+   wire [3:0] read_write;
+   wire [1:0] wb_sel;
+   wire reg_wr_en;
+   wire is_memory_instruction;
+   wire is_load_instruction;
    
    control_unit control_unit(
       .opcode_i({instr_i[6:2], 2'b11}),
@@ -119,10 +114,8 @@ module instruction_decode_stage(
    
    main_decoder u_main_decoder(
       .opcode_i(instr_i[6:2]),
-      .is_branch_instr(is_branch_instr),
-      .is_jump_instr(is_jump_instr),
-      .imm_src(imm_src),
-      .EX_op(EX_op)
+      .branch_jump_op_o(branch_jump_op),
+      .imm_src_o(imm_src)
       );
 
    EX_Decoder u_EX_Decoder(
@@ -204,8 +197,7 @@ module instruction_decode_stage(
                funct7_o <= funct7;
                is_load_instr_o <= is_load_instr;
                is_store_instr_o <= is_store_instr;
-               is_branch_instr_o <= is_branch_instr;
-               is_jump_instr_o <= is_jump_instr;
+               branch_jump_op_o <= branch_jump_op;
                privjump_o <= privjump;
                CSR_en_o <= CSR_en;
                CSR_op_o <= CSR_op;
@@ -235,8 +227,7 @@ module instruction_decode_stage(
                funct7_o                 <= 0;
                is_load_instr_o          <= 0; 
                is_store_instr_o         <= 0;
-               is_branch_instr_o        <= 0;
-               is_jump_instr_o          <= 0;
+               branch_jump_op_o         <= 0;
                privjump_o               <= 0;
                CSR_en_o                 <= 0;
                CSR_op_o                 <= 0;
@@ -268,8 +259,7 @@ module instruction_decode_stage(
          funct7_o                 <= 0;
          is_load_instr_o          <= 0; 
          is_store_instr_o         <= 0;
-         is_branch_instr_o        <= 0;
-         is_jump_instr_o          <= 0;
+         branch_jump_op_o         <= 0;
          privjump_o               <= 0;
          CSR_en_o                 <= 0;
          CSR_op_o                 <= 0;

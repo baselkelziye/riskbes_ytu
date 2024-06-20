@@ -74,8 +74,7 @@ module instruction_execution_stage(
         output reg PC_sel_w_ex_mem_o,
         
         //inputs required from prev stage to ex stage
-        input is_branch_instr_i,
-        input is_jump_instr_i,
+        input [1:0] branch_jump_op_i,
         input [4:0] rd_mem_wb_o,
         input reg_wb_en_mem_wb_o,
         input is_memory_instruction_mem_wb_o,
@@ -134,8 +133,7 @@ module instruction_execution_stage(
     branch_jump u_branch_jump(
         .in1_i(alu_in1_w),          //alu output yap
         .in2_i(alu_in2_w),
-        .is_branch_instr(is_branch_instr_i),
-        .is_jump_instr(is_jump_instr_i),
+        .branch_jump_op_i(branch_jump_op_i),
         .funct3_i(funct3_ex_mem_i),
         .PC_sel_o(PC_sel_w)            //sinyal
     );

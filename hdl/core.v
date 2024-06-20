@@ -68,8 +68,7 @@ module core(
 
     wire is_load_instr_id_ex_o;
     wire is_store_instr_id_ex_o;
-    wire is_branch_instr_id_ex_o;
-    wire is_jump_instr_id_ex_o;
+    wire [1:0] branch_jump_op_id_ex_o;
     
     wire [1:0] privjump_id_ex_o;
     wire CSR_en_id_ex_o;
@@ -192,8 +191,7 @@ module core(
       .funct7_o(funct7_id_ex_o),
       .is_load_instr_o(is_load_instr_id_ex_o),
       .is_store_instr_o(is_store_instr_id_ex_o),
-      .is_branch_instr_o(is_branch_instr_id_ex_o),
-      .is_jump_instr_o(is_jump_instr_id_ex_o),
+      .branch_jump_op_o(branch_jump_op_id_ex_o),
 
       .privjump_o(privjump_id_ex_o),
       .CSR_en_o(CSR_en_id_ex_o),
@@ -259,8 +257,7 @@ module core(
       .is_store_instr_ex_mem_o(is_store_instr_ex_mem_o),
       
       //inputs for the EX stage from prev
-      .is_branch_instr_i(is_branch_instr_id_ex_o),
-      .is_jump_instr_i(is_jump_instr_id_ex_o),
+      .branch_jump_op_i(branch_jump_op_id_ex_o),
       
       .rd_mem_wb_o(rd_mem_wb_o),
       .reg_wb_en_mem_wb_o(reg_wb_en_mem_wb_o),
