@@ -40,7 +40,7 @@ module instruction_execution_stage(
         input [6:0] funct7_ex_mem_i,
         input is_load_instr_ex_mem_i, 
         input is_store_instr_ex_mem_i,    
-        output reg [31:2] branch_target_o;
+        output reg [31:2] branch_target_o,
         output reg reg_wb_en_ex_mem_o,
         output reg [4:0] rd_ex_mem_o,
         output reg [31:0] pc_ex_mem_o,
@@ -216,7 +216,7 @@ module instruction_execution_stage(
 
     
     EX_Decoder u_EX_Decoder(
-                   .EX_op (EX_op_ex_mem_i), 
+                   .opcode(opcode_ex_mem_i), 
                    .funct3(funct3_ex_mem_i),
                    .funct7(funct7_ex_mem_i),
                    .rd_label(rd_ex_mem_i),

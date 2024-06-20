@@ -39,7 +39,19 @@ wire [11:0] funct12 = {funct7, funct5};
 // 00 ALU
 // 01 MDU
 // 10 BMU
-// 11 CSR
+// 11 CSRs
+
+//OPCODES
+localparam [6:2] RTYPE_OPCODE   = 5'b01100,
+                 ITYPE_OPCODE   = 5'b00100,
+                 STORE_OPCODE   = 5'b01000,
+                 LOAD_OPCODE    = 5'b00000,
+                 BRANCH_OPCODE  = 5'b11000,
+                 JALR_OPCODE    = 5'b11001,
+                 JAL_OPCODE     = 5'b11011,
+                 AUIPC_OPCODE   = 5'b00101,
+                 LUI_OPCODE     = 5'b01101,
+                 SYSTEM_OPCODE  = 5'b11100;
 
 localparam [2:0]    ADDI_FUNCT3  = 3'b000,
                     SLTI_FUNCT3  = 3'b010,
@@ -51,8 +63,6 @@ localparam [2:0]    ADDI_FUNCT3  = 3'b000,
 localparam [6:0]    SLLI_FUNCT7  = 7'b0000000,
                     SRLI_FUNCT7  = 7'b0000000,
                     SRAI_FUNCT7  = 7'b0100000;
-
-
 
 //R-TYPE RV32I FUNCT7
 localparam [6:0]    ADD_FUNCT7   = 7'b0000000,
@@ -168,11 +178,16 @@ reg [22:0] ex_signals;
 
 // chip_select[1:0], CSR_en, CSR_op[1:0], CSR_source_sel, privjump[1:0], ALU_op[3:0], MDU_en, MDU_op[2:0], BMU_op[4:0], rs1_shift_sel, rs2_negate_sel
 always @* begin 
-    case (EX_op)
-    3'b000: // Load, Store, Branch, AUIPC, JAL, JALR  komutlar icin. Sadecec Toplama Var
+    case (opcode)
+    LOAD_OPCODE,
+    STORE_OPCODE,
+    BRANCH_OPCODE,
+    AUIPC_OPCODE,
+    JAL_OPCODE,
+    JALR_OPCODE: // Load, Store, Branch, AUIPC, JAL, JALR  komutlar icin. Sadecec Toplama Var
         ex_signals = 23'b00_0_XX_X_00_0000_0_XXX_XXXXX_0_0;
 
-    3'b001: //I-Type Komutlar, funct3 e gore Ayrilir, Sonra funct7.
+    ITYPE_OPCODE: //I-Type Komutlar, funct3 e gore Ayrilir, Sonra funct7.
         begin
             if(funct3 == 3'b001     )  begin // BMU ve I-Type SHAMT iceren komutlar
                             case (funct7) 
@@ -221,7 +236,7 @@ always @* begin
         end
 
                                         
-    3'b010:  // R-TYPE komutlar, Ilk once FUNCT7 e gore ayrilir
+    RTYPE_OPCODE:  // R-TYPE komutlar, Ilk once FUNCT7 e gore ayrilir
         begin
             case (funct7) 
                 7'b0000000: // ADD, SLL, SLT, SLTU, XOR, SRL, OR, AND
@@ -290,8 +305,8 @@ always @* begin
                             
             endcase 
         end
-   3'b011: ex_signals = 23'b00_0_XX_X_00_1100_0_XXX_XXXXX_0_0; // LUI artik ALU de
-   3'b100: case(funct3)
+   LUI_OPCODE: ex_signals = 23'b00_0_XX_X_00_1100_0_XXX_XXXXX_0_0;
+   SYSTEM_OPCODE: case(funct3)
          CSRRW_FUNCT3 :  ex_signals = 23'b11_1_01_0_00_XXXX_0_XXX_XXXXX_X_X;
          CSRRS_FUNCT3 :  ex_signals = 23'b11_1_10_0_00_XXXX_0_XXX_XXXXX_X_X;
          CSRRC_FUNCT3 :  ex_signals = 23'b11_1_11_0_00_XXXX_0_XXX_XXXXX_X_X;

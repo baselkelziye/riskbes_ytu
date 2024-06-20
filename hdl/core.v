@@ -144,7 +144,9 @@ module core(
      .instr_o(instruction_if_id_o),
      .pc_o(pc_if_id_o)
    );
-    
+  
+   wire [6:2] opcode_id_ex_o; //TEMPORARY
+   
    wire [31:0] INSTRUCTION_ID = {instruction_if_id_o, 2'b11};
    wire [31:2] u_id_pc_o;  
    assign pc_id_ex_o = {u_id_pc_o, 2'b00};   
@@ -181,7 +183,8 @@ module core(
       .is_store_instr_id_ex_o(is_store_instr_id_ex_o),
       .is_branch_instr_id_ex_o(is_branch_instr_id_ex_o),
       .is_jump_instr_id_ex_o(is_jump_instr_id_ex_o),
-      .EX_op_id_ex_o(EX_op_id_ex_o)
+      //.EX_op_id_ex_o(EX_op_id_ex_o)
+      .opcode_id_ex_o(opcode_id_ex_o)
    );
    
    
@@ -253,7 +256,8 @@ module core(
        .rd_data_mem_wb_o(rd_data_mem_wb_o),
        .alu_op1_sel_ex_mem_i(alu_op1_sel_id_ex_o),
        .alu_op2_sel_ex_mem_i(alu_op2_sel_id_ex_o),
-       .EX_op_ex_mem_i(EX_op_id_ex_o),
+       .opcode_ex_mem_i(opcode_id_ex_o),
+       //.EX_op_ex_mem_i(EX_op_id_ex_o),
        .mul_stall_o(mul_stall),
        .div_stall_o(div_stall_core)
      );
