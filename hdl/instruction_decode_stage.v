@@ -43,7 +43,6 @@ module instruction_decode_stage(
   
    output reg alu_op1_sel_o,
    output reg alu_op2_sel_o,
-   output reg [3:0] read_write_sel_o,
    output reg [1:0] wb_sel_o,
    output reg [4:0] rd_o,
    output reg [4:0] rs1_label_o,
@@ -93,7 +92,6 @@ module instruction_decode_stage(
    wire op1_sel;
    wire op2_sel;
 
-   wire [3:0] read_write;
    wire [1:0] wb_sel;
    wire reg_wr_en;
    wire is_load_instruction;
@@ -181,7 +179,6 @@ module instruction_decode_stage(
                imm_value_o <= imm; 
                alu_op1_sel_o <= op1_sel;
                alu_op2_sel_o <= op2_sel;
-               read_write_sel_o <= read_write;
                wb_sel_o <= wb_sel;
                rd_o <= rd_label_final;
                rs1_label_o <= rs1_label;
@@ -209,7 +206,6 @@ module instruction_decode_stage(
                imm_value_o              <= 0;
                alu_op1_sel_o            <= 0;
                alu_op2_sel_o            <= 0;
-               read_write_sel_o         <= 0;
                wb_sel_o                 <= 0;
                rd_o                     <= 0;
                rs1_label_o              <= 0;
@@ -238,7 +234,6 @@ module instruction_decode_stage(
          imm_value_o              <= 0;
          alu_op1_sel_o            <= 0;
          alu_op2_sel_o            <= 0;
-         read_write_sel_o         <= 0;
          wb_sel_o                 <= 0;
          rd_o                     <= 0;
          rs1_label_o              <= 0;

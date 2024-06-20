@@ -59,7 +59,6 @@ module instruction_execution_stage(
         output reg [31:0] imm_ex_mem_o,
         output reg [4:0] rs1_label_ex_mem_o,
         output reg [4:0] rs2_label_ex_mem_o,
-        output reg [3:0] read_write_sel_ex_mem_o,
         output reg [2:0] funct3_ex_mem_o,
         output reg [6:0] funct7_ex_mem_o,
         output reg is_load_instr_ex_mem_o,
@@ -283,7 +282,6 @@ module instruction_execution_stage(
             imm_ex_mem_o <= 32'd0;
             rs1_label_ex_mem_o <= 5'd0;
             rs2_label_ex_mem_o <= 5'd0;
-            read_write_sel_ex_mem_o <= 4'd0;
             rs2_ex_mem_o <= 32'd0;
             PC_sel_w_ex_mem_o <= 0;
             funct3_ex_mem_o <= 3'b0;
@@ -300,7 +298,6 @@ module instruction_execution_stage(
                imm_ex_mem_o <= imm_ex_mem_i;
                rs1_label_ex_mem_o <= rs1_label_ex_mem_i;
                rs2_label_ex_mem_o <= rs2_label_ex_mem_i;
-               read_write_sel_ex_mem_o <= read_write_sel_ex_mem_i;
                rs2_ex_mem_o <= alu_in2_w;
                funct3_ex_mem_o <= funct3_ex_mem_i;
                funct7_ex_mem_o <= funct7_ex_mem_i;
@@ -308,7 +305,6 @@ module instruction_execution_stage(
                is_store_instr_ex_mem_o <= is_store_instr_ex_mem_i;
             end else begin // Mul stall da Yazma
                rd_ex_mem_o <= 0;
-               read_write_sel_ex_mem_o <= 0;
             end
         end     
    end

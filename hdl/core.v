@@ -50,8 +50,7 @@ module core(
     wire [31:0] imm_value_id_ex_o;
     wire alu_op1_sel_id_ex_o;
 
-    wire alu_op2_sel_id_ex_o; 
-    wire [3:0] read_write_sel_id_ex_o; 
+    wire alu_op2_sel_id_ex_o;
 
     wire [1:0] wb_sel_id_ex_o;
 
@@ -86,7 +85,6 @@ module core(
     wire [31:0] pc_ex_mem_o;  
     wire [1:0] wb_sel_ex_mem_o; // control signal to WB                              
     wire [31:0] imm_ex_mem_o;   
-    wire [3:0] read_write_sel_ex_mem_o;
     wire [4:0] rs1_label_ex_mem_o;
     wire [4:0] rs2_label_ex_mem_o;   
     wire [31:0] rs2_ex_mem_o;
@@ -166,7 +164,6 @@ module core(
       .imm_value_o(imm_value_id_ex_o),
       .alu_op1_sel_o(alu_op1_sel_id_ex_o),
       .alu_op2_sel_o(alu_op2_sel_id_ex_o),
-      .read_write_sel_o(read_write_sel_id_ex_o),
       .wb_sel_o(wb_sel_id_ex_o),
       .rd_o(rd_id_ex_o),
       .rs1_label_o(rs1_label_id_ex_o),
@@ -214,9 +211,6 @@ module core(
       
       .rs2_label_ex_mem_i(rs2_label_id_ex_o),
       .rs2_label_ex_mem_o(rs2_label_ex_mem_o),
-      
-      .read_write_sel_ex_mem_i(read_write_sel_id_ex_o),
-      .read_write_sel_ex_mem_o(read_write_sel_ex_mem_o),
       
       .rs2_ex_mem_o(rs2_ex_mem_o),
       
