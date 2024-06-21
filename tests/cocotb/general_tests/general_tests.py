@@ -51,6 +51,19 @@ async def load_code(dut, file_path):
     await Timer(1, units='ns')
 
 @cocotb.test()
+async def exception_test(dut):
+    filename = "exception_test.txt"
+    dut.rst_i.value = 1
+    await run_clock(dut, 10, 2)
+    dut.rst_i.value = 0
+    await load_code(dut, filepath + filename)
+
+    num_cycles = 100
+    await run_clock(dut, num_cycles, period_ns)
+    
+    assert get_register_file(dut)[1].value == 1
+
+@cocotb.test()
 async def mem_test(dut):
     filename = "mem_test.txt"
     dut.rst_i.value = 1

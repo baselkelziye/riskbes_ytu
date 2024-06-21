@@ -21,7 +21,6 @@
 
 
 module branch_jump(
-   input en_i,
    input [31:0] rs1_i,
    input [31:0] rs2_i,
    input [1:0] branch_jump_op_i,
@@ -66,7 +65,7 @@ module branch_jump(
    wire has_exception = |exception_i;
 
    always @(*) begin
-      branching_o = en_i && (has_exception || is_jump_instr || (is_branch_instr && condition));
+      branching_o = has_exception || is_jump_instr || (is_branch_instr && condition);
       target_sel_o = has_exception ? MTVEC_TARGET : ALU_TARGET;
    end   
    

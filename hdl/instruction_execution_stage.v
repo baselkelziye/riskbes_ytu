@@ -85,10 +85,10 @@ module instruction_execution_stage(
 );
    wire EX_en = !branching_o && !busywait;
    
-   //tmp Values
+   wire [31:0] mtvec_value, mepc_value;
+
    wire [31:0] alu_in1_w;
    wire [31:0] alu_in2_w;
-   wire branching;
    wire [31:0] alu_out_next;
    wire [1:0]  forwardA;
    wire [1:0]  forwardB;
@@ -122,17 +122,17 @@ module instruction_execution_stage(
                      REMU_FUNCT3   = 3'b111;
    
    //Dallanma birimi
+   wire branching_next;
    wire [1:0] branch_target_sel;
    wire [31:1] branch_target_next;
 
    branch_jump u_branch_jump(
-      .en_i(EX_en),
       .rs1_i(alu_in1_w), 
       .rs2_i(alu_in2_w),
       .branch_jump_op_i(branch_jump_op_i),
       .exception_i(exception_i),
       .funct3_i(funct3_ex_mem_i),
-      .branching_o(branching),
+      .branching_o(branching_next),
       .target_sel_o(branch_target_sel)
    );
 
@@ -140,8 +140,8 @@ module instruction_execution_stage(
       .DATA_WIDTH(31)
    ) branch_target_selector (
       .in0(alu_out_next[31:1]),
-      .in1(mtvec_value),
-      .in2(mepc_value),
+      .in1(mtvec_value[31:1]),
+      .in2(mepc_value[31:1]),
       .in3(31'hBADC0DE),
 
       .select(branch_target_sel),
@@ -270,7 +270,11 @@ module instruction_execution_stage(
       
       .addr_i(CSR_addr),
       
-      .read_o(CSR_res)
+      .read_o(CSR_res),
+
+      .mtvec_o(mtvec_value
+),
+      .mepc_o(mepc_value)
    );
 
    mux_4x1 #(
@@ -302,7 +306,7 @@ module instruction_execution_stage(
          is_store_instr_ex_mem_o <= 1'b0;
       end else if(!busywait) begin
          if (!mul_stall_o && !div_stall_o) begin
-            branching_o <= branching;     
+            branching_o <= branching_next;     
             branch_target_o <= branch_target_next;
             alu_out_ex_mem_o <= alu_out_next;
             rd_ex_mem_o <= rd_ex_mem_i;
