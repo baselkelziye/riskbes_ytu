@@ -42,12 +42,7 @@ initial begin
 //   wrapper.ram.data[7] = 128'h00945863_00070483_00138713_00038403;
 //   wrapper.ram.data[8] = 128'h00900533_00000863_00970023_00838023;
 //   wrapper.ram.data[9] = 128'hfc0006e3_00108093_00a38023_00870023;
-//   wrapper.ram.data[10] = 128'hfa000ee_300128293;
-//   wrapper.ram.data[11] = 128'hABCDEF;
-//   wrapper.ram.data[12] = 128'hABCDEF;
-//   wrapper.ram.data[13] = 128'hABCDEF;
-//   wrapper.ram.data[14] = 128'hABCDEF;
-//   wrapper.ram.data[15] = 128'hDEADC0DE;
+//   wrapper.ram.data[10] = 128'h0000006f_fa000ee_300128293;
 
 
 
@@ -61,7 +56,7 @@ initial begin
     wrapper.ram.data[6] = 128'h49f29993_48429a33_49f2d893_4842d933;  // bclri x19, x5, 31 ; bclr x20, x5, x4 ; bexti x17, x5, 31 ; bext x18, x5, x4
     wrapper.ram.data[7] = 128'h29f29693_28429733_69f29793_68429833;  // bseti x13, x5, 31 ; bset x14, x5, x4 ; binvi x15, x5, 31 ; binv x16, x5, x4
     wrapper.ram.data[8] = 128'h40e3f4b3_20316533_203145b3_20312633;  // andn x9, x7, x14 ; sh3add x10, x3, x2 ; sh2add x11, x3, x2 ; sh1add x12, x3, x2
-    wrapper.ram.data[9] = 128'h00000013_00000013_40f840b3_40e3e433;  // NOP ; NOP ; xnor x1, x16, x15 ; orn x8, x7, x14
+    wrapper.ram.data[9] = 128'h00000013_0000006f_40f840b3_40e3e433;  // NOP ; jal x0, . ; xnor x1, x16, x15 ; orn x8, x7, x14
     
 
 

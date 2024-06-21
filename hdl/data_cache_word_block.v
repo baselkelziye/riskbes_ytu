@@ -33,8 +33,6 @@ module data_cache_word_block #(
    input [31:0] flush_data_i,
    input [WORD_PER_BLOCK_COUNT - 1 : 0] flushing_n_i
 );
-   integer DEBUGINT;
-
    genvar I;
    
    localparam WORD_PER_BLOCK_COUNT = 2 ** ADDR_WIDTH;

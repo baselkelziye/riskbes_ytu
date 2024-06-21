@@ -5,10 +5,10 @@
 
 
 //TEKNOFEST ICIN YAPILACAKLAR
-//otomatik bi sekilde OBJ KODLARI OKUYUP INSTURCTION CACHE'e YERLESTIR
-//memory erisiminde adres alignment bakilacak mi?
 //resetleri aktif 0 yap
 //Hazard detection yapinca aradaki komutu NOP yapmamiz gerekir mi?
+
+`define DEBUG 1
 
 module core(
    input clk_i,
@@ -26,14 +26,14 @@ module core(
    output [31:0] data_cache_data_o,
    output data_cache_enabled_o
 );
-    
+   
    //***********IF-ID STAGE VARIABLES************
    wire [31:2] pc_if_id_o; //ID asamasina giren PC olduugu icin PC_ID_O isimlend
    wire [31:2] instruction_if_id_o;
 
    wire [1:0] branch_jump_op_if_id_o;
    wire [2:0] imm_src_if_id_o;
-    
+      
    wire [4:0] rd_if_id_o  = instruction_if_id_o[11:7]; 
    wire [4:0] rs1_if_id_o = instruction_if_id_o[19:15]; 
    wire [4:0] rs2_if_id_o = instruction_if_id_o[24:20];
@@ -41,113 +41,113 @@ module core(
    wire [2:0] instruction_funct3_if_id_o = instruction_if_id_o[14:12];
    wire [6:0] instruction_funct7_if_id_o = instruction_if_id_o[31:25];
    wire [24:0] instruction_payload_if_id_o = instruction_if_id_o[31:7];
-    
-    
- //*******************ID-EX STAGE VARIABLES***********   
-    wire [31:0] rs1_value_id_ex_o;
-    
-    wire [31:0] pc_id_ex_o; //pass PC to ID/EX stage
+      
+      
+   //*******************ID-EX STAGE VARIABLES***********   
+   wire [31:0] rs1_value_id_ex_o;
+   
+   wire [31:0] pc_id_ex_o; //pass PC to ID/EX stage
 
-    wire [31:0] rs2_value_id_ex_o;
+   wire [31:0] rs2_value_id_ex_o;
 
-    wire [31:0] imm_value_id_ex_o;
-    wire alu_op1_sel_id_ex_o;
+   wire [31:0] imm_value_id_ex_o;
+   wire alu_op1_sel_id_ex_o;
 
-    wire alu_op2_sel_id_ex_o;
+   wire alu_op2_sel_id_ex_o;
 
-    wire [1:0] wb_sel_id_ex_o;
+   wire [1:0] wb_sel_id_ex_o;
 
-    wire [4:0] rd_id_ex_o; //pass rd label for the writeback   
-    wire [4:0] rs1_label_id_ex_o; //forwarding unit
-    
-    wire [4:0] rs2_label_id_ex_o;
-    
-    wire [2:0] funct3_id_ex_o;
-    wire [6:0] funct7_id_ex_o;
+   wire [4:0] rd_id_ex_o; //pass rd label for the writeback   
+   wire [4:0] rs1_label_id_ex_o; //forwarding unit
+   
+   wire [4:0] rs2_label_id_ex_o;
+   
+   wire [2:0] funct3_id_ex_o;
+   wire [6:0] funct7_id_ex_o;
 
-    wire is_load_instr_id_ex_o;
-    wire is_store_instr_id_ex_o;
-    wire [1:0] branch_jump_op_id_ex_o;
-    
-    wire [1:0] privjump_id_ex_o;
-    wire CSR_en_id_ex_o;
-    wire [1:0] CSR_op_id_ex_o;
-    wire CSR_source_sel_id_ex_o;
-    wire [3:0] ALU_op_id_ex_o;
-    wire [4:0] BMU_op_id_ex_o;
-    wire MDU_en_id_ex_o;
-    wire [2:0] MDU_op_id_ex_o;
-    wire [1:0] chip_select_id_ex_o;
-    wire rs1_shift_sel_id_ex_o;
-    wire rs2_negate_sel_id_ex_o;
-    
-    //*****************EX-MEM******************
-    wire [31:0] alu_out_ex_mem_i; // for alu output
-    wire [31:0] alu_out_ex_mem_o;
-    wire [4:0] rd_ex_mem_o;  
-    wire [31:0] pc_ex_mem_o;  
-    wire [1:0] wb_sel_ex_mem_o; // control signal to WB                              
-    wire [31:0] imm_ex_mem_o;   
-    wire [4:0] rs1_label_ex_mem_o;
-    wire [4:0] rs2_label_ex_mem_o;   
-    wire [31:0] rs2_ex_mem_o;
-    wire PC_sel_w_ex_mem_o;
-    
-// forwarding unit                   
+   wire is_load_instr_id_ex_o;
+   wire is_store_instr_id_ex_o;
+   wire [1:0] branch_jump_op_id_ex_o;
+   
+   wire [1:0] exception_id_ex_o;
+   wire CSR_en_id_ex_o;
+   wire [1:0] CSR_op_id_ex_o;
+   wire CSR_source_sel_id_ex_o;
+   wire [3:0] ALU_op_id_ex_o;
+   wire [4:0] BMU_op_id_ex_o;
+   wire MDU_en_id_ex_o;
+   wire [2:0] MDU_op_id_ex_o;
+   wire [1:0] chip_select_id_ex_o;
+   wire rs1_shift_sel_id_ex_o;
+   wire rs2_negate_sel_id_ex_o;
+   
+   //*****************EX-MEM******************
+   wire [31:1] branch_target; // for alu output
+   wire [31:0] alu_out_ex_mem_o;
+   wire [4:0] rd_ex_mem_o;  
+   wire [31:0] pc_ex_mem_o;  
+   wire [1:0] wb_sel_ex_mem_o; // control signal to WB                              
+   wire [31:0] imm_ex_mem_o;   
+   wire [4:0] rs1_label_ex_mem_o;
+   wire [4:0] rs2_label_ex_mem_o;   
+   wire [31:0] rs2_ex_mem_o;
+   wire branching;
+   
+   // forwarding unit                   
 
 
-    
-    wire [2:0] funct3_ex_mem_o;
-    wire [6:0] funct7_ex_mem_o;
-    wire is_load_instr_ex_mem_o;
-    wire is_store_instr_ex_mem_o;
-    
-    //    *********** MEM-WB STAGE *************** 
-    wire [4:0] rd_mem_wb_o;  
-    wire [31:0] alu_out_mem_wb_o;  
-    wire [1:0] wb_sel_mem_wb_o; // control signal to write back to reg file (which value) 
-    wire [31:0] rd_data_mem_wb_o; 
-    wire [31:0] imm_mem_wb_o;
-    wire [31:0] pc_mem_wb_o;
-    wire is_load_instr_mem_wb_o; 
-    wire [31:0] rs2_mem_wb_o;   
-    wire [31:0] pc_mem_wb_o_4; 
+   
+   wire [2:0] funct3_ex_mem_o;
+   wire [6:0] funct7_ex_mem_o;
+   wire is_load_instr_ex_mem_o;
+   wire is_store_instr_ex_mem_o;
+   
+   //    *********** MEM-WB STAGE *************** 
+   wire [4:0] rd_mem_wb_o;  
+   wire [31:0] alu_out_mem_wb_o;  
+   wire [1:0] wb_sel_mem_wb_o; // control signal to write back to reg file (which value) 
+   wire [31:0] rd_data_mem_wb_o; 
+   wire [31:0] imm_mem_wb_o;
+   wire [31:0] pc_mem_wb_o;
+   wire is_load_instr_mem_wb_o; 
+   wire [31:0] rs2_mem_wb_o;   
+   wire [31:0] pc_mem_wb_o_4; 
 
-    //************ tmp values *******************\\
-    wire mul_stall;
-    wire div_stall_core;
-    reg data_cache_blocking_n_last;
-    
-    always @(posedge clk_i) begin
-      data_cache_blocking_n_last <= data_cache_blocking_n_i;
-    end
+   //************ tmp values *******************\\
+   wire mul_stall;
+   wire div_stall_core;
+   reg data_cache_blocking_n_last;
+   
+   always @(posedge clk_i) begin
+   data_cache_blocking_n_last <= data_cache_blocking_n_i;
+   end
 
-    //tmp control signals
-    wire load_stall;
-    wire id_stall = load_stall | mul_stall | div_stall_core ;
-    wire if_stall = load_stall | ~data_cache_blocking_n_last | ~data_cache_blocking_n_i | mul_stall | div_stall_core;
+   //tmp control signals
+   wire load_stall;
+   wire id_stall = load_stall | mul_stall | div_stall_core ;
+   wire if_stall = load_stall | ~data_cache_blocking_n_last | ~data_cache_blocking_n_i | mul_stall | div_stall_core;
 
-    wire [31:0] reg_wb_data_w;
-    wire busy_w;
-    
-    assign busy_w = ~data_cache_blocking_n_last | ~data_cache_blocking_n_i;
+   wire [31:0] reg_wb_data_w;
+   wire busy_w;
+   
+   assign busy_w = ~data_cache_blocking_n_last | ~data_cache_blocking_n_i;
 
    instruction_fetch_stage u_if(
-     .clk_i(clk_i),
-     .rst_i(rst_i),
-     .cache_blocking_n_i(instr_cache_blocking_n_i),
-     .cache_data_i(instr_cache_instr_i),
-     .cache_address_o(instr_cache_address_o),
+      .clk_i(clk_i),
+      .rst_i(rst_i),
+      .cache_blocking_n_i(instr_cache_blocking_n_i),
+      .cache_data_i(instr_cache_instr_i),
+      .cache_address_o(instr_cache_address_o),
 
-     .stall_i(if_stall),
-     .branching(PC_sel_w_ex_mem_o),
-     .branch_pc(alu_out_ex_mem_o[31:1]),
-     .instr_o(instruction_if_id_o),
-     .branch_jump_op_o(branch_jump_op_if_id_o),
-     .imm_src_o(imm_src_if_id_o),
-     .pc_o(pc_if_id_o)
+      .stall_i(if_stall),
+      .branching_i(branching),
+      .branch_target_i(branch_target),
+      .instr_o(instruction_if_id_o),
+      .branch_jump_op_o(branch_jump_op_if_id_o),
+      .imm_src_o(imm_src_if_id_o),
+      .pc_o(pc_if_id_o)
    );
-  
+
    wire [6:2] opcode_id_ex_o; //TEMPORARY
    wire [31:2] u_id_pc_o;  
    assign pc_id_ex_o = {u_id_pc_o, 2'b00};   
@@ -158,8 +158,8 @@ module core(
       .instr_i(instruction_if_id_o),
       .branch_jump_op_i(branch_jump_op_if_id_o),
       .imm_src_i(imm_src_if_id_o),
-      .busywait(busy_w),
-      .flush(PC_sel_w_ex_mem_o),
+      .busywait_i(busy_w),
+      .branching_i(branching),
       .stall_id_i(id_stall),
       .load_stall_o(load_stall),
       .rd_label_i(rd_mem_wb_o),
@@ -181,7 +181,7 @@ module core(
       .is_store_instr_o(is_store_instr_id_ex_o),
       .branch_jump_op_o(branch_jump_op_id_ex_o),
 
-      .privjump_o(privjump_id_ex_o),
+      .exception_o(exception_id_ex_o),
       .CSR_en_o(CSR_en_id_ex_o),
       .CSR_op_o(CSR_op_id_ex_o),
       .CSR_source_sel_o(CSR_source_sel_id_ex_o),
@@ -220,9 +220,7 @@ module core(
       .rs2_label_ex_mem_o(rs2_label_ex_mem_o),
       
       .rs2_ex_mem_o(rs2_ex_mem_o),
-      
-      .PC_sel_w_ex_mem_o(PC_sel_w_ex_mem_o),
-  
+
       .funct3_ex_mem_i(funct3_id_ex_o),
       .funct3_ex_mem_o(funct3_ex_mem_o),
       
@@ -234,9 +232,11 @@ module core(
       
       .is_store_instr_ex_mem_i(is_store_instr_id_ex_o), 
       .is_store_instr_ex_mem_o(is_store_instr_ex_mem_o),
-      
-      //inputs for the EX stage from prev
+
       .branch_jump_op_i(branch_jump_op_id_ex_o),
+
+      .branching_o(branching),
+      .branch_target_o(branch_target),
       
       .rd_mem_wb_i(rd_mem_wb_o),
       .is_load_instr_mem_wb_i(is_load_instr_mem_wb_o),
@@ -249,7 +249,7 @@ module core(
       .mul_stall_o(mul_stall),
       .div_stall_o(div_stall_core),
 
-      .privjump_i(privjump_id_ex_o),
+      .exception_i(exception_id_ex_o),
       .CSR_en_i(CSR_en_id_ex_o),
       .CSR_op_i(CSR_op_id_ex_o),
       .CSR_source_sel_i(CSR_source_sel_id_ex_o),
@@ -260,8 +260,8 @@ module core(
       .chip_select_i(chip_select_id_ex_o),
       .rs1_shift_sel_i(rs1_shift_sel_id_ex_o),
       .rs2_negate_sel_i(rs2_negate_sel_id_ex_o)
-     );
-    
+   );
+      
 
    memory_stage u_mem(
       .clk_i(clk_i),
@@ -296,30 +296,30 @@ module core(
       .rs2_data_o(rs2_mem_wb_o)
    );
 
-    pc_adder u_pc_adder1(
-        .in_i(pc_mem_wb_o), //PC i 4 ile toplar
-        .out_o(pc_mem_wb_o_4) // cunku son muxta PC+4 var, su ana kadar sadece PC i ilettik biz, 4 ile toplayip yollamamiz lazim.
-    );
+   pc_adder u_pc_adder1(
+      .in_i(pc_mem_wb_o), //PC i 4 ile toplar
+      .out_o(pc_mem_wb_o_4) // cunku son muxta PC+4 var, su ana kadar sadece PC i ilettik biz, 4 ile toplayip yollamamiz lazim.
+   );
 
-    mux_4x1 #(
-      .DATA_WIDTH(32)
-    ) writeback_mux (
-      .in0(alu_out_mem_wb_o),
-      .in1(rd_data_mem_wb_o),
-      .in2(imm_mem_wb_o),
-      .in3(pc_mem_wb_o_4),
-      .select(wb_sel_mem_wb_o),    // Selection signal
-      .out(reg_wb_data_w)          // Output of the MUX
-    );
-    `define DEBUG 1
-      `ifdef DEBUG
-         wire [31:0] INSTRUCTION_ID = {instruction_if_id_o, 2'b11};
-         reg [31:0] INSTRUCTION_EX;
-         reg [31:0] INSTRUCTION_MEM;
-         
-         always @(posedge clk_i) begin
-            INSTRUCTION_EX <= INSTRUCTION_ID;
-            INSTRUCTION_MEM <= INSTRUCTION_EX;
-         end
-      `endif
+   mux_4x1 #(
+   .DATA_WIDTH(32)
+   ) writeback_mux (
+   .in0(alu_out_mem_wb_o),
+   .in1(rd_data_mem_wb_o),
+   .in2(imm_mem_wb_o),
+   .in3(pc_mem_wb_o_4),
+   .select(wb_sel_mem_wb_o),    // Selection signal
+   .out(reg_wb_data_w)          // Output of the MUX
+   );
+
+   `ifdef DEBUG
+      wire [31:0] INSTRUCTION_ID = {instruction_if_id_o, 2'b11};
+      reg [31:0] INSTRUCTION_EX;
+      reg [31:0] INSTRUCTION_MEM;
+      
+      always @(posedge clk_i) begin
+         INSTRUCTION_EX <= INSTRUCTION_ID;
+         INSTRUCTION_MEM <= INSTRUCTION_EX;
+      end
+   `endif
 endmodule

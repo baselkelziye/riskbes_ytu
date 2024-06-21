@@ -34,8 +34,6 @@ module data_cache_qword_block #(
    output [QWORD_PER_BLOCK_COUNT - 1 : 0] dirty_o,
    input cleaned_n_i
 );
-   integer DEBUGINT;
-
    localparam QWORD_PER_BLOCK_COUNT = 2 ** SUB_ADDR_WIDTH;
    
    reg [QWORD_PER_BLOCK_COUNT - 1 : 0] dirty; //Written after flush?

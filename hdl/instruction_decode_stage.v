@@ -27,8 +27,8 @@ module instruction_decode_stage(
    input [1:0] branch_jump_op_i,
    input [2:0] imm_src_i,
 
-   input busywait,
-   input flush,
+   input busywait_i,
+   input branching_i,
    
    input [31:0] rd_data_i,
    input [4:0] rd_label_i,
@@ -57,7 +57,7 @@ module instruction_decode_stage(
    output reg [2:0] funct3_o,
    output reg [6:0] funct7_o,
 
-   output reg [1:0] privjump_o,
+   output reg [1:0] exception_o,
    output reg CSR_en_o,
    output reg [1:0] CSR_op_o,
    output reg CSR_source_sel_o,
@@ -81,7 +81,7 @@ module instruction_decode_stage(
    wire CSR_en;
    wire [1:0] CSR_op;
    wire CSR_source_sel;
-   wire [1:0] privjump;
+   wire [1:0] exception;
    wire [3:0] ALU_op;
    wire [4:0] BMU_op;
    wire MDU_en;
@@ -98,7 +98,7 @@ module instruction_decode_stage(
    full_decoder u_full_decoder(
       .instr_i(instr_i),
 
-      .privjump_o(privjump),
+      .exception_o(exception),
       .CSR_en_o(CSR_en),
       .CSR_op_o(CSR_op),
       .CSR_source_sel_o(CSR_source_sel),
@@ -163,8 +163,8 @@ module instruction_decode_stage(
    );                   
     
    always @(posedge clk_i)begin
-      if(!rst_i && !flush) begin
-         if(!busywait) begin
+      if(!rst_i && !branching_i) begin
+         if(!busywait_i) begin
             if(!stall_id_i)begin
                pc_o  <= pc_i;
                rs1_value_o <= rs1_value;
@@ -181,7 +181,7 @@ module instruction_decode_stage(
                is_load_instr_o <= is_load_instr;
                is_store_instr_o <= is_store_instr;
                branch_jump_op_o <= branch_jump_op_i;
-               privjump_o <= privjump;
+               exception_o <= exception;
                CSR_en_o <= CSR_en;
                CSR_op_o <= CSR_op;
                CSR_source_sel_o <= CSR_source_sel;
@@ -207,7 +207,7 @@ module instruction_decode_stage(
                is_load_instr_o          <= 0; 
                is_store_instr_o         <= 0;
                branch_jump_op_o         <= 0;
-               privjump_o               <= 0;
+               exception_o              <= 0;
                CSR_en_o                 <= 0;
                CSR_op_o                 <= 0;
                CSR_source_sel_o         <= 0;
@@ -235,7 +235,7 @@ module instruction_decode_stage(
          is_load_instr_o          <= 0; 
          is_store_instr_o         <= 0;
          branch_jump_op_o         <= 0;
-         privjump_o               <= 0;
+         exception_o              <= 0;
          CSR_en_o                 <= 0;
          CSR_op_o                 <= 0;
          CSR_source_sel_o         <= 0;

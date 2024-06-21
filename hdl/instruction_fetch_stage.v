@@ -30,8 +30,8 @@ module instruction_fetch_stage(
 
    input stall_i,
    
-   input branching,
-   input [31:1] branch_pc,
+   input branching_i,
+   input [31:1] branch_target_i,
    
    output reg [31:2] instr_o,
    output reg [31:2] pc_o,
@@ -52,8 +52,8 @@ module instruction_fetch_stage(
    wire [FETCH_WIDTH - 1:0] fetch_counter_next;
    wire fetch_counter_carry;
    
-   wire [31:2] branch_fetch_counter = branch_pc[31:2];
-   wire branch_aligned_n = branch_pc[1];
+   wire [31:2] branch_fetch_counter = branch_target_i[31:2];
+   wire branch_aligned_n = branch_target_i[1];
    
    increment #(.DATA_WIDTH(FETCH_WIDTH)) fetch_counter_inc
    (
@@ -74,7 +74,7 @@ module instruction_fetch_stage(
    always @(posedge clk_i) begin
       if(!rst_i) begin
          if(!stall_i) begin
-            if(branching) begin
+            if(branching_i) begin
                fetch_counter <= branch_fetch_counter;
 
                instr_o <= INSTR_NOP;
@@ -90,8 +90,8 @@ module instruction_fetch_stage(
                pc_o <= fetch_counter;
             end else begin
                instr_o <= INSTR_NOP;
-               branch_jump_op_o <= branch_jump_op;
-               imm_src_o <= imm_src;
+               branch_jump_op_o <= BRANCH_JUMP_NOP;
+               imm_src_o <= IMM_SRC_NOP;
             end
          end
       end else begin

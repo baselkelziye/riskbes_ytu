@@ -21,52 +21,53 @@
 
 
 module branch_jump(
-    input [31:0]in1_i,
-    input [31:0]in2_i,
-    input [1:0] branch_jump_op_i,
-    input [2:0] funct3_i,
-    output PC_sel_o
-    );
-    
-    wire beq_reg; // BNE bunun degili
+   input en_i,
+   input [31:0] rs1_i,
+   input [31:0] rs2_i,
+   input [1:0] branch_jump_op_i,
+   input [1:0] exception_i,
+   input [2:0] funct3_i,
+   output reg branching_o,
+   output reg [1:0] target_sel_o
+);
 
-    wire blt_reg;// signed Less Than comparison.
+   localparam [1:0] ALU_TARGET   = 2'b00,
+                    MTVEC_TARGET = 2'b01,
+                    MEPC_TARGET  = 2'b10;
 
-    wire bltu_reg; // unsigned
+   localparam [2:0] BEQ_FUNCT3  = 3'b000,
+                    BNE_FUNCT3  = 3'b001,
+                    BLT_FUNCT3  = 3'b100,
+                    BGE_FUNCT3  = 3'b101,
+                    BLTU_FUNCT3 = 3'b110,
+                    BGEU_FUNCT3 = 3'b111;
 
-    assign beq_reg =  (in1_i == in2_i ) ? 1 : 0;
-    
-    assign blt_reg =  ($signed(in1_i  ) < $signed(in2_i  ) ? 1 : 0);
-    assign bltu_reg = ($unsigned(in1_i) < $unsigned(in2_i) ? 1 : 0);
+   wire beq_reg =  rs1_i == rs2_i ? 1 : 0;
+   wire blt_reg =  $signed(rs1_i) < $signed(rs2_i) ? 1 : 0;
+   wire bltu_reg = $unsigned(rs1_i) < $unsigned(rs2_i) ? 1 : 0;
 
+   wire is_branch_instr = branch_jump_op_i[1];
+   wire is_jump_instr = branch_jump_op_i[0];
+   
+   reg condition;
 
-    reg out_sel_r;
+   always @(*) begin
+      case(funct3_i)
+         BEQ_FUNCT3:  condition = beq_reg;
+         BNE_FUNCT3:  condition = ~beq_reg;
+         BLT_FUNCT3:  condition = blt_reg;
+         BGE_FUNCT3:  condition = ~blt_reg;
+         BLTU_FUNCT3: condition = bltu_reg;
+         BGEU_FUNCT3: condition = ~bltu_reg;
+         default:     condition = 1'bX;
+      endcase
+   end
 
-    wire is_branch_instr = branch_jump_op_i[1];
-    wire is_jump_instr = branch_jump_op_i[0];
-    
-    always @* begin
-      if(is_branch_instr) begin
-          case(funct3_i)
-              3'b000:
-                  out_sel_r = beq_reg;
-              3'b001:
-                  out_sel_r = ~beq_reg;
-              3'b100:
-                  out_sel_r = blt_reg;
-              3'b101: //BGE. EQUAL | !BLT
-                  out_sel_r = beq_reg | ~blt_reg;
-              3'b110:
-                  out_sel_r = bltu_reg;
-              3'b111:
-                  out_sel_r = beq_reg | ~bltu_reg;
-              default:
-                  out_sel_r = 0;
-           endcase
-      end else begin
-          out_sel_r = is_jump_instr;
-      end
-    end   
-    assign PC_sel_o = out_sel_r;
-    
+   wire has_exception = |exception_i;
+
+   always @(*) begin
+      branching_o = en_i && (has_exception || is_jump_instr || (is_branch_instr && condition));
+      target_sel_o = has_exception ? MTVEC_TARGET : ALU_TARGET;
+   end   
+   
 endmodule

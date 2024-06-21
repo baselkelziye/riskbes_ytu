@@ -29,8 +29,9 @@ module csr_mepc(
    input [31:0] set_i,
    input [31:0] clear_i,
    
-   output [31:0] read_o,
-   output ack_o //Acknowledge sinyali
+   output ack_o, //Acknowledge sinyali
+
+   output [31:0] value_o
 );
 
    localparam ADDRESS = 12'h341;
@@ -38,8 +39,8 @@ module csr_mepc(
    wire ack = en_i && (addr_i == ADDRESS);
    assign ack_o = ack;
    
-   wire [31:2] read;
-   assign read_o = {read, {2{1'b0}}};
+   wire [31:2] value;
+   assign value_o = {value, {2{1'b0}}};
    
    csrfield #(
       .WIDTH(30)
@@ -50,7 +51,6 @@ module csr_mepc(
       .en_i(ack),
       .set_i(set_i[31:2]),
       .clear_i(clear_i[31:2]),
-      .read_o(read),
-      .value_o()
+      .value_o(value)
    );
 endmodule

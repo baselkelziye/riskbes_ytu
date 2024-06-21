@@ -5,10 +5,11 @@
 
 
 //TEKNOFEST ICIN YAPILACAKLAR
-//otomatik bi sekilde OBJ KODLARI OKUYUP INSTURCTION CACHE'e YERLESTIR
-//memory erisiminde adres alignment bakilacak mi?
+
 //resetleri aktif 0 yap
 //Hazard detection yapinca aradaki komutu NOP yapmamiz gerekir mi?
+
+`define DEBUG 1
 
 module cpu #(
    parameter BUS_ADDRESS_WIDTH = 20,

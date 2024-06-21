@@ -29,19 +29,17 @@ module csr_mstatus(
     input [31:0] set_i,
     input [31:0] clear_i,
 
-    output [31:0] read_o,
-    output ack_o //Acknowledge sinyali
+    output ack_o, //Acknowledge sinyali
+
+    output [31:0] value_o
 );
 
    localparam ADDRESS = 12'h300;
    
    wire ack = en_i && (addr_i == ADDRESS);
    assign ack_o = ack;
-   
-   wire ZERO = 0;
-   wire ONE = ack;
-   
-   wire w_mie;
+
+   wire v_mie;
    csrfield u_mie(
       .clk_i(clk_i),
       .rst_i(rst_i),
@@ -49,11 +47,10 @@ module csr_mstatus(
       .en_i(ack),
       .set_i(set_i[3]),
       .clear_i(clear_i[3]),
-      .read_o(w_mie),
-      .value_o()
+      .value_o(v_mie)
    );
    
-   wire w_mpie;
+   wire v_mpie;
    csrfield u_mpie(
       .clk_i(clk_i),
       .rst_i(rst_i),
@@ -61,25 +58,24 @@ module csr_mstatus(
       .en_i(ack),
       .set_i(set_i[7]),
       .clear_i(clear_i[7]),
-      .read_o(w_mpie),
-      .value_o()
+      .value_o(v_mpie)
    );
    
-   wire w_sd = 0;
-   wire [1:0] w_xs = 0;
-   wire [1:0] w_fs = 0;
+   wire v_sd = 0;
+   wire [1:0] v_xs = 0;
+   wire [1:0] v_fs = 0;
 
-   assign read_o = {
-      w_sd,
-      {14{ZERO}},
-      w_xs,
-      w_fs,
-      {2{ONE}},
-      {3{ZERO}},
-      w_mpie,
-      {3{ZERO}},
-      w_mie,
-      {3{ZERO}} 
+   assign value_o = {
+      v_sd,
+      {14{1'b0}},
+      v_xs,
+      v_fs,
+      {2{1'b1}},
+      {3{1'b0}},
+      v_mpie,
+      {3{1'b0}},
+      v_mie,
+      {3{1'b0}} 
    };
 
 endmodule

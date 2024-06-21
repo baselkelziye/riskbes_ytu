@@ -1,2 +1,4 @@
 CPOP
 Branch Prediction
+Cache Arbiter'ı tekrar incele
+Load/Store ve Load/Move forwarding

@@ -9,13 +9,11 @@ module csrfield #(
     input [WIDTH - 1 : 0] set_i,
     input [WIDTH - 1 : 0] clear_i,
 
-    output [WIDTH - 1 : 0] read_o,
     output [WIDTH - 1 : 0] value_o
 );
 
     reg [WIDTH - 1 : 0] value;
 
-    assign read_o = en_i ? value : 0;
     assign value_o = value;
 
     always @(posedge clk_i) begin
