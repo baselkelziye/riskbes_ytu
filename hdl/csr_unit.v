@@ -141,6 +141,8 @@ module csr_unit (
       .rst_i(rst_i),
       .en_i(en_i),
 
+      .exception_i(exception_i),
+
       .addr_i(addr_i),
       .set_i(setfield),
       .clear_i(clearfield),
@@ -175,7 +177,9 @@ module csr_unit (
          + mstatus_ack 
          + mstatush_ack
          + mepc_ack
-         + mtvec_ack;
+         + mtvec_ack
+         + mtval_ack
+         + mcause_ack;
 
          if((en_i == 0 && ack_count != 0) || (en_i == 1 && ack_count != 1)) begin
             $display("WARNING: Bad en_i and ack_count values: %d, %d",en_i , ack_count);

@@ -61,7 +61,7 @@ async def exception_test(dut):
     num_cycles = 100
     await run_clock(dut, num_cycles, period_ns)
     
-    assert get_register_file(dut)[1].value == 1
+    assert get_register_file(dut)[1].value == 2
 
 @cocotb.test()
 async def mem_test(dut):

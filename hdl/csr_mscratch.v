@@ -11,7 +11,7 @@ module csr_mscratch(
 
    output [31:0] value_o
 );
-   localparam ADDRESS = 12'h340;
+   localparam [11:0] ADDRESS = 12'h340;
    
    wire ack = en_i && (addr_i == ADDRESS);
    assign ack_o = ack;

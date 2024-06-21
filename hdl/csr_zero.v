@@ -21,7 +21,7 @@
 
 
 module csr_zero #(
-   parameter ADDRESS = 0
+   parameter [11:0] ADDRESS = 0
 )(
    input en_i,
    input [11:0] addr_i,

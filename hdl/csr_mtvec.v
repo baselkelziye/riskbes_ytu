@@ -34,7 +34,7 @@ module csr_mtvec(
    output [31:0] value_o
 );
 
-   localparam ADDRESS = 12'h305;
+   localparam [11:0] ADDRESS = 12'h305;
    
    wire ack = en_i && (addr_i == ADDRESS);
    assign ack_o = ack;
