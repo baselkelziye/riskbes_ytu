@@ -67,6 +67,7 @@ module core(
 
    wire is_load_instr_id_ex_o;
    wire is_store_instr_id_ex_o;
+   wire is_mret_id_ex_o;
    wire [1:0] branch_jump_op_id_ex_o;
    
    wire [1:0] exception_id_ex_o;
@@ -179,6 +180,7 @@ module core(
       .funct7_o(funct7_id_ex_o),
       .is_load_instr_o(is_load_instr_id_ex_o),
       .is_store_instr_o(is_store_instr_id_ex_o),
+      .is_mret_o(is_mret_id_ex_o),
       .branch_jump_op_o(branch_jump_op_id_ex_o),
 
       .exception_o(exception_id_ex_o),
@@ -233,6 +235,7 @@ module core(
       .is_store_instr_ex_mem_i(is_store_instr_id_ex_o), 
       .is_store_instr_ex_mem_o(is_store_instr_ex_mem_o),
 
+      .is_mret_i(is_mret_id_ex_o),
       .branch_jump_op_i(branch_jump_op_id_ex_o),
 
       .branching_o(branching),

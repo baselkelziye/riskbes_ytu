@@ -52,6 +52,7 @@ module instruction_decode_stage(
    output reg [4:0] rs2_label_o,   
    output reg is_load_instr_o,
    output reg is_store_instr_o,
+   output reg is_mret_o,
    output reg [1:0] branch_jump_op_o,
 
    output reg [2:0] funct3_o,
@@ -87,7 +88,7 @@ module instruction_decode_stage(
    wire MDU_en;
    wire [2:0] MDU_op;
    wire rs1_shift_sel, rs2_negate_sel;
-   wire is_load_instr, is_store_instr;
+   wire is_load_instr, is_store_instr, is_mret;
    wire op1_sel;
    wire op2_sel;
 
@@ -114,7 +115,8 @@ module instruction_decode_stage(
       .op1_sel_o(op1_sel),
       .op2_sel_o(op2_sel),
       .is_load_instr_o(is_load_instr),
-      .is_store_instr_o(is_store_instr)
+      .is_store_instr_o(is_store_instr),
+      .is_mret_o(is_mret)
    );      
 
    wire [31:0] rs1_value, rs2_value;
@@ -192,6 +194,7 @@ module instruction_decode_stage(
                chip_select_o <= chip_select;
                rs1_shift_sel_o <= rs1_shift_sel;
                rs2_negate_sel_o <= rs2_negate_sel;
+               is_mret_o <= is_mret;
             end else if(load_stall_o) begin
                pc_o                     <= 0;
                rs1_value_o              <= 0;
@@ -218,6 +221,7 @@ module instruction_decode_stage(
                chip_select_o            <= 0;
                rs1_shift_sel_o          <= 0;
                rs2_negate_sel_o         <= 0;
+               is_mret_o                <= 0;
             end
           end
       end else begin
@@ -246,6 +250,7 @@ module instruction_decode_stage(
          chip_select_o            <= 0;
          rs1_shift_sel_o          <= 0;
          rs2_negate_sel_o         <= 0;
+         is_mret_o                <= 0;
       end
    end
 endmodule

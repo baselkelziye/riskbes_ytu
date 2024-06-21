@@ -24,6 +24,9 @@ module csr_mepc(
    input clk_i,
    input rst_i,
    input en_i,
+
+   input has_exception_i,
+   input [31:2] pc_i,
    
    input [11:0] addr_i,
    input [31:0] set_i,
@@ -41,6 +44,10 @@ module csr_mepc(
    
    wire [31:2] value;
    assign value_o = {value, {2{1'b0}}};
+
+   wire en = has_exception_i || ack;
+   wire [31:2] set = has_exception_i ? pc_i : set_i[31:2];
+   wire [31:2] clear = has_exception_i ? ~pc_i : clear_i[31:2];
    
    csrfield #(
       .WIDTH(30)
@@ -48,9 +55,9 @@ module csr_mepc(
       .clk_i(clk_i),
       .rst_i(rst_i),
       
-      .en_i(ack),
-      .set_i(set_i[31:2]),
-      .clear_i(clear_i[31:2]),
+      .en_i(en),
+      .set_i(set),
+      .clear_i(clear),
       .value_o(value)
    );
 endmodule

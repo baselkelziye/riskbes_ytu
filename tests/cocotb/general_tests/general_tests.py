@@ -58,10 +58,21 @@ async def exception_test(dut):
     dut.rst_i.value = 0
     await load_code(dut, filepath + filename)
 
-    num_cycles = 100
+    num_cycles = 1000
     await run_clock(dut, num_cycles, period_ns)
     
-    assert get_register_file(dut)[1].value == 2
+    regs = get_register_file(dut)
+    x1 = regs[1].value
+    x2 = regs[2].value
+    x3 = regs[3].value
+
+    dut._log.info(f"x1 = {hex(x1)}")
+    dut._log.info(f"x2 = {hex(x2)}")
+    dut._log.info(f"x3 = {hex(x3)}")
+
+    assert x1 == 11
+    assert x2 == 3
+    assert x3 == 2
 
 @cocotb.test()
 async def mem_test(dut):

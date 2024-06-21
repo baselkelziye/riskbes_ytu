@@ -2,6 +2,7 @@ module full_decoder(
     input [31:2] instr_i,
 
     output [1:0] exception_o,
+    output is_mret_o,
     output CSR_en_o,
     output [1:0] CSR_op_o,
     output CSR_source_sel_o,
@@ -171,15 +172,16 @@ module full_decoder(
                      CSRRCI_FUNCT3        = 3'b111,
                      PRIVJUMP_FUNCT3      = 3'b000;
 
-   localparam [11:0] MRET_FUNCT12         = 12'b0001000_00010,
-                     WFI_FUNCT12          = 12'b0011000_00101,
+   localparam [11:0] MRET_FUNCT12         = 12'b0011000_00010,
+                     WFI_FUNCT12          = 12'b0001000_00101,
                      ECALL_FUNCT12        = 12'b0000000_00000,
                      EBREAK_FUNCT12       = 12'b0000000_00001;
 
 
-   reg [30:0] control_signals;
-   localparam [30:0] ILLEGAL = 30'bXX_0_XX_X_01_XXXX_0_XXX_XXXXX_X_X_0_XX_X_X_0_0;         
+   reg [31:0] control_signals;
+   localparam [31:0] ILLEGAL = 31'bX_XX_0_XX_X_01_XXXX_0_XXX_XXXXX_X_X_0_XX_X_X_0_0;         
 
+   // is_mret_o,
    // chip_select_o[1:0],
    // CSR_en_o,
    // CSR_op_o[1:0],
@@ -200,56 +202,56 @@ module full_decoder(
    
    always @* begin 
       case (opcode)
-      LOAD_OPCODE : control_signals = 30'b00_0_XX_X_00_0000_0_XXX_XXXXX_0_0_1_01_0_1_1_0;
-      STORE_OPCODE : control_signals = 30'b00_0_XX_X_00_0000_0_XXX_XXXXX_0_0_0_XX_0_1_0_1;
-      BRANCH_OPCODE : control_signals = 30'b00_0_XX_X_00_0000_0_XXX_XXXXX_0_0_0_XX_1_1_0_0;
-      AUIPC_OPCODE : control_signals = 30'b00_0_XX_X_00_0000_0_XXX_XXXXX_0_0_1_00_1_1_0_0;
-      JAL_OPCODE : control_signals = 30'b00_0_XX_X_00_0000_0_XXX_XXXXX_0_0_1_11_1_1_0_0;
-      JALR_OPCODE : control_signals = 30'b00_0_XX_X_00_0000_0_XXX_XXXXX_0_0_1_11_0_1_0_0;
+      LOAD_OPCODE : control_signals = 31'b0_00_0_XX_X_00_0000_0_XXX_XXXXX_0_0_1_01_0_1_1_0;
+      STORE_OPCODE : control_signals = 31'b0_00_0_XX_X_00_0000_0_XXX_XXXXX_0_0_0_XX_0_1_0_1;
+      BRANCH_OPCODE : control_signals = 31'b0_00_0_XX_X_00_0000_0_XXX_XXXXX_0_0_0_XX_1_1_0_0;
+      AUIPC_OPCODE : control_signals = 31'b0_00_0_XX_X_00_0000_0_XXX_XXXXX_0_0_1_00_1_1_0_0;
+      JAL_OPCODE : control_signals = 31'b0_00_0_XX_X_00_0000_0_XXX_XXXXX_0_0_1_11_1_1_0_0;
+      JALR_OPCODE : control_signals = 31'b0_00_0_XX_X_00_0000_0_XXX_XXXXX_0_0_1_11_0_1_0_0;
 
       ITYPE_OPCODE: //I-Type Komutlar, funct3 e gore Ayrilir, Sonra funct7.
          begin
                if(funct3 == 3'b001     )  begin // BMU ve I-Type SHAMT iceren komutlar
                               case (funct7) 
-                                 SLLI_FUNCT7  : control_signals = 30'b00_0_XX_X_00_0011_0_XXX_XXXXX_0_0_1_00_0_1_0_0;
+                                 SLLI_FUNCT7  : control_signals = 31'b0_00_0_XX_X_00_0011_0_XXX_XXXXX_0_0_1_00_0_1_0_0;
                                  CLZ_FUNCT7   ,
                                  CTZ_FUNCT7   ,
                                  CPOP_FUNCT7  ,
                                  SEXT_B_FUNCT7: begin //clz,ctz,cpop,sext.b funct5 ile ayirmamiz gerekiyor
                                                    case(funct5) 
-                                                      CLZ_FUNCT5   : control_signals = 30'b10_0_XX_X_00_XXXX_0_XXX_00000_0_0_1_00_0_1_0_0;
-                                                      CTZ_FUNCT5   : control_signals = 30'b10_0_XX_X_00_XXXX_0_XXX_00001_0_0_1_00_0_1_0_0;
-                                                      CPOP_FUNCT5  : control_signals = 30'b10_0_XX_X_00_XXXX_0_XXX_00010_0_0_1_00_0_1_0_0;
-                                                      SEXT_B_FUNCT5: control_signals = 30'b10_0_XX_X_00_XXXX_0_XXX_00110_0_0_1_00_0_1_0_0;
-                                                      SEXT_H_FUNCT5: control_signals = 30'b10_0_XX_X_00_XXXX_0_XXX_00111_0_0_1_00_0_1_0_0;
+                                                      CLZ_FUNCT5   : control_signals = 31'b0_10_0_XX_X_00_XXXX_0_XXX_00000_0_0_1_00_0_1_0_0;
+                                                      CTZ_FUNCT5   : control_signals = 31'b0_10_0_XX_X_00_XXXX_0_XXX_00001_0_0_1_00_0_1_0_0;
+                                                      CPOP_FUNCT5  : control_signals = 31'b0_10_0_XX_X_00_XXXX_0_XXX_00010_0_0_1_00_0_1_0_0;
+                                                      SEXT_B_FUNCT5: control_signals = 31'b0_10_0_XX_X_00_XXXX_0_XXX_00110_0_0_1_00_0_1_0_0;
+                                                      SEXT_H_FUNCT5: control_signals = 31'b0_10_0_XX_X_00_XXXX_0_XXX_00111_0_0_1_00_0_1_0_0;
                                                       default      : control_signals = ILLEGAL;  
                                                    endcase    
                                                    end
-                                 BCLRI_FUNCT7 : control_signals = 30'b10_0_XX_X_00_XXXX_0_XXX_01011_0_0_1_00_0_1_0_0;
-                                 BINVI_FUNCT7 : control_signals = 30'b10_0_XX_X_00_XXXX_0_XXX_01101_0_0_1_00_0_1_0_0;
-                                 BESTI_FUNCT7 : control_signals = 30'b10_0_XX_X_00_XXXX_0_XXX_01110_0_0_1_00_0_1_0_0;      
+                                 BCLRI_FUNCT7 : control_signals = 31'b0_10_0_XX_X_00_XXXX_0_XXX_01011_0_0_1_00_0_1_0_0;
+                                 BINVI_FUNCT7 : control_signals = 31'b0_10_0_XX_X_00_XXXX_0_XXX_01101_0_0_1_00_0_1_0_0;
+                                 BESTI_FUNCT7 : control_signals = 31'b0_10_0_XX_X_00_XXXX_0_XXX_01110_0_0_1_00_0_1_0_0;      
                                  default      : control_signals = ILLEGAL;
                               endcase
                end 
                else if(funct3 == 3'b101)  begin // BMU ve I-Type SHAMT iceren komutlar
                               case (funct7)
-                                 SRLI_FUNCT7 : control_signals = 30'b00_0_XX_X_00_0111_0_XXX_XXXXX_0_0_1_00_0_1_0_0;
-                                 SRAI_FUNCT7 : control_signals = 30'b00_0_XX_X_00_1000_0_XXX_XXXXX_0_0_1_00_0_1_0_0;
-                                 ORC_B_FUNCT7: control_signals = 30'b10_0_XX_X_00_XXXX_0_XXX_00011_0_0_1_00_0_1_0_0;
-                                 REV8_FUNCT7 : control_signals = 30'b10_0_XX_X_00_XXXX_0_XXX_00100_0_0_1_00_0_1_0_0;
-                                 RORI_FUNCT7 : control_signals = 30'b10_0_XX_X_00_XXXX_0_XXX_01001_0_0_1_00_0_1_0_0;
-                                 BEXTI_FUNCT7: control_signals = 30'b10_0_XX_X_00_XXXX_0_XXX_01100_0_0_1_00_0_1_0_0;
+                                 SRLI_FUNCT7 : control_signals = 31'b0_00_0_XX_X_00_0111_0_XXX_XXXXX_0_0_1_00_0_1_0_0;
+                                 SRAI_FUNCT7 : control_signals = 31'b0_00_0_XX_X_00_1000_0_XXX_XXXXX_0_0_1_00_0_1_0_0;
+                                 ORC_B_FUNCT7: control_signals = 31'b0_10_0_XX_X_00_XXXX_0_XXX_00011_0_0_1_00_0_1_0_0;
+                                 REV8_FUNCT7 : control_signals = 31'b0_10_0_XX_X_00_XXXX_0_XXX_00100_0_0_1_00_0_1_0_0;
+                                 RORI_FUNCT7 : control_signals = 31'b0_10_0_XX_X_00_XXXX_0_XXX_01001_0_0_1_00_0_1_0_0;
+                                 BEXTI_FUNCT7: control_signals = 31'b0_10_0_XX_X_00_XXXX_0_XXX_01100_0_0_1_00_0_1_0_0;
                                  default     : control_signals = ILLEGAL;
                               endcase
                end
                else begin              //Diger I komutlar
                               case (funct3) 
-                                 ADDI_FUNCT3 : control_signals = 30'b00_0_XX_X_00_0000_0_XXX_XXXXX_0_0_1_00_0_1_0_0;
-                                 SLTI_FUNCT3 : control_signals = 30'b00_0_XX_X_00_0100_0_XXX_XXXXX_0_0_1_00_0_1_0_0;
-                                 SLTIU_FUNCT3: control_signals = 30'b00_0_XX_X_00_0101_0_XXX_XXXXX_0_0_1_00_0_1_0_0;
-                                 XORI_FUNCT3 : control_signals = 30'b00_0_XX_X_00_0110_0_XXX_XXXXX_0_0_1_00_0_1_0_0;
-                                 ORI_FUNCT3  : control_signals = 30'b00_0_XX_X_00_1001_0_XXX_XXXXX_0_0_1_00_0_1_0_0;
-                                 ANDI_FUNCT3 : control_signals = 30'b00_0_XX_X_00_1010_0_XXX_XXXXX_0_0_1_00_0_1_0_0;
+                                 ADDI_FUNCT3 : control_signals = 31'b0_00_0_XX_X_00_0000_0_XXX_XXXXX_0_0_1_00_0_1_0_0;
+                                 SLTI_FUNCT3 : control_signals = 31'b0_00_0_XX_X_00_0100_0_XXX_XXXXX_0_0_1_00_0_1_0_0;
+                                 SLTIU_FUNCT3: control_signals = 31'b0_00_0_XX_X_00_0101_0_XXX_XXXXX_0_0_1_00_0_1_0_0;
+                                 XORI_FUNCT3 : control_signals = 31'b0_00_0_XX_X_00_0110_0_XXX_XXXXX_0_0_1_00_0_1_0_0;
+                                 ORI_FUNCT3  : control_signals = 31'b0_00_0_XX_X_00_1001_0_XXX_XXXXX_0_0_1_00_0_1_0_0;
+                                 ANDI_FUNCT3 : control_signals = 31'b0_00_0_XX_X_00_1010_0_XXX_XXXXX_0_0_1_00_0_1_0_0;
                                  default     : control_signals = ILLEGAL;
                               endcase
                end       
@@ -261,85 +263,85 @@ module full_decoder(
                case (funct7) 
                   7'b0000000: // ADD, SLL, SLT, SLTU, XOR, SRL, OR, AND
                               case(funct3)
-                                 ADD_FUNCT3    : control_signals = 30'b00_0_XX_X_00_0000_0_XXX_XXXXX_0_0_1_00_0_0_0_0;
-                                 SLT_FUNCT3    : control_signals = 30'b00_0_XX_X_00_0100_0_XXX_XXXXX_0_0_1_00_0_0_0_0;
-                                 SLL_FUNCT3    : control_signals = 30'b00_0_XX_X_00_0011_0_XXX_XXXXX_0_0_1_00_0_0_0_0; 
-                                 SLTU_FUNCT3   : control_signals = 30'b00_0_XX_X_00_0101_0_XXX_XXXXX_0_0_1_00_0_0_0_0;
-                                 XOR_FUNCT3    : control_signals = 30'b00_0_XX_X_00_0110_0_XXX_XXXXX_0_0_1_00_0_0_0_0;
-                                 OR_FUNCT3     : control_signals = 30'b00_0_XX_X_00_1001_0_XXX_XXXXX_0_0_1_00_0_0_0_0;
-                                 AND_FUNCT3    : control_signals = 30'b00_0_XX_X_00_1010_0_XXX_XXXXX_0_0_1_00_0_0_0_0;
+                                 ADD_FUNCT3    : control_signals = 31'b0_00_0_XX_X_00_0000_0_XXX_XXXXX_0_0_1_00_0_0_0_0;
+                                 SLT_FUNCT3    : control_signals = 31'b0_00_0_XX_X_00_0100_0_XXX_XXXXX_0_0_1_00_0_0_0_0;
+                                 SLL_FUNCT3    : control_signals = 31'b0_00_0_XX_X_00_0011_0_XXX_XXXXX_0_0_1_00_0_0_0_0; 
+                                 SLTU_FUNCT3   : control_signals = 31'b0_00_0_XX_X_00_0101_0_XXX_XXXXX_0_0_1_00_0_0_0_0;
+                                 XOR_FUNCT3    : control_signals = 31'b0_00_0_XX_X_00_0110_0_XXX_XXXXX_0_0_1_00_0_0_0_0;
+                                 OR_FUNCT3     : control_signals = 31'b0_00_0_XX_X_00_1001_0_XXX_XXXXX_0_0_1_00_0_0_0_0;
+                                 AND_FUNCT3    : control_signals = 31'b0_00_0_XX_X_00_1010_0_XXX_XXXXX_0_0_1_00_0_0_0_0;
                                  default       : control_signals = ILLEGAL;
                               endcase
                   7'b0000001: //MUL, MULH, MULHSU, MULHU, DIV,DIVU, REM, REMU
                               case(funct3) 
-                                 MUL_FUNCT3    : control_signals = 30'b01_0_XX_X_00_XXXX_1_000_XXXXX_0_0_1_00_0_0_0_0;
-                                 MULH_FUNCT3   : control_signals = 30'b01_0_XX_X_00_XXXX_1_001_XXXXX_0_0_1_00_0_0_0_0;
-                                 MULHSU_FUNCT3 : control_signals = 30'b01_0_XX_X_00_XXXX_1_010_XXXXX_0_0_1_00_0_0_0_0;
-                                 MULHU_FUNCT3  : control_signals = 30'b01_0_XX_X_00_XXXX_1_011_XXXXX_0_0_1_00_0_0_0_0;
-                                 DIV_FUNCT3    : control_signals = 30'b01_0_XX_X_00_XXXX_1_100_XXXXX_0_0_1_00_0_0_0_0;
-                                 DIVU_FUNCT3   : control_signals = 30'b01_0_XX_X_00_XXXX_1_101_XXXXX_0_0_1_00_0_0_0_0;
-                                 REM_FUNCT3    : control_signals = 30'b01_0_XX_X_00_XXXX_1_110_XXXXX_0_0_1_00_0_0_0_0;
-                                 REMU_FUNCT3   : control_signals = 30'b01_0_XX_X_00_XXXX_1_111_XXXXX_0_0_1_00_0_0_0_0;
+                                 MUL_FUNCT3    : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_000_XXXXX_0_0_1_00_0_0_0_0;
+                                 MULH_FUNCT3   : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_001_XXXXX_0_0_1_00_0_0_0_0;
+                                 MULHSU_FUNCT3 : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_010_XXXXX_0_0_1_00_0_0_0_0;
+                                 MULHU_FUNCT3  : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_011_XXXXX_0_0_1_00_0_0_0_0;
+                                 DIV_FUNCT3    : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_100_XXXXX_0_0_1_00_0_0_0_0;
+                                 DIVU_FUNCT3   : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_101_XXXXX_0_0_1_00_0_0_0_0;
+                                 REM_FUNCT3    : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_110_XXXXX_0_0_1_00_0_0_0_0;
+                                 REMU_FUNCT3   : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_111_XXXXX_0_0_1_00_0_0_0_0;
                                  default       : control_signals = ILLEGAL;
                               endcase
                   7'b0100000: // SUB, SRA, ANDN, ORN, XNOR
                               case(funct3)
-                                 SUB_FUNCT3    : control_signals = 30'b00_0_XX_X_00_0001_0_XXX_XXXXX_0_1_1_00_0_0_0_0;
-                                 SRA_FUNCT3    : control_signals = 30'b00_0_XX_X_00_1000_0_XXX_XXXXX_0_0_1_00_0_0_0_0;
-                                 ANDN_FUNCT3   : control_signals = 30'b00_0_XX_X_00_1010_0_XXX_XXXXX_0_1_1_00_0_0_0_0;
-                                 ORN_FUNCT3    : control_signals = 30'b00_0_XX_X_00_1001_0_XXX_XXXXX_0_1_1_00_0_0_0_0;
-                                 XNOR_FUNCT3   : control_signals = 30'b00_0_XX_X_00_1011_0_XXX_XXXXX_0_0_1_00_0_0_0_0;
+                                 SUB_FUNCT3    : control_signals = 31'b0_00_0_XX_X_00_0001_0_XXX_XXXXX_0_1_1_00_0_0_0_0;
+                                 SRA_FUNCT3    : control_signals = 31'b0_00_0_XX_X_00_1000_0_XXX_XXXXX_0_0_1_00_0_0_0_0;
+                                 ANDN_FUNCT3   : control_signals = 31'b0_00_0_XX_X_00_1010_0_XXX_XXXXX_0_1_1_00_0_0_0_0;
+                                 ORN_FUNCT3    : control_signals = 31'b0_00_0_XX_X_00_1001_0_XXX_XXXXX_0_1_1_00_0_0_0_0;
+                                 XNOR_FUNCT3   : control_signals = 31'b0_00_0_XX_X_00_1011_0_XXX_XXXXX_0_0_1_00_0_0_0_0;
                                  default       : control_signals = ILLEGAL;
                               endcase
-                  7'b0000100:  /*ZEXT.h Icin*/    control_signals = 30'b10_0_XX_X_00_XXXX_0_XXX_00101_0_0_1_00_0_0_0_0;
+                  7'b0000100:  /*ZEXT.h Icin*/    control_signals = 31'b0_10_0_XX_X_00_XXXX_0_XXX_00101_0_0_1_00_0_0_0_0;
                   7'b0110000: // ROL, ROR
                               case(funct3)
-                                 ROL_FUNCT3    : control_signals = 30'b10_0_XX_X_00_XXXX_0_XXX_01000_0_0_1_00_0_0_0_0;
-                                 ROR_FUNCT3    : control_signals = 30'b10_0_XX_X_00_XXXX_0_XXX_01001_0_0_1_00_0_0_0_0;
+                                 ROL_FUNCT3    : control_signals = 31'b0_10_0_XX_X_00_XXXX_0_XXX_01000_0_0_1_00_0_0_0_0;
+                                 ROR_FUNCT3    : control_signals = 31'b0_10_0_XX_X_00_XXXX_0_XXX_01001_0_0_1_00_0_0_0_0;
                                  default       : control_signals = ILLEGAL;
                               endcase 
                   7'b0100100: //BCLR, BEXT
                               case(funct3)
-                                 BCLR_FUNCT3   : control_signals = 30'b10_0_XX_X_00_XXXX_0_XXX_01011_0_0_1_00_0_0_0_0;
-                                 BEXT_FUNCT3   : control_signals = 30'b10_0_XX_X_00_XXXX_0_XXX_01100_0_0_1_00_0_0_0_0;
+                                 BCLR_FUNCT3   : control_signals = 31'b0_10_0_XX_X_00_XXXX_0_XXX_01011_0_0_1_00_0_0_0_0;
+                                 BEXT_FUNCT3   : control_signals = 31'b0_10_0_XX_X_00_XXXX_0_XXX_01100_0_0_1_00_0_0_0_0;
                                  default       : control_signals = ILLEGAL;
                               endcase 
-                  7'b0110100: /* BINV*/           control_signals = 30'b10_0_XX_X_00_XXXX_0_XXX_01101_0_0_1_00_0_0_0_0;
-                  7'b0010100: /*BSET*/            control_signals = 30'b10_0_XX_X_00_XXXX_0_XXX_01110_0_0_1_00_0_0_0_0;
+                  7'b0110100: /* BINV*/           control_signals = 31'b0_10_0_XX_X_00_XXXX_0_XXX_01101_0_0_1_00_0_0_0_0;
+                  7'b0010100: /*BSET*/            control_signals = 31'b0_10_0_XX_X_00_XXXX_0_XXX_01110_0_0_1_00_0_0_0_0;
                   7'b0000101: //MAX,MAXU, MIN,MINU
                               case(funct3)
-                                 MAX_FUNCT3    : control_signals = 30'b10_0_XX_X_00_XXXX_0_XXX_01010_0_0_1_00_0_0_0_0;
-                                 MAXU_FUNCT3   : control_signals = 30'b10_0_XX_X_00_XXXX_0_XXX_01111_0_0_1_00_0_0_0_0;
-                                 MIN_FUNCT3    : control_signals = 30'b10_0_XX_X_00_XXXX_0_XXX_10000_0_0_1_00_0_0_0_0;
-                                 MINU_FUNCT3   : control_signals = 30'b10_0_XX_X_00_XXXX_0_XXX_10001_0_0_1_00_0_0_0_0;
+                                 MAX_FUNCT3    : control_signals = 31'b0_10_0_XX_X_00_XXXX_0_XXX_01010_0_0_1_00_0_0_0_0;
+                                 MAXU_FUNCT3   : control_signals = 31'b0_10_0_XX_X_00_XXXX_0_XXX_01111_0_0_1_00_0_0_0_0;
+                                 MIN_FUNCT3    : control_signals = 31'b0_10_0_XX_X_00_XXXX_0_XXX_10000_0_0_1_00_0_0_0_0;
+                                 MINU_FUNCT3   : control_signals = 31'b0_10_0_XX_X_00_XXXX_0_XXX_10001_0_0_1_00_0_0_0_0;
                                  default       : control_signals = ILLEGAL;
                               endcase
                   7'b0010000: //SH1ADD,SH2ADD,SH3ADD
                               case(funct3)
-                                 SH1ADD_FUNCT3 : control_signals = 30'b00_0_XX_X_00_0000_0_XXX_XXXXX_1_0_1_00_0_0_0_0; 
-                                 SH2ADD_FUNCT3 : control_signals = 30'b00_0_XX_X_00_0000_0_XXX_XXXXX_1_0_1_00_0_0_0_0;
-                                 SH3ADD_FUNCT3 : control_signals = 30'b00_0_XX_X_00_0000_0_XXX_XXXXX_1_0_1_00_0_0_0_0;
+                                 SH1ADD_FUNCT3 : control_signals = 31'b0_00_0_XX_X_00_0000_0_XXX_XXXXX_1_0_1_00_0_0_0_0; 
+                                 SH2ADD_FUNCT3 : control_signals = 31'b0_00_0_XX_X_00_0000_0_XXX_XXXXX_1_0_1_00_0_0_0_0;
+                                 SH3ADD_FUNCT3 : control_signals = 31'b0_00_0_XX_X_00_0000_0_XXX_XXXXX_1_0_1_00_0_0_0_0;
                                  default       : control_signals = ILLEGAL;
                               endcase
                default: control_signals = ILLEGAL;
                               
                endcase 
          end
-   LUI_OPCODE: control_signals = 30'b00_0_XX_X_00_1100_0_XXX_XXXXX_0_0_1_00_X_1_0_0;
+   LUI_OPCODE: control_signals = 31'b0_00_0_XX_X_00_1100_0_XXX_XXXXX_0_0_1_00_X_1_0_0;
    SYSTEM_OPCODE: case(funct3)
-         CSRRW_FUNCT3 :  control_signals = 30'b11_1_01_0_00_XXXX_0_XXX_XXXXX_X_X_1_00_X_X_0_0;
-         CSRRS_FUNCT3 :  control_signals = 30'b11_1_10_0_00_XXXX_0_XXX_XXXXX_X_X_1_00_X_X_0_0;
-         CSRRC_FUNCT3 :  control_signals = 30'b11_1_11_0_00_XXXX_0_XXX_XXXXX_X_X_1_00_X_X_0_0;
-         CSRRWI_FUNCT3 : control_signals = 30'b11_1_01_1_00_XXXX_0_XXX_XXXXX_X_X_1_00_X_X_0_0;
-         CSRRSI_FUNCT3 : control_signals = 30'b11_1_10_1_00_XXXX_0_XXX_XXXXX_X_X_1_00_X_X_0_0;
-         CSRRCI_FUNCT3 : control_signals = 30'b11_1_11_1_00_XXXX_0_XXX_XXXXX_X_X_1_00_X_X_0_0;
+         CSRRW_FUNCT3 :  control_signals = 31'b0_11_1_01_0_00_XXXX_0_XXX_XXXXX_X_X_1_00_X_X_0_0;
+         CSRRS_FUNCT3 :  control_signals = 31'b0_11_1_10_0_00_XXXX_0_XXX_XXXXX_X_X_1_00_X_X_0_0;
+         CSRRC_FUNCT3 :  control_signals = 31'b0_11_1_11_0_00_XXXX_0_XXX_XXXXX_X_X_1_00_X_X_0_0;
+         CSRRWI_FUNCT3 : control_signals = 31'b0_11_1_01_1_00_XXXX_0_XXX_XXXXX_X_X_1_00_X_X_0_0;
+         CSRRSI_FUNCT3 : control_signals = 31'b0_11_1_10_1_00_XXXX_0_XXX_XXXXX_X_X_1_00_X_X_0_0;
+         CSRRCI_FUNCT3 : control_signals = 31'b0_11_1_11_1_00_XXXX_0_XXX_XXXXX_X_X_1_00_X_X_0_0;
          PRIVJUMP_FUNCT3 :  begin
                if(rd_label == 0 && rs1_label == 0) begin
                   case (funct12)
-                     ECALL_FUNCT12 :     control_signals = 30'bXX_0_XX_X_10_XXXX_0_XXX_XXXXX_X_X_0_XX_X_X_0_0;
-                     EBREAK_FUNCT12 :    control_signals = 30'bXX_0_XX_X_11_XXXX_0_XXX_XXXXX_X_X_0_XX_X_X_0_0;
-                     MRET_FUNCT12 :      control_signals = ILLEGAL; //TO-DO: Find a way to do MRET
-                     WFI_FUNCT12 :       control_signals = 30'bXX_0_XX_X_00_XXXX_0_XXX_XXXXX_X_X_0_XX_X_X_0_0; //WFI=NOP
+                     ECALL_FUNCT12 :     control_signals = 31'bX_XX_0_XX_X_10_XXXX_0_XXX_XXXXX_X_X_0_XX_X_X_0_0;
+                     EBREAK_FUNCT12 :    control_signals = 31'bX_XX_0_XX_X_11_XXXX_0_XXX_XXXXX_X_X_0_XX_X_X_0_0;
+                     MRET_FUNCT12 :      control_signals = 31'b1_XX_0_XX_X_00_XXXX_0_XXX_XXXXX_X_X_0_XX_X_X_0_0; //TO-DO: Find a way to do MRET
+                     WFI_FUNCT12 :       control_signals = 31'b0_XX_0_XX_X_00_XXXX_0_XXX_XXXXX_X_X_0_XX_X_X_0_0; //WFI=NOP
                      default:            control_signals = ILLEGAL;
                   endcase
                end else begin
@@ -352,6 +354,7 @@ module full_decoder(
    end
 
    assign {
+      is_mret_o,
       chip_select_o,
       CSR_en_o,
       CSR_op_o,

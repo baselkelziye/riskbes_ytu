@@ -39,6 +39,7 @@ module instruction_execution_stage(
    input is_load_instr_ex_mem_i, 
    input is_store_instr_ex_mem_i,    
 
+   input is_mret_i,
    input [1:0] branch_jump_op_i,
    input [1:0] exception_i,
    input CSR_en_i,
@@ -129,6 +130,7 @@ module instruction_execution_stage(
    branch_jump u_branch_jump(
       .rs1_i(alu_in1_w), 
       .rs2_i(alu_in2_w),
+      .is_mret_i(is_mret_i),
       .branch_jump_op_i(branch_jump_op_i),
       .exception_i(exception_i),
       .funct3_i(funct3_ex_mem_i),
@@ -238,7 +240,8 @@ module instruction_execution_stage(
       .rst_i(rst_i),
       .alu1_i(alu_in1_forwarded_input),
       .alu2_i(alu_in2_forwarded_input),
-      .en_i(EX_en && MDU_en_i),
+      .EX_en_i(EX_en),
+      .en_i(MDU_en_i),
       .MDU_op(MDU_op_i),
       .result_o(MDU_res),
       .mul_stall(mul_stall_o),
@@ -259,11 +262,13 @@ module instruction_execution_stage(
       .clk_i(clk_i),
       .rst_i(rst_i),
       
-      .en_i(EX_en && CSR_en_i),
+      .EX_en_i(EX_en),
+      .en_i(CSR_en_i),
       .op_i(CSR_op_i),
       .source_sel_i(CSR_source_sel_i),
 
       .exception_i(exception_i),
+      .pc_i(pc_ex_mem_i[31:2]),
       
       .rs1_label_i(rs1_label_ex_mem_i),
       .rs1_value_i(alu_in1_w), //Most recent RS1 value
