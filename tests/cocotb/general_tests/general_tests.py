@@ -51,14 +51,39 @@ async def load_code(dut, file_path):
     await Timer(1, units='ns')
 
 @cocotb.test()
-async def misa_test(dut):
-    filename = "misa_test.txt"
+async def misa_b_test(dut):
+    filename = "misa_b_test.txt"
     dut.rst_i.value = 1
     await run_clock(dut, 10, 2)
     dut.rst_i.value = 0
     await load_code(dut, filepath + filename)
 
-    num_cycles = 1000
+    num_cycles = 100
+    await run_clock(dut, num_cycles, period_ns)
+    
+    regs = get_register_file(dut)
+    x1 = regs[1].value
+    x2 = regs[2].value
+    x3 = regs[3].value
+    x31 = regs[31].value
+
+    dut._log.info(f"x1 = {hex(x1)}")
+    dut._log.info(f"x2 = {hex(x2)}")
+    dut._log.info(f"x3 = {hex(x3)}")
+
+    assert x1 == 7
+    assert x2 == 5
+    assert x3 == 61
+
+@cocotb.test()
+async def misa_m_test(dut):
+    filename = "misa_m_test.txt"
+    dut.rst_i.value = 1
+    await run_clock(dut, 10, 2)
+    dut.rst_i.value = 0
+    await load_code(dut, filepath + filename)
+
+    num_cycles = 250
     await run_clock(dut, num_cycles, period_ns)
     
     regs = get_register_file(dut)
@@ -83,7 +108,7 @@ async def exception_test(dut):
     dut.rst_i.value = 0
     await load_code(dut, filepath + filename)
 
-    num_cycles = 1000
+    num_cycles = 100
     await run_clock(dut, num_cycles, period_ns)
     
     regs = get_register_file(dut)
@@ -213,6 +238,33 @@ async def pipeline_carpma(dut):
             dut._log.error(f"Mismatch at Register {reg}: expected {expected_values[idx]}, got {hex(dut_value)}")
         else:
             dut._log.info(f"Register {reg} matches the expected value: {hex(dut_value)}")
+
+@cocotb.test()
+async def fibonacci(dut):
+    filename = "fibonacci.txt"
+    dut.rst_i.value = 1
+    await run_clock(dut, 10, 2)
+    dut.rst_i.value = 0
+    await load_code(dut, filepath + filename)
+    num_cycles = 2000  # Define the number of cycles to run the clock
+    await run_clock(dut, num_cycles, period_ns)
+    # After the clock has been run for 400 cycles, you can add your comparison logic here.  
+    data_memory = MemoryAdapter(dut)
+    expected_data_values = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233]
+
+    for i in range(len(expected_data_values)):
+        # Fetch the value from the memory adapter
+        dut_value = data_memory[256 + i]
+
+        # Assuming dut_value is already an integer, we can compare directly after converting
+        # the expected value from hex to int
+        expected_value = expected_data_values[i]
+        
+        # Now compare the values
+        if dut_value != expected_value:
+            dut._log.error(f"Mismatch at Data Memory {256+i}: expected {expected_data_values[i]}, got {hex(dut_value)}")
+        else:
+            dut._log.info(f"Data Memory {256+i} matches the expected value: {hex(dut_value)}")
 
 @cocotb.test()
 async def basel_bubblesort(dut):
