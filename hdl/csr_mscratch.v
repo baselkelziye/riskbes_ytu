@@ -25,7 +25,8 @@ module csr_mscratch(
       .en_i(ack),
       .set_i(set_i),
       .clear_i(clear_i),
-      .value_o(value_o)
+      .value_o(value_o),
+      .value_next_o()
    );
    
 endmodule

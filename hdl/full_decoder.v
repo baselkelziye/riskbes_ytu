@@ -1,24 +1,30 @@
 module full_decoder(
-    input [31:2] instr_i,
+   input [31:2] instr_i,
 
-    output [1:0] exception_o,
-    output is_mret_o,
-    output CSR_en_o,
-    output [1:0] CSR_op_o,
-    output CSR_source_sel_o,
-    output [3:0] ALU_op_o ,
-    output [4:0] BMU_op_o ,
-    output MDU_en_o,
-    output [2:0] MDU_op_o ,
-    output [1:0] chip_select_o,
-    output rs1_shift_sel_o,
-    output rs2_negate_sel_o,
-    output reg_wr_en_o,
-    output [1:0] wb_sel_o,
-    output op1_sel_o,
-    output op2_sel_o,
-    output is_load_instr_o,
-    output is_store_instr_o
+   //Uzantı destek bitleri (Forwarded)
+   input is_a_supported_i,
+   input is_b_supported_i,
+   input is_f_supported_i,
+   input is_m_supported_i,
+
+   output [1:0] exception_o,
+   output is_mret_o,
+   output CSR_en_o,
+   output [1:0] CSR_op_o,
+   output CSR_source_sel_o,
+   output [3:0] ALU_op_o ,
+   output [4:0] BMU_op_o ,
+   output MDU_en_o,
+   output [2:0] MDU_op_o ,
+   output [1:0] chip_select_o,
+   output rs1_shift_sel_o,
+   output rs2_negate_sel_o,
+   output reg_wr_en_o,
+   output [1:0] wb_sel_o,
+   output op1_sel_o,
+   output op2_sel_o,
+   output is_load_instr_o,
+   output is_store_instr_o
 );
 
    wire [6:2] opcode = instr_i[6:2];
@@ -340,18 +346,23 @@ module full_decoder(
                         AND_FUNCT3    : control_signals = 31'b0_00_0_XX_X_00_1010_0_XXX_XXXXX_0_0_1_00_0_0_0_0;
                         default       : control_signals = ILLEGAL;
                      endcase
-                  MDU_FUNCT7: //MUL, MULH, MULHSU, MULHU, DIV,DIVU, REM, REMU
-                     case(funct3) 
-                        MUL_FUNCT3    : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_000_XXXXX_0_0_1_00_0_0_0_0;
-                        MULH_FUNCT3   : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_001_XXXXX_0_0_1_00_0_0_0_0;
-                        MULHSU_FUNCT3 : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_010_XXXXX_0_0_1_00_0_0_0_0;
-                        MULHU_FUNCT3  : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_011_XXXXX_0_0_1_00_0_0_0_0;
-                        DIV_FUNCT3    : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_100_XXXXX_0_0_1_00_0_0_0_0;
-                        DIVU_FUNCT3   : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_101_XXXXX_0_0_1_00_0_0_0_0;
-                        REM_FUNCT3    : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_110_XXXXX_0_0_1_00_0_0_0_0;
-                        REMU_FUNCT3   : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_111_XXXXX_0_0_1_00_0_0_0_0;
-                        default       : control_signals = ILLEGAL;
-                     endcase
+                  MDU_FUNCT7: begin //MUL, MULH, MULHSU, MULHU, DIV,DIVU, REM, REMU
+                     if(is_m_supported_i) begin
+                        case(funct3) 
+                           MUL_FUNCT3    : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_000_XXXXX_0_0_1_00_0_0_0_0;
+                           MULH_FUNCT3   : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_001_XXXXX_0_0_1_00_0_0_0_0;
+                           MULHSU_FUNCT3 : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_010_XXXXX_0_0_1_00_0_0_0_0;
+                           MULHU_FUNCT3  : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_011_XXXXX_0_0_1_00_0_0_0_0;
+                           DIV_FUNCT3    : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_100_XXXXX_0_0_1_00_0_0_0_0;
+                           DIVU_FUNCT3   : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_101_XXXXX_0_0_1_00_0_0_0_0;
+                           REM_FUNCT3    : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_110_XXXXX_0_0_1_00_0_0_0_0;
+                           REMU_FUNCT3   : control_signals = 31'b0_01_0_XX_X_00_XXXX_1_111_XXXXX_0_0_1_00_0_0_0_0;
+                           default       : control_signals = ILLEGAL;
+                        endcase
+                     end else begin
+                        control_signals = ILLEGAL;
+                     end
+                  end        
                   SIMPLE_ALT_FUNCT7: // SUB, SRA, ANDN, ORN, XNOR
                      case(funct3)
                         SUB_FUNCT3    : control_signals = 31'b0_00_0_XX_X_00_0001_0_XXX_XXXXX_0_1_1_00_0_0_0_0;

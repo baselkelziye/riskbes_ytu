@@ -58,6 +58,7 @@ module csr_mepc(
       .en_i(en),
       .set_i(set),
       .clear_i(clear),
-      .value_o(value)
+      .value_o(value),
+      .value_next_o()
    );
 endmodule

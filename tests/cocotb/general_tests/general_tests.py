@@ -51,6 +51,31 @@ async def load_code(dut, file_path):
     await Timer(1, units='ns')
 
 @cocotb.test()
+async def misa_test(dut):
+    filename = "misa_test.txt"
+    dut.rst_i.value = 1
+    await run_clock(dut, 10, 2)
+    dut.rst_i.value = 0
+    await load_code(dut, filepath + filename)
+
+    num_cycles = 1000
+    await run_clock(dut, num_cycles, period_ns)
+    
+    regs = get_register_file(dut)
+    x1 = regs[1].value
+    x2 = regs[2].value
+    x3 = regs[3].value
+    x31 = regs[31].value
+
+    dut._log.info(f"x1 = {hex(x1)}")
+    dut._log.info(f"x2 = {hex(x2)}")
+    dut._log.info(f"x3 = {hex(x3)}")
+
+    assert x1 == 7
+    assert x2 == 5
+    assert x3 == 35
+
+@cocotb.test()
 async def exception_test(dut):
     filename = "exception_test.txt"
     dut.rst_i.value = 1

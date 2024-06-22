@@ -51,6 +51,7 @@ module csr_mtvec(
       .en_i(ack),
       .set_i(set_i[31:2]),
       .clear_i(clear_i[31:2]),
-      .value_o(value)
+      .value_o(value),
+      .value_next_o()
    );
 endmodule

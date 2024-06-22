@@ -68,7 +68,13 @@ module instruction_decode_stage(
    output reg [2:0] MDU_op_o ,
    output reg [1:0] chip_select_o,
    output reg rs1_shift_sel_o,
-   output reg rs2_negate_sel_o
+   output reg rs2_negate_sel_o,
+
+   //Uzantı destek bitleri (Forwarded)
+   input is_a_supported_i,
+   input is_b_supported_i,
+   input is_f_supported_i,
+   input is_m_supported_i
 );
    wire [6:2] opcode = instr_i[6:2];
    wire [2:0] funct3 = instr_i[14:12];
@@ -98,6 +104,11 @@ module instruction_decode_stage(
 
    full_decoder u_full_decoder(
       .instr_i(instr_i),
+
+      .is_a_supported_i(is_a_supported_i),
+      .is_b_supported_i(is_b_supported_i),
+      .is_f_supported_i(is_f_supported_i),
+      .is_m_supported_i(is_m_supported_i),
 
       .exception_o(exception),
       .CSR_en_o(CSR_en),

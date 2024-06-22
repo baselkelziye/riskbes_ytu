@@ -55,7 +55,8 @@ module csr_mcause(
       .en_i(en),
       .set_i(excode_set),
       .clear_i(excode_clear),
-      .value_o(v_excode)
+      .value_o(v_excode),
+      .value_next_o()
    );
 
    wire v_int;
@@ -69,7 +70,8 @@ module csr_mcause(
       .en_i(en),
       .set_i(int_set),
       .clear_i(int_clear),
-      .value_o(v_int)
+      .value_o(v_int),
+      .value_next_o()
    );
 
    assign value_o = {v_int, {27{1'b0}}, v_excode};

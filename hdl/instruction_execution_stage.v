@@ -82,7 +82,13 @@ module instruction_execution_stage(
    input alu_op1_sel_ex_mem_i,
    input alu_op2_sel_ex_mem_i,
    output wire mul_stall_o,
-   output wire div_stall_o
+   output wire div_stall_o,
+
+   //Uzantı destek bitleri (Forwarded)
+   output is_a_supported_o,
+   output is_b_supported_o,
+   output is_f_supported_o,
+   output is_m_supported_o
 );
    wire EX_en = !branching_o && !busywait;
    
@@ -277,9 +283,13 @@ module instruction_execution_stage(
       
       .read_o(CSR_res),
 
-      .mtvec_o(mtvec_value
-),
-      .mepc_o(mepc_value)
+      .mtvec_o(mtvec_value),
+      .mepc_o(mepc_value),
+
+      .is_a_supported_o(is_a_supported_o),
+      .is_b_supported_o(is_b_supported_o),
+      .is_f_supported_o(is_f_supported_o),
+      .is_m_supported_o(is_m_supported_o)
    );
 
    mux_4x1 #(

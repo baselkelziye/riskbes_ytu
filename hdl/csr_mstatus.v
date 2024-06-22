@@ -47,7 +47,8 @@ module csr_mstatus(
       .en_i(ack),
       .set_i(set_i[3]),
       .clear_i(clear_i[3]),
-      .value_o(v_mie)
+      .value_o(v_mie),
+      .value_next_o()
    );
    
    wire v_mpie;
@@ -58,7 +59,8 @@ module csr_mstatus(
       .en_i(ack),
       .set_i(set_i[7]),
       .clear_i(clear_i[7]),
-      .value_o(v_mpie)
+      .value_o(v_mpie),
+      .value_next_o()
    );
    
    wire v_sd = 0;

@@ -18,7 +18,13 @@ module csr_unit (
    output [31:0] read_o,
 
    output [31:0] mtvec_o,
-   output [31:0] mepc_o
+   output [31:0] mepc_o,
+
+   //Uzantı destek bitleri (Forwarded)
+   output is_a_supported_o,
+   output is_b_supported_o,
+   output is_f_supported_o,
+   output is_m_supported_o
 );
 
    localparam OP_RW = 2'b01;
@@ -168,7 +174,29 @@ module csr_unit (
       .ack_o(mtval_ack)
    );
 
-   assign read_o = mscratch_read | mstatus_read | mepc_read | mtvec_read | mcause_read;
+   wire [31:0] misa_value;
+   wire misa_ack;
+
+   wire [31:0] misa_read = misa_ack ? misa_value : 0;
+   csr_misa u_misa(
+      .clk_i(clk_i),
+      .rst_i(rst_i),
+      .en_i(en_i),
+
+      .addr_i(addr_i),
+      .set_i(setfield),
+      .clear_i(clearfield),
+
+      .ack_o(misa_ack),
+      .value_o(misa_value),
+
+      .is_a_supported_o(is_a_supported_o),
+      .is_b_supported_o(is_b_supported_o),
+      .is_f_supported_o(is_f_supported_o),
+      .is_m_supported_o(is_m_supported_o)
+   );
+
+   assign read_o = mscratch_read | mstatus_read | mepc_read | mtvec_read | mcause_read | misa_read;
    assign mtvec_o = mtvec_value;
    assign mepc_o = mepc_value;
 
@@ -184,7 +212,8 @@ module csr_unit (
          + mepc_ack
          + mtvec_ack
          + mtval_ack
-         + mcause_ack;
+         + mcause_ack
+         + misa_ack;
 
          if((en_i == 0 && ack_count != 0) || (en_i == 1 && ack_count != 1)) begin
             $display("WARNING: Bad en_i and ack_count values: %d, %d",en_i , ack_count);

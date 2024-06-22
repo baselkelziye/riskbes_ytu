@@ -67,9 +67,15 @@ initial begin
 
 // Exception Test
 
-    wrapper.ram.data[0] = 128'h00000000_00100073_00000073_305a5073;  
-    wrapper.ram.data[1] = 128'h342021f3_00018113_00010093_0000006f;  
-    wrapper.ram.data[2] = 128'h30200073_341f9073_004f8f93_34102ff3; 
+//    wrapper.ram.data[0] = 128'h00000000_00100073_00000073_305a5073;  
+//    wrapper.ram.data[1] = 128'h342021f3_00018113_00010093_0000006f;  
+//    wrapper.ram.data[2] = 128'h30200073_341f9073_004f8f93_34102ff3; 
+    
+ // misa test
+ 
+    wrapper.ram.data[0] = 128'h305f9073_01c00f93_00000113_00000093;  
+    wrapper.ram.data[1] = 128'h00500113_0000006f_022081b3_30101073;  
+    wrapper.ram.data[2] = 128'h30200073_301fa073_fff00f93_00700093; 
 
 end
 

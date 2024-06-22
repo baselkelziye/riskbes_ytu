@@ -114,22 +114,24 @@ module core(
    wire [31:0] rs2_mem_wb_o;   
    wire [31:0] pc_mem_wb_o_4; 
 
-   //************ tmp values *******************\\
+   //************ stall signals *******************\\
    wire mul_stall;
    wire div_stall_core;
    reg data_cache_blocking_n_last;
    
    always @(posedge clk_i) begin
-   data_cache_blocking_n_last <= data_cache_blocking_n_i;
+      data_cache_blocking_n_last <= data_cache_blocking_n_i;
    end
 
-   //tmp control signals
    wire load_stall;
    wire id_stall = load_stall | mul_stall | div_stall_core ;
    wire if_stall = load_stall | ~data_cache_blocking_n_last | ~data_cache_blocking_n_i | mul_stall | div_stall_core;
 
    wire [31:0] reg_wb_data_w;
    wire busy_w;
+
+   //Uzantı destek bitleri (Forwarded)
+   wire is_a_supported, is_b_supported, is_f_supported, is_m_supported;
    
    assign busy_w = ~data_cache_blocking_n_last | ~data_cache_blocking_n_i;
 
@@ -193,7 +195,12 @@ module core(
       .MDU_op_o(MDU_op_id_ex_o),
       .chip_select_o(chip_select_id_ex_o),
       .rs1_shift_sel_o(rs1_shift_sel_id_ex_o),
-      .rs2_negate_sel_o(rs2_negate_sel_id_ex_o)
+      .rs2_negate_sel_o(rs2_negate_sel_id_ex_o),
+
+      .is_a_supported_i(is_a_supported),
+      .is_b_supported_i(is_b_supported),
+      .is_f_supported_i(is_f_supported),
+      .is_m_supported_i(is_m_supported)
    );
 
    instruction_execution_stage u_ex(
@@ -262,7 +269,12 @@ module core(
       .MDU_op_i(MDU_op_id_ex_o),
       .chip_select_i(chip_select_id_ex_o),
       .rs1_shift_sel_i(rs1_shift_sel_id_ex_o),
-      .rs2_negate_sel_i(rs2_negate_sel_id_ex_o)
+      .rs2_negate_sel_i(rs2_negate_sel_id_ex_o),
+
+      .is_a_supported_o(is_a_supported),
+      .is_b_supported_o(is_b_supported),
+      .is_f_supported_o(is_f_supported),
+      .is_m_supported_o(is_m_supported)
    );
       
 
