@@ -70,7 +70,7 @@ module core(
    wire is_mret_id_ex_o;
    wire [1:0] branch_jump_op_id_ex_o;
    
-   wire [1:0] exception_id_ex_o;
+   wire [2:0] exception_id_ex_o;
    wire CSR_en_id_ex_o;
    wire [1:0] CSR_op_id_ex_o;
    wire CSR_source_sel_id_ex_o;

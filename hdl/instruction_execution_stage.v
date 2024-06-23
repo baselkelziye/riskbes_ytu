@@ -41,7 +41,7 @@ module instruction_execution_stage(
 
    input is_mret_i,
    input [1:0] branch_jump_op_i,
-   input [1:0] exception_i,
+   input [2:0] exception_i,
    input CSR_en_i,
    input [1:0] CSR_op_i,
    input CSR_source_sel_i,
@@ -91,6 +91,7 @@ module instruction_execution_stage(
    output is_m_supported_o
 );
    wire EX_en = !branching_o && !busywait;
+   wire has_exception = EX_en && |exception_i;
    
    wire [31:0] mtvec_value, mepc_value;
 
@@ -138,7 +139,7 @@ module instruction_execution_stage(
       .rs2_i(alu_in2_w),
       .is_mret_i(is_mret_i),
       .branch_jump_op_i(branch_jump_op_i),
-      .exception_i(exception_i),
+      .has_exception_i(has_exception),
       .funct3_i(funct3_ex_mem_i),
       .branching_o(branching_next),
       .target_sel_o(branch_target_sel)
@@ -273,6 +274,7 @@ module instruction_execution_stage(
       .op_i(CSR_op_i),
       .source_sel_i(CSR_source_sel_i),
 
+      .has_exception_i(has_exception),
       .exception_i(exception_i),
       .pc_i(pc_ex_mem_i[31:2]),
       

@@ -58,7 +58,7 @@ module instruction_decode_stage(
    output reg [2:0] funct3_o,
    output reg [6:0] funct7_o,
 
-   output reg [1:0] exception_o,
+   output reg [2:0] exception_o,
    output reg CSR_en_o,
    output reg [1:0] CSR_op_o,
    output reg CSR_source_sel_o,
@@ -83,12 +83,12 @@ module instruction_decode_stage(
    wire [4:0] rs1_label = instr_i[19:15];
    wire [4:0] rs2_label = instr_i[24:20];
 
-   //EX_Decoder sinyalleri, Sonra yukariya EX Stage sinyallerin altina Aynen tasinsin
+   //Decoder sinyalleri
    wire [1:0] chip_select;
    wire CSR_en;
    wire [1:0] CSR_op;
    wire CSR_source_sel;
-   wire [1:0] exception;
+   wire [2:0] exception;
    wire [3:0] ALU_op;
    wire [4:0] BMU_op;
    wire MDU_en;

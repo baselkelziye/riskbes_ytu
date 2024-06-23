@@ -3,7 +3,8 @@ module csr_mcause(
    input rst_i,
    input en_i,
 
-   input [1:0] exception_i,
+   input has_exception_i,
+   input [2:0] exception_i,
    
    input [11:0] addr_i,
    input [31:0] set_i,
@@ -19,33 +20,37 @@ module csr_mcause(
    wire ack = en_i && (addr_i == ADDRESS);
    assign ack_o = ack;
 
-   localparam [1:0] NO_EXCEPTION      = 2'b00,
-                    ILLEGAL_EXCEPTION = 2'b01,
-                    ECALL_EXCEPTION   = 2'b10,
-                    EBREAK_EXCEPTION  = 2'b11;
+   localparam [2:0] NO_EXCEPTION                = 3'b000,
+                    ILLEGAL_EXCEPTION           = 3'b001,
+                    ECALL_EXCEPTION             = 3'b010,
+                    EBREAK_EXCEPTION            = 3'b011,
+                    INSTR_MISALIGNED_EXCEPTION  = 3'b100,
+                    INSTR_ACCESS_EXCEPTION      = 3'b101;
    
-   localparam [3:0] ILLEGAL_EXCODE = 4'd2,
-                    ECALL_EXCODE   = 4'd11,
-                    EBREAK_EXCODE  = 4'd3;
-
-   wire has_exception = |exception_i;
+   localparam [3:0] ILLEGAL_EXCODE           = 4'd2,
+                    ECALL_EXCODE             = 4'd11,
+                    EBREAK_EXCODE            = 4'd3,
+                    INSTR_MISALIGNED_EXCODE  = 4'd0,
+                    INSTR_ACCESS_EXCODE      = 4'd1;
    reg [3:0] excode_gen;
 
    always @(*) begin
       case (exception_i)
-         ILLEGAL_EXCEPTION: excode_gen = ILLEGAL_EXCODE;
-         ECALL_EXCEPTION:   excode_gen = ECALL_EXCODE;
-         EBREAK_EXCEPTION:  excode_gen = EBREAK_EXCODE;
-         default:           excode_gen = 4'bXXXX;
+         ILLEGAL_EXCEPTION:            excode_gen = ILLEGAL_EXCODE;
+         ECALL_EXCEPTION:              excode_gen = ECALL_EXCODE;
+         EBREAK_EXCEPTION:             excode_gen = EBREAK_EXCODE;
+         INSTR_MISALIGNED_EXCEPTION:   excode_gen = INSTR_MISALIGNED_EXCODE;
+         INSTR_ACCESS_EXCEPTION:       excode_gen = INSTR_ACCESS_EXCODE;
+         default:                      excode_gen = 4'bXXXX;
       endcase
    end
 
-   wire en = has_exception || ack;
+   wire en = has_exception_i || ack;
 
    wire [3:0] v_excode;
    
-   wire [3:0] excode_set = has_exception ? excode_gen : set_i[3:0];
-   wire [3:0] excode_clear = has_exception ? ~excode_gen : clear_i[3:0];
+   wire [3:0] excode_set = has_exception_i ? excode_gen : set_i[3:0];
+   wire [3:0] excode_clear = has_exception_i ? ~excode_gen : clear_i[3:0];
    csrfield #(
       .WIDTH(4)
    ) u_excode (
@@ -61,8 +66,8 @@ module csr_mcause(
 
    wire v_int;
    
-   wire int_set = set_i[31] && !has_exception;
-   wire int_clear = clear_i[31] || has_exception;
+   wire int_set = set_i[31] && !has_exception_i;
+   wire int_clear = clear_i[31] || has_exception_i;
    csrfield u_int (
       .clk_i(clk_i),
       .rst_i(rst_i),
