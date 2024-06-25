@@ -32,8 +32,6 @@ module instruction_execution_stage(
    input [31:0] imm_ex_mem_i,
    input [4:0 ] rs1_label_ex_mem_i,
    input [4:0 ] rs2_label_ex_mem_i,
-   input [3:0 ] read_write_sel_ex_mem_i,
-   //        input [31:0] rs2_ex_mem_i, locally
    input [2:0] funct3_ex_mem_i,
    input [6:0] funct7_ex_mem_i,
    input is_load_instr_ex_mem_i, 
@@ -41,7 +39,8 @@ module instruction_execution_stage(
 
    input is_mret_i,
    input [1:0] branch_jump_op_i,
-   input [1:0] exception_i,
+   input has_exception_i,
+   input [3:0] exception_i,
    input CSR_en_i,
    input [1:0] CSR_op_i,
    input CSR_source_sel_i,
@@ -53,7 +52,7 @@ module instruction_execution_stage(
    input rs1_shift_sel_i,
    input rs2_negate_sel_i,
 
-   output reg [31:1] branch_target_o,
+   output reg [31:2] branch_target_o,
    output reg [4:0] rd_ex_mem_o,
    output reg [31:0] pc_ex_mem_o,
    output reg [1:0] wb_sel_ex_mem_o,
@@ -91,6 +90,7 @@ module instruction_execution_stage(
    output is_m_supported_o
 );
    wire EX_en = !branching_o && !busywait;
+   wire has_exception = EX_en && has_exception_i;
    
    wire [31:0] mtvec_value, mepc_value;
 
@@ -101,17 +101,6 @@ module instruction_execution_stage(
    wire [1:0]  forwardB;
    wire [31:0] rs1_tmp;
    wire [31:0] shifted_rs1;
-
-   wire [1:0] chip_select_i;
-   wire CSR_en_i;
-   wire [1:0] CSR_op_i;
-   wire CSR_source_sel_i;
-   wire [1:0] privjump_i;
-   wire [3:0] ALU_op_i;
-   wire [4:0] BMU_op_i;
-   wire MDU_en_i;
-   wire [2:0] MDU_op_i;
-   wire rs1_shift_sel_i, rs2_negate_sel_i;
    
    wire [31:0] ALU_res, MDU_res, BMU_res;
    
@@ -138,7 +127,7 @@ module instruction_execution_stage(
       .rs2_i(alu_in2_w),
       .is_mret_i(is_mret_i),
       .branch_jump_op_i(branch_jump_op_i),
-      .exception_i(exception_i),
+      .has_exception_i(has_exception),
       .funct3_i(funct3_ex_mem_i),
       .branching_o(branching_next),
       .target_sel_o(branch_target_sel)
@@ -267,12 +256,12 @@ module instruction_execution_stage(
    csr_unit u_CSR(
       .clk_i(clk_i),
       .rst_i(rst_i),
-      
-      .EX_en_i(EX_en),
+ 
       .en_i(CSR_en_i),
       .op_i(CSR_op_i),
       .source_sel_i(CSR_source_sel_i),
 
+      .has_exception_i(has_exception),
       .exception_i(exception_i),
       .pc_i(pc_ex_mem_i[31:2]),
       
@@ -322,7 +311,7 @@ module instruction_execution_stage(
       end else if(!busywait) begin
          if (!mul_stall_o && !div_stall_o) begin
             branching_o <= branching_next;     
-            branch_target_o <= branch_target_next;
+            branch_target_o <= branch_target_next[31:2];
             alu_out_ex_mem_o <= alu_out_next;
             rd_ex_mem_o <= rd_ex_mem_i;
             pc_ex_mem_o <= pc_ex_mem_i;

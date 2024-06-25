@@ -31,7 +31,7 @@ module instruction_fetch_stage(
    input stall_i,
    
    input branching_i,
-   input [31:1] branch_target_i,
+   input [31:2] branch_target_i,
    
    output reg [31:2] instr_o,
    output reg [31:2] pc_o,
@@ -39,27 +39,22 @@ module instruction_fetch_stage(
    output reg [1:0] branch_jump_op_o,
    output reg [2:0] imm_src_o
 );
-   
-   localparam FETCH_WIDTH = 29;
    localparam [31:2] INSTR_NOP = 30'b000000000000000000000000000100;
    localparam [1:0] BRANCH_JUMP_NOP = 2'b00;
    localparam [2:0] IMM_SRC_NOP = 3'bXXX;
    
-   reg [FETCH_WIDTH - 1:0] fetch_counter;
+   reg [31:2] pc;
 
-   assign cache_address_o = fetch_counter;
+   assign cache_address_o = pc;
 
-   wire [FETCH_WIDTH - 1:0] fetch_counter_next;
-   wire fetch_counter_carry;
+   wire [31:2] pc_increment;
+   wire pc_carry;
    
-   wire [31:2] branch_fetch_counter = branch_target_i[31:2];
-   wire branch_aligned_n = branch_target_i[1];
-   
-   increment #(.DATA_WIDTH(FETCH_WIDTH)) fetch_counter_inc
+   increment #(.DATA_WIDTH(30)) u_pc_increment
    (
-       .value_i(fetch_counter),
-       .value_o(fetch_counter_next),
-       .carry_o(fetch_counter_carry)
+       .value_i(pc),
+       .value_o(pc_increment),
+       .carry_o(pc_carry)
    );
 
    wire [1:0] branch_jump_op;
@@ -74,20 +69,20 @@ module instruction_fetch_stage(
    always @(posedge clk_i) begin
       if(!rst_i) begin
          if(!stall_i) begin
+            pc_o <= pc;
+
             if(branching_i) begin
-               fetch_counter <= branch_fetch_counter;
+               pc <= branch_target_i;
 
                instr_o <= INSTR_NOP;
                branch_jump_op_o <= BRANCH_JUMP_NOP;
                imm_src_o <= IMM_SRC_NOP;
             end else if(cache_blocking_n_i) begin
-               fetch_counter <= fetch_counter_next;
+               pc <= pc_increment;
 
                instr_o <= cache_data_i;
                branch_jump_op_o <= branch_jump_op;
                imm_src_o <= imm_src;
-
-               pc_o <= fetch_counter;
             end else begin
                instr_o <= INSTR_NOP;
                branch_jump_op_o <= BRANCH_JUMP_NOP;
@@ -95,7 +90,7 @@ module instruction_fetch_stage(
             end
          end
       end else begin
-         fetch_counter <= {FETCH_WIDTH{1'b0}};
+         pc <= 30'b10000_00000_00000_00000_00000_00000;
 
          instr_o <= INSTR_NOP;
          branch_jump_op_o <= BRANCH_JUMP_NOP;

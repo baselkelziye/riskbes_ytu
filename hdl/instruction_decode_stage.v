@@ -58,7 +58,8 @@ module instruction_decode_stage(
    output reg [2:0] funct3_o,
    output reg [6:0] funct7_o,
 
-   output reg [1:0] exception_o,
+   output reg has_exception_o,
+   output reg [3:0] exception_o,
    output reg CSR_en_o,
    output reg [1:0] CSR_op_o,
    output reg CSR_source_sel_o,
@@ -83,12 +84,13 @@ module instruction_decode_stage(
    wire [4:0] rs1_label = instr_i[19:15];
    wire [4:0] rs2_label = instr_i[24:20];
 
-   //EX_Decoder sinyalleri, Sonra yukariya EX Stage sinyallerin altina Aynen tasinsin
+   wire has_exception;
+   wire [3:0] exception;
+
    wire [1:0] chip_select;
    wire CSR_en;
    wire [1:0] CSR_op;
    wire CSR_source_sel;
-   wire [1:0] exception;
    wire [3:0] ALU_op;
    wire [4:0] BMU_op;
    wire MDU_en;
@@ -110,6 +112,7 @@ module instruction_decode_stage(
       .is_f_supported_i(is_f_supported_i),
       .is_m_supported_i(is_m_supported_i),
 
+      .has_exception_o(has_exception),
       .exception_o(exception),
       .CSR_en_o(CSR_en),
       .CSR_op_o(CSR_op),
@@ -194,6 +197,7 @@ module instruction_decode_stage(
                is_load_instr_o <= is_load_instr;
                is_store_instr_o <= is_store_instr;
                branch_jump_op_o <= branch_jump_op_i;
+               has_exception_o <= has_exception;
                exception_o <= exception;
                CSR_en_o <= CSR_en;
                CSR_op_o <= CSR_op;
@@ -221,6 +225,7 @@ module instruction_decode_stage(
                is_load_instr_o          <= 0; 
                is_store_instr_o         <= 0;
                branch_jump_op_o         <= 0;
+               has_exception_o          <= 0;
                exception_o              <= 0;
                CSR_en_o                 <= 0;
                CSR_op_o                 <= 0;
@@ -250,6 +255,7 @@ module instruction_decode_stage(
          is_load_instr_o          <= 0; 
          is_store_instr_o         <= 0;
          branch_jump_op_o         <= 0;
+         has_exception_o          <= 0;
          exception_o              <= 0;
          CSR_en_o                 <= 0;
          CSR_op_o                 <= 0;
