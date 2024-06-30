@@ -39,6 +39,7 @@ module csr_mstatus(
    wire ack = en_i && (addr_i == ADDRESS);
    assign ack_o = ack;
 
+   // Sorulara gelen cevaplara göre bunun exception ve MRET sonrası güncellenmesi gerekebilir.
    wire v_mie;
    csrfield u_mie(
       .clk_i(clk_i),
@@ -51,6 +52,7 @@ module csr_mstatus(
       .value_next_o()
    );
    
+   // Sorulara gelen cevaplara göre bunun exception ve MRET sonrası güncellenmesi gerekebilir.
    wire v_mpie;
    csrfield u_mpie(
       .clk_i(clk_i),
