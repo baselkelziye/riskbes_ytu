@@ -20,10 +20,12 @@ module csr_mcause(
    wire ack = en_i && (addr_i == ADDRESS);
    assign ack_o = ack;
 
-   localparam [1:0] NO_EXCEPTION      = 2'b00,
-                    ILLEGAL_EXCEPTION = 2'b01,
-                    ECALL_EXCEPTION   = 2'b10,
-                    EBREAK_EXCEPTION  = 2'b11;
+   localparam [2:0] NO_EXCEPTION                = 3'b000,
+                    ILLEGAL_EXCEPTION           = 3'b001,
+                    ECALL_EXCEPTION             = 3'b010,
+                    EBREAK_EXCEPTION            = 3'b011,
+                    INSTR_MISALIGNED_EXCEPTION  = 3'b100,
+                    INSTR_ACCESS_EXCEPTION      = 3'b101;
    
    localparam [3:0] ILLEGAL_EXCODE = 4'd2,
                     ECALL_EXCODE   = 4'd11,
