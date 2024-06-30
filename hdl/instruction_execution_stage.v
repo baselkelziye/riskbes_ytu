@@ -95,34 +95,13 @@ module instruction_execution_stage(
 
    //Exception detection
    wire ID_exception_detected = EX_en && ID_exception_detected_i;
-   wire EX_exception_detected = EX_en && branching_next && branch_target_misaligned;
+   wire branch_misaligned; //Aşağıda değeri atanmıştır.
+   wire memory_misaligned; //memory_alignment_checker'den alınacak.
+   wire EX_exception_detected = EX_en && (branch_misaligned || memory_misaligned);
    wire exception_detected = ID_exception_detected || EX_exception_detected;
    reg [3:0] exception_last;
    
    wire [31:0] mtvec_value, mepc_value;
-
-   wire [31:0] alu_in1_w;
-   wire [31:0] alu_in2_w;
-   wire [31:0] alu_out_next;
-   wire [1:0]  forwardA;
-   wire [1:0]  forwardB;
-   wire [31:0] rs1_tmp;
-   wire [31:0] shifted_rs1;
-   
-   wire [31:0] ALU_res, MDU_res, BMU_res;
-   
-   wire [31:0] alu_in1_forwarded_input;
-   wire [31:0] alu_in2_forwarded_input;
-   
-   
-   localparam [2:0]  MUL_FUNCT3    = 3'b000,
-                     MULH_FUNCT3   = 3'b001,
-                     MULHSU_FUNCT3 = 3'b010,
-                     MULHU_FUNCT3  = 3'b011,
-                     DIV_FUNCT3    = 3'b100,
-                     DIVU_FUNCT3   = 3'b101,
-                     REM_FUNCT3    = 3'b110,
-                     REMU_FUNCT3   = 3'b111;
    
    //Dallanma birimi
    wire branching_next;
@@ -130,6 +109,7 @@ module instruction_execution_stage(
    wire [31:1] branch_target_value;
    wire [31:2] branch_target_next = branch_target_value[31:2];
    wire branch_target_misaligned = branch_target_value[1];
+   assign branch_misaligned = branching_next && branch_target_misaligned;
 
    branch_jump u_branch_jump(
       .rs1_i(alu_in1_w), 
@@ -153,6 +133,27 @@ module instruction_execution_stage(
 
       .select(branch_target_sel),
       .out(branch_target_value)
+   );
+
+   wire [31:0] alu_in1_w;
+   wire [31:0] alu_in2_w;
+   wire [31:0] alu_out_next;
+   wire [1:0]  forwardA;
+   wire [1:0]  forwardB;
+   wire [31:0] rs1_tmp;
+   wire [31:0] shifted_rs1;
+   
+   wire [31:0] ALU_res, MDU_res, BMU_res;
+   
+   wire [31:0] alu_in1_forwarded_input;
+   wire [31:0] alu_in2_forwarded_input;
+
+   memory_alignment_checker u_memory_alignment_checker(
+      .addr_align_i(ALU_res[1:0]), //adres her zaman ALU'dan gelir
+      .is_load_instr_i(is_load_instr_ex_mem_i),
+      .is_store_instr_i(is_store_instr_ex_mem_i),
+      .funct3_i(funct3_ex_mem_i),
+      .misaligned_o(memory_misaligned)
    );
    
    forwarding_unit forwarding_unit(

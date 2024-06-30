@@ -59,7 +59,6 @@ async def exception_test(dut):
     await load_code(dut, filepath + filename)
 
     regs = get_register_file(dut)
-    regs[4].value = 0xFFFF # 0 olmayan birşey yap
 
     num_cycles = 200
     await run_clock(dut, num_cycles, period_ns)
@@ -68,16 +67,19 @@ async def exception_test(dut):
     x2 = regs[2].value
     x3 = regs[3].value
     x4 = regs[4].value
+    x5 = regs[5].value
 
     dut._log.info(f"x1 = {hex(x1)}")
     dut._log.info(f"x2 = {hex(x2)}")
     dut._log.info(f"x3 = {hex(x3)}")
     dut._log.info(f"x4 = {hex(x4)}")
+    dut._log.info(f"x5 = {hex(x5)}")
 
     assert x1 == 11
     assert x2 == 3
     assert x3 == 2
     assert x4 == 0
+    assert x5 == 6
 
 @cocotb.test()
 async def misa_b_test(dut):

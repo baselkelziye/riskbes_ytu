@@ -244,14 +244,14 @@ module full_decoder(
                LH_FUNCT3,
                LW_FUNCT3,
                LBU_FUNCT3,
-               LHU_FUNCT3: control_signals = 34'b0_XXXX_0_00_0_XX_X_0000_0_XXX_XXXXX_0_0_1_01_0_1_1_0;
+               LHU_FUNCT3: control_signals = 34'b0_0100_0_00_0_XX_X_0000_0_XXX_XXXXX_0_0_1_01_0_1_1_0;
             endcase
          end
          STORE_OPCODE : begin
             case (funct3)
                SB_FUNCT3,
                SH_FUNCT3,
-               SW_FUNCT3: control_signals = 34'b0_XXXX_0_00_0_XX_X_0000_0_XXX_XXXXX_0_0_0_XX_0_1_0_1;
+               SW_FUNCT3: control_signals = 34'b0_0110_0_00_0_XX_X_0000_0_XXX_XXXXX_0_0_0_XX_0_1_0_1;
             endcase
          end 
          BRANCH_OPCODE : begin

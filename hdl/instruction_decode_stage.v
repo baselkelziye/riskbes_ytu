@@ -154,6 +154,7 @@ module instruction_decode_stage(
        .rd_label_ex_i(rd_o), // EX asamasinda RD
        .rs1_label_id_i(rs1_label), // ID rs1 numarasi
        .rs2_label_id_i(rs2_label), // ID rs2 numarasi
+       .branching_i(branching_i), //branch var
 
        .stall_o(load_stall_o)  // cikis stall sinyali
    );
@@ -255,7 +256,7 @@ module instruction_decode_stage(
          is_load_instr_o          <= 0; 
          is_store_instr_o         <= 0;
          branch_jump_op_o         <= 0;
-         ID_exception_detected_o          <= 0;
+         ID_exception_detected_o  <= 0;
          exception_o              <= 0;
          CSR_en_o                 <= 0;
          CSR_op_o                 <= 0;
