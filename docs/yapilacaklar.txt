@@ -1,0 +1,13 @@
+ZORUNLU:
+Instruction Access Fault
+Load/Store/AMO Access Fault (istenirse)
+
+KIRMIZI:
+CPOP
+
+SARI:
+Cache Arbiter'ı tekrar incele
+
+YEŞİL:
+Load/Store ve Load/Move forwarding
+Branch Prediction
