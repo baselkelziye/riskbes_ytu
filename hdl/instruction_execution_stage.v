@@ -39,7 +39,7 @@ module instruction_execution_stage(
 
    input is_mret_i,
    input [1:0] branch_jump_op_i,
-   input has_exception_i,
+   input ID_exception_detected_i,
    input [3:0] exception_i,
    input CSR_en_i,
    input [1:0] CSR_op_i,
@@ -87,10 +87,17 @@ module instruction_execution_stage(
    output is_a_supported_o,
    output is_b_supported_o,
    output is_f_supported_o,
-   output is_m_supported_o
+   output is_m_supported_o,
+
+   output reg exception_detected_o
 );
-   wire EX_en = !branching_o && !busywait;
-   wire has_exception = EX_en && has_exception_i;
+   wire EX_en = !branching_o && !busywait && !exception_detected_o;
+
+   //Exception detection
+   wire ID_exception_detected = EX_en && ID_exception_detected_i;
+   wire EX_exception_detected = 0;
+   wire exception_detected = ID_exception_detected || EX_exception_detected;
+   reg [3:0] exception_last;
    
    wire [31:0] mtvec_value, mepc_value;
 
@@ -127,7 +134,8 @@ module instruction_execution_stage(
       .rs2_i(alu_in2_w),
       .is_mret_i(is_mret_i),
       .branch_jump_op_i(branch_jump_op_i),
-      .has_exception_i(has_exception),
+      .has_exception_i(ID_exception_detected), 
+      .jump_to_exception_i(exception_detected_o),
       .funct3_i(funct3_ex_mem_i),
       .branching_o(branching_next),
       .target_sel_o(branch_target_sel)
@@ -235,8 +243,7 @@ module instruction_execution_stage(
       .rst_i(rst_i),
       .alu1_i(alu_in1_forwarded_input),
       .alu2_i(alu_in2_forwarded_input),
-      .EX_en_i(EX_en),
-      .en_i(MDU_en_i),
+      .en_i(EX_en && MDU_en_i),
       .MDU_op(MDU_op_i),
       .result_o(MDU_res),
       .mul_stall(mul_stall_o),
@@ -257,13 +264,13 @@ module instruction_execution_stage(
       .clk_i(clk_i),
       .rst_i(rst_i),
  
-      .en_i(CSR_en_i),
+      .en_i(EX_en && CSR_en_i),
       .op_i(CSR_op_i),
       .source_sel_i(CSR_source_sel_i),
 
-      .has_exception_i(has_exception),
-      .exception_i(exception_i),
-      .pc_i(pc_ex_mem_i[31:2]),
+      .exception_detected_i(exception_detected_o),
+      .exception_i(exception_last),
+      .pc_last_i(pc_ex_mem_o[31:2]),
       
       .rs1_label_i(rs1_label_ex_mem_i),
       .rs1_value_i(alu_in1_w), //Most recent RS1 value
@@ -308,6 +315,8 @@ module instruction_execution_stage(
          funct7_ex_mem_o <= 7'b0;
          is_load_instr_ex_mem_o <= 1'b0;
          is_store_instr_ex_mem_o <= 1'b0;
+         exception_detected_o <= 1'b0;
+         exception_last <= 0;
       end else if(!busywait) begin
          if (!mul_stall_o && !div_stall_o) begin
             branching_o <= branching_next;     
@@ -324,6 +333,8 @@ module instruction_execution_stage(
             funct7_ex_mem_o <= funct7_ex_mem_i;
             is_load_instr_ex_mem_o <= is_load_instr_ex_mem_i;
             is_store_instr_ex_mem_o <= is_store_instr_ex_mem_i;
+            exception_detected_o <= exception_detected;
+            exception_last <= exception_i;
          end else begin // Mul stall da yazma!
             rd_ex_mem_o <= 0;
          end

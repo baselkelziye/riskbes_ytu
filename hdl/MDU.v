@@ -1,7 +1,6 @@
 module MDU(
             input clk_i,
             input rst_i,
-            input EX_en_i,
             input en_i,
             input [31:0]alu1_i,
             input [31:0]alu2_i,
@@ -38,10 +37,10 @@ localparam [2:0]    MUL_FUNCT3    = 3'b000,
 
 //--Multiplier and Divider Start Signals------------------------------
 wire mul_en;
-assign mul_en = EX_en_i && en_i && (MDU_op == MUL_FUNCT3 || MDU_op == MULH_FUNCT3 || MDU_op == MULHSU_FUNCT3 || MDU_op == MULHU_FUNCT3) ? 1 : 0;
+assign mul_en = en_i && (MDU_op == MUL_FUNCT3 || MDU_op == MULH_FUNCT3 || MDU_op == MULHSU_FUNCT3 || MDU_op == MULHU_FUNCT3) ? 1 : 0;
 
 wire div_en;
-assign div_en = EX_en_i && en_i && (MDU_op == DIV_FUNCT3 || MDU_op == DIVU_FUNCT3 || MDU_op == REM_FUNCT3 || MDU_op == REMU_FUNCT3) ? 1 : 0;
+assign div_en = en_i && (MDU_op == DIV_FUNCT3 || MDU_op == DIVU_FUNCT3 || MDU_op == REM_FUNCT3 || MDU_op == REMU_FUNCT3) ? 1 : 0;
 //--------------------------------------------------------------------
 
 //---------------Modules Instantiations-------------------------------

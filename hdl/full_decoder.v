@@ -7,7 +7,7 @@ module full_decoder(
    input is_f_supported_i,
    input is_m_supported_i,
 
-   output has_exception_o,
+   output ID_exception_detected_o,
    output [3:0] exception_o,
    output is_mret_o,
    output CSR_en_o,
@@ -214,7 +214,7 @@ module full_decoder(
    reg [33:0] control_signals;
    localparam [33:0] ILLEGAL = 34'b1_0010_X_XX_0_XX_X_XXXX_0_XXX_XXXXX_X_X_0_XX_X_X_0_0;         
 
-   // has_exception_o,
+   // ID_exception_detected_o,
    // exception_o[3:0],
    // is_mret_o,
    // chip_select_o[1:0],
@@ -461,7 +461,7 @@ module full_decoder(
    end
 
    assign {
-      has_exception_o,
+      ID_exception_detected_o,
       exception_o,
       is_mret_o,
       chip_select_o,

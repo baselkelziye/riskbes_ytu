@@ -3,7 +3,7 @@ module csr_mcause(
    input rst_i,
    input en_i,
 
-   input has_exception_i,
+   input exception_detected_i,
    input [3:0] exception_i,
    
    input [11:0] addr_i,
@@ -29,12 +29,12 @@ module csr_mcause(
                     ECALL_EXCODE   = 4'd11,
                     EBREAK_EXCODE  = 4'd3;
 
-   wire en = has_exception_i || ack;
+   wire en = exception_detected_i || ack;
 
    wire [3:0] v_excode;
    
-   wire [3:0] excode_set = has_exception_i ? exception_i : set_i[3:0];
-   wire [3:0] excode_clear = has_exception_i ? ~exception_i : clear_i[3:0];
+   wire [3:0] excode_set = exception_detected_i ? exception_i : set_i[3:0];
+   wire [3:0] excode_clear = exception_detected_i ? ~exception_i : clear_i[3:0];
    csrfield #(
       .WIDTH(4)
    ) u_excode (
@@ -50,8 +50,8 @@ module csr_mcause(
 
    wire v_int;
    
-   wire int_set = set_i[31] && !has_exception_i;
-   wire int_clear = clear_i[31] || has_exception_i;
+   wire int_set = set_i[31] && !exception_detected_i;
+   wire int_clear = clear_i[31] || exception_detected_i;
    csrfield u_int (
       .clk_i(clk_i),
       .rst_i(rst_i),

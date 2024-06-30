@@ -6,9 +6,9 @@ module csr_unit (
    input [1:0] op_i, // 01 = RW, 10 = RS, 11 = RC
    input source_sel_i, //0 = rs1, 1 = uimm
 
-   input has_exception_i,
+   input exception_detected_i,
    input [3:0] exception_i,
-   input [31:2] pc_i,
+   input [31:2] pc_last_i,
 
    input [4:0] rs1_label_i,
    input [31:0] rs1_value_i,
@@ -113,8 +113,8 @@ module csr_unit (
       .rst_i(rst_i),
       .en_i(en_i),
 
-      .pc_i(pc_i),
-      .has_exception_i(has_exception_i),
+      .pc_last_i(pc_last_i),
+      .exception_detected_i(exception_detected_i),
 
       .addr_i(addr_i),
       .set_i(setfield),
@@ -152,7 +152,7 @@ module csr_unit (
       .rst_i(rst_i),
       .en_i(en_i),
 
-      .has_exception_i(has_exception_i),
+      .exception_detected_i(exception_detected_i),
       .exception_i(exception_i),
 
       .addr_i(addr_i),

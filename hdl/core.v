@@ -70,7 +70,7 @@ module core(
    wire is_mret_id_ex_o;
    wire [1:0] branch_jump_op_id_ex_o;
    
-   wire has_exception_id_ex_o;
+   wire ID_exception_detected_id_ex_o;
    wire [3:0] exception_id_ex_o;
    wire CSR_en_id_ex_o;
    wire [1:0] CSR_op_id_ex_o;
@@ -186,7 +186,7 @@ module core(
       .is_mret_o(is_mret_id_ex_o),
       .branch_jump_op_o(branch_jump_op_id_ex_o),
 
-      .has_exception_o(has_exception_id_ex_o),
+      .ID_exception_detected_o(ID_exception_detected_id_ex_o),
       .exception_o(exception_id_ex_o),
       .CSR_en_o(CSR_en_id_ex_o),
       .CSR_op_o(CSR_op_id_ex_o),
@@ -261,7 +261,7 @@ module core(
       .mul_stall_o(mul_stall),
       .div_stall_o(div_stall_core),
 
-      .has_exception_i(has_exception_id_ex_o),
+      .ID_exception_detected_i(ID_exception_detected_id_ex_o),
       .exception_i(exception_id_ex_o),
       .CSR_en_i(CSR_en_id_ex_o),
       .CSR_op_i(CSR_op_id_ex_o),
