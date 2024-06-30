@@ -1,5 +1,6 @@
 ZORUNLU:
 Instruction Access Fault
+Asenkron aktif-low reset
 Load/Store/AMO Access Fault (istenirse)
 
 KIRMIZI:
