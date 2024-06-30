@@ -67,9 +67,10 @@ initial begin
 
 // Exception Test
 
-    wrapper.ram.data[0] = 128'h000fffe7_00100073_00000073_305a5073;  
-    wrapper.ram.data[1] = 128'h342021f3_00018113_00010093_0000006f;  
-    wrapper.ram.data[2] = 128'h30200073_341f9073_004f8f93_34102ff3; 
+    wrapper.ram.data[0] = 128'h000fffe7_00100073_00000073_305c5073;  
+    wrapper.ram.data[1] = 128'h00018113_00010093_0000006f_0020006f;  
+    wrapper.ram.data[2] = 128'h004f8f93_34102ff3_34202273_00020193; 
+    wrapper.ram.data[3] = 128'h30200073_341f9073; 
     
  // misa test
  

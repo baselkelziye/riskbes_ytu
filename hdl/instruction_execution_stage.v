@@ -95,7 +95,7 @@ module instruction_execution_stage(
 
    //Exception detection
    wire ID_exception_detected = EX_en && ID_exception_detected_i;
-   wire EX_exception_detected = 0;
+   wire EX_exception_detected = EX_en && branching_next && branch_target_misaligned;
    wire exception_detected = ID_exception_detected || EX_exception_detected;
    reg [3:0] exception_last;
    
@@ -127,7 +127,9 @@ module instruction_execution_stage(
    //Dallanma birimi
    wire branching_next;
    wire [1:0] branch_target_sel;
-   wire [31:1] branch_target_next;
+   wire [31:1] branch_target_value;
+   wire [31:2] branch_target_next = branch_target_value[31:2];
+   wire branch_target_misaligned = branch_target_value[1];
 
    branch_jump u_branch_jump(
       .rs1_i(alu_in1_w), 
@@ -150,7 +152,7 @@ module instruction_execution_stage(
       .in3(31'hBADC0DE),
 
       .select(branch_target_sel),
-      .out(branch_target_next)
+      .out(branch_target_value)
    );
    
    forwarding_unit forwarding_unit(
@@ -301,8 +303,8 @@ module instruction_execution_stage(
 
    always @(posedge clk_i) begin
       if(rst_i || branching_o) begin
-         branching_o <= 0;
-         branch_target_o <= 0;
+         branching_o <= !rst_i && exception_detected_o; //Misaligned Instruction Exception için (burada !rst_i testi gerekli mi?)
+         branch_target_o <= mtvec_value[31:2]; //Misaligned Instruction Exception için
          alu_out_ex_mem_o <= 32'd0;
          rd_ex_mem_o <= 5'd0;
          pc_ex_mem_o <= 32'd0;
@@ -320,7 +322,7 @@ module instruction_execution_stage(
       end else if(!busywait) begin
          if (!mul_stall_o && !div_stall_o) begin
             branching_o <= branching_next;     
-            branch_target_o <= branch_target_next[31:2];
+            branch_target_o <= branch_target_next;
             alu_out_ex_mem_o <= alu_out_next;
             rd_ex_mem_o <= rd_ex_mem_i;
             pc_ex_mem_o <= pc_ex_mem_i;

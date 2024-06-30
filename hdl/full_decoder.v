@@ -261,17 +261,17 @@ module full_decoder(
                BLT_FUNCT3,
                BGE_FUNCT3,
                BLTU_FUNCT3,
-               BGEU_FUNCT3: control_signals = 34'b0_XXXX_0_00_0_XX_X_0000_0_XXX_XXXXX_0_0_0_XX_1_1_0_0;
+               BGEU_FUNCT3: control_signals = 34'b0_0000_0_00_0_XX_X_0000_0_XXX_XXXXX_0_0_0_XX_1_1_0_0;
             endcase
          end
 
          LUI_OPCODE: control_signals = 34'b0_XXXX_0_00_0_XX_X_1100_0_XXX_XXXXX_0_0_1_00_X_1_0_0;
          AUIPC_OPCODE : control_signals = 34'b0_XXXX_0_00_0_XX_X_0000_0_XXX_XXXXX_0_0_1_00_1_1_0_0;
-         JAL_OPCODE : control_signals = 34'b0_XXXX_0_00_0_XX_X_0000_0_XXX_XXXXX_0_0_1_11_1_1_0_0;
+         JAL_OPCODE : control_signals = 34'b0_0000_0_00_0_XX_X_0000_0_XXX_XXXXX_0_0_1_11_1_1_0_0;
 
          JALR_OPCODE : begin
             if(funct3 == JALR_FUNCT3) begin
-               control_signals = 34'b0_XXXX_0_00_0_XX_X_0000_0_XXX_XXXXX_0_0_1_11_0_1_0_0;
+               control_signals = 34'b0_0000_0_00_0_XX_X_0000_0_XXX_XXXXX_0_0_1_11_0_1_0_0;
             end
          end
 
