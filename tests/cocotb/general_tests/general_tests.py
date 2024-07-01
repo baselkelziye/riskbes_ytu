@@ -51,6 +51,52 @@ async def load_code(dut, file_path):
     await Timer(1, units='ns')
 
 @cocotb.test()
+async def amo_test(dut):
+    filename = "amo_test.txt"
+    dut.rst_i.value = 1
+    await run_clock(dut, 10, 2)
+    dut.rst_i.value = 0
+    await load_code(dut, filepath + filename)
+
+    regs = get_register_file(dut)
+    mem = MemoryAdapter(dut)
+
+    addr = 0x80001000
+
+    mem[addr] = 30
+    await Timer(1, units='ns')
+
+    mem[addr + 1] = 0
+    await Timer(1, units='ns')
+
+    mem[addr + 2] = 0
+    await Timer(1, units='ns')
+
+    mem[addr + 3] = 0
+    await Timer(1, units='ns')
+
+    num_cycles = 200
+    await run_clock(dut, num_cycles, period_ns)
+    
+    x2 = regs[2].value
+
+    memval0 = mem[addr]
+    memval1 = mem[addr + 1]
+    memval2 = mem[addr + 2]
+    memval3 = mem[addr + 3]
+
+    dut._log.info(f"x2 = {hex(x2)}")
+
+    dut._log.info(f"Memory[0x{addr:x}] = 0x{memval3:02x}{memval2:02x}{memval1:02x}{memval0:02x}")
+
+    assert x2 == 30
+
+    assert memval0 == 90
+    assert memval1 == 0
+    assert memval2 == 0
+    assert memval3 == 0
+
+@cocotb.test()
 async def lr_sc(dut):
     filename = "lr_sc.txt"
     dut.rst_i.value = 1
@@ -61,6 +107,20 @@ async def lr_sc(dut):
     regs = get_register_file(dut)
     mem = MemoryAdapter(dut)
 
+    addr = 0x80001000
+
+    mem[addr] = 0
+    await Timer(1, units='ns')
+
+    mem[addr + 1] = 0
+    await Timer(1, units='ns')
+
+    mem[addr + 2] = 0
+    await Timer(1, units='ns')
+
+    mem[addr + 3] = 0
+    await Timer(1, units='ns')
+
     num_cycles = 200
     await run_clock(dut, num_cycles, period_ns)
     
@@ -69,7 +129,6 @@ async def lr_sc(dut):
     x3 = regs[3].value
     x10 = regs[10].value
 
-    addr = 0x80001000
     memval0 = mem[addr]
     memval1 = mem[addr + 1]
     memval2 = mem[addr + 2]

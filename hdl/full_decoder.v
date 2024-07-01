@@ -68,6 +68,9 @@ module full_decoder(
                      SYSTEM_OPCODE  = 5'b11100,
                      AMO_OPCODE     = 5'b01011;
 
+   //PSEUDO INSTRUCTION OPCODES
+   localparam [6:2] P_AMOEND_OPCODE = 5'b00111;
+
    localparam [2:0]  ADDI_FUNCT3          = 3'b000,
                      SLTI_FUNCT3          = 3'b010,
                      SLTIU_FUNCT3         = 3'b011,
@@ -466,7 +469,7 @@ module full_decoder(
                   end               
                endcase 
             end
-      SYSTEM_OPCODE: case(funct3)
+         SYSTEM_OPCODE: case(funct3)
             CSRRW_FUNCT3 :  control_signals = 38'b0_XXXX_0_11_1_01_0_XXXX_0_XXX_XXXXX_X_X_1_00_X_X_0_0_XX_0_0;
             CSRRS_FUNCT3 :  control_signals = 38'b0_XXXX_0_11_1_10_0_XXXX_0_XXX_XXXXX_X_X_1_00_X_X_0_0_XX_0_0;
             CSRRC_FUNCT3 :  control_signals = 38'b0_XXXX_0_11_1_11_0_XXXX_0_XXX_XXXXX_X_X_1_00_X_X_0_0_XX_0_0;
@@ -484,7 +487,7 @@ module full_decoder(
                   end
             end
          endcase
-      AMO_OPCODE: begin
+         AMO_OPCODE: begin
             if (funct3 == AMO_FUNCT3) begin
                case (funct5a)
                   LR_FUNCT5A: begin
@@ -503,10 +506,11 @@ module full_decoder(
                   AMOMINU_FUNCT5A,
                   AMOOR_FUNCT5A,
                   AMOSWAP_FUNCT5A,
-                  AMOXOR_FUNCT5A: ; //TO-DO: AMOSTART
+                  AMOXOR_FUNCT5A: control_signals = 38'b0_0110_0_00_0_XX_X_1101_0_XXX_XXXXX_0_0_1_01_0_X_1_0_01_0_0; //AMOSTART
                endcase
             end
          end 
+         P_AMOEND_OPCODE: control_signals = 38'b0_XXXX_0_00_0_XX_X_1101_0_XXX_XXXXX_0_0_1_01_0_X_0_1_00_0_0;
       endcase
    end
 
