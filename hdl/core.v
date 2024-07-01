@@ -362,7 +362,7 @@ module core(
             INSTRUCTION_EX <= NOP;
             INSTRUCTION_MEM <= NOP;
          end else begin
-            INSTRUCTION_ID <= INSTRUCTION_IF;
+            INSTRUCTION_ID <= instr_cache_blocking_n_i ? INSTRUCTION_IF : NOP;
             INSTRUCTION_EX <= INSTRUCTION_ID;
             INSTRUCTION_MEM <= INSTRUCTION_EX;
          end
