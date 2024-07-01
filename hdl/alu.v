@@ -62,6 +62,8 @@ module alu (input [31:0]alu1_i,
                 result_r = ~xor_result;
                 4'b1100: // LUI
                 result_r = alu2_i;
+                4'b1101: // LR/SC
+                result_r = alu1_i;
                 endcase
               end else begin
                 result_r = result_o;

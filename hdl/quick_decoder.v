@@ -22,7 +22,8 @@ localparam [6:2] R_TYPE  = 5'b01100,
                  JAL     = 5'b11011,
                  AUIPC   = 5'b00101,
                  LUI     = 5'b01101,
-                 SYSTEM  = 5'b11100;
+                 SYSTEM  = 5'b11100,
+                 AMO     = 5'b01011;
 
 
 always @(opcode_i) begin 
@@ -38,6 +39,7 @@ always @(opcode_i) begin
         LUI    :  control_signals = 5'b00_000;
         AUIPC  :  control_signals = 5'b00_000;
         SYSTEM :  control_signals = 5'b00_101;
+        AMO    :  control_signals = 5'b00_XXX;
         default:  control_signals = 5'bXX_XXX;
     endcase
 end

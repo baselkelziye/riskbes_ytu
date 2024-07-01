@@ -4,9 +4,11 @@ Load/Store/AMO Access Fault (istenirse)
 
 KIRMIZI:
 CPOP
+Hazard Detection Unit'i incele (gereksiz hazard mı üretiyor?)
 
 SARI:
 Cache Arbiter'ı tekrar incele
+ALU ve MDU gereksiz latch oluşturmasın
 
 YEŞİL:
 Load/Store ve Load/Move forwarding
