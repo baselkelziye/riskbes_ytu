@@ -52,6 +52,9 @@ module instruction_execution_stage(
    input rs1_shift_sel_i,
    input rs2_negate_sel_i,
 
+   input sets_reservation_i,
+   input uses_reservation_i,
+
    output reg [31:2] branch_target_o,
    output reg [4:0] rd_ex_mem_o,
    output reg [31:0] pc_ex_mem_o,
@@ -60,7 +63,6 @@ module instruction_execution_stage(
    output reg [4:0] rs1_label_ex_mem_o,
    output reg [4:0] rs2_label_ex_mem_o,
    output reg [2:0] funct3_ex_mem_o,
-   output reg [6:0] funct7_ex_mem_o,
    output reg is_load_instr_ex_mem_o,
    output reg is_store_instr_ex_mem_o,
 
@@ -89,7 +91,10 @@ module instruction_execution_stage(
    output is_f_supported_o,
    output is_m_supported_o,
 
-   output reg exception_detected_o
+   output reg exception_detected_o,
+
+   output reg sets_reservation_o,
+   output reg uses_reservation_o
 );
    wire EX_en = !branching_o && !busywait && !exception_detected_o;
 
@@ -303,9 +308,9 @@ module instruction_execution_stage(
    );
 
    always @(posedge clk_i) begin
-      if(rst_i || branching_o) begin
-         branching_o <= !rst_i && exception_detected_o; //Misaligned Instruction Exception için (burada !rst_i testi gerekli mi?)
-         branch_target_o <= mtvec_value[31:2]; //Misaligned Instruction Exception için
+      if(rst_i) begin
+         branching_o <= 0;
+         branch_target_o <= 0;
          alu_out_ex_mem_o <= 32'd0;
          rd_ex_mem_o <= 5'd0;
          pc_ex_mem_o <= 32'd0;
@@ -315,29 +320,51 @@ module instruction_execution_stage(
          rs2_label_ex_mem_o <= 5'd0;
          rs2_ex_mem_o <= 32'd0;
          funct3_ex_mem_o <= 3'b0;
-         funct7_ex_mem_o <= 7'b0;
          is_load_instr_ex_mem_o <= 1'b0;
          is_store_instr_ex_mem_o <= 1'b0;
          exception_detected_o <= 1'b0;
          exception_last <= 0;
+         sets_reservation_o <= 0;
+         uses_reservation_o <= 0;
       end else if(!busywait) begin
          if (!mul_stall_o && !div_stall_o) begin
-            branching_o <= branching_next;     
-            branch_target_o <= branch_target_next;
-            alu_out_ex_mem_o <= alu_out_next;
-            rd_ex_mem_o <= rd_ex_mem_i;
-            pc_ex_mem_o <= pc_ex_mem_i;
-            wb_sel_ex_mem_o <= wb_sel_ex_mem_i;
-            imm_ex_mem_o <= imm_ex_mem_i;
-            rs1_label_ex_mem_o <= rs1_label_ex_mem_i;
-            rs2_label_ex_mem_o <= rs2_label_ex_mem_i;
-            rs2_ex_mem_o <= alu_in2_w;
-            funct3_ex_mem_o <= funct3_ex_mem_i;
-            funct7_ex_mem_o <= funct7_ex_mem_i;
-            is_load_instr_ex_mem_o <= is_load_instr_ex_mem_i;
-            is_store_instr_ex_mem_o <= is_store_instr_ex_mem_i;
-            exception_detected_o <= exception_detected;
-            exception_last <= exception_i;
+            if(branching_o) begin
+               branching_o <= exception_detected_o; //Misaligned Instruction Exception için
+               branch_target_o <= mtvec_value[31:2]; //Misaligned Instruction Exception için
+               alu_out_ex_mem_o <= 32'd0;
+               rd_ex_mem_o <= 5'd0;
+               pc_ex_mem_o <= 32'd0;
+               wb_sel_ex_mem_o <= 2'd0;
+               imm_ex_mem_o <= 32'd0;
+               rs1_label_ex_mem_o <= 5'd0;
+               rs2_label_ex_mem_o <= 5'd0;
+               rs2_ex_mem_o <= 32'd0;
+               funct3_ex_mem_o <= 3'b0;
+               is_load_instr_ex_mem_o <= 1'b0;
+               is_store_instr_ex_mem_o <= 1'b0;
+               exception_detected_o <= 1'b0;
+               exception_last <= 0;
+               sets_reservation_o <= 0;
+               uses_reservation_o <= 0;
+            end else begin
+               branching_o <= branching_next;     
+               branch_target_o <= branch_target_next;
+               alu_out_ex_mem_o <= alu_out_next;
+               rd_ex_mem_o <= rd_ex_mem_i;
+               pc_ex_mem_o <= pc_ex_mem_i;
+               wb_sel_ex_mem_o <= wb_sel_ex_mem_i;
+               imm_ex_mem_o <= imm_ex_mem_i;
+               rs1_label_ex_mem_o <= rs1_label_ex_mem_i;
+               rs2_label_ex_mem_o <= rs2_label_ex_mem_i;
+               rs2_ex_mem_o <= alu_in2_w;
+               funct3_ex_mem_o <= funct3_ex_mem_i;
+               is_load_instr_ex_mem_o <= is_load_instr_ex_mem_i;
+               is_store_instr_ex_mem_o <= is_store_instr_ex_mem_i;
+               exception_detected_o <= exception_detected;
+               exception_last <= exception_i;
+               sets_reservation_o <= sets_reservation_i;
+               uses_reservation_o <= uses_reservation_i;
+            end
          end else begin // Mul stall da yazma!
             rd_ex_mem_o <= 0;
          end

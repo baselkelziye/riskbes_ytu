@@ -36,11 +36,16 @@ module memory_stage(
    input [31:0] imm_i,
    input [31:0] pc_i,
    input [31:0] rs2_data_i,
+
+   input exception_detected_i,
+
+   input sets_reservation_i,
+   input uses_reservation_i,
     
    output [31:0] data_cache_data_o,
    output [3:0] data_cache_write_en_o,
    output [31:2] data_cache_address_o,
-   output reg [31:0] load_val_o,
+   output reg [31:0] mem_data_o,
 
    output reg [4:0] rd_label_o,
    output reg [31:0] alu_out_o,
@@ -52,12 +57,22 @@ module memory_stage(
    
    output data_cache_enabled_o
 );
+   reg reservation;
+   wire reservation_tmp = (reservation | sets_reservation_i) & ~uses_reservation_i;
+   wire reservation_next = !exception_detected_i ? reservation_tmp : reservation; //Eğer exception varsa değeri değiştirme
 
+   wire is_memory_instruction = is_load_instruction_i || is_store_instruction_i;
+   wire is_successful = !uses_reservation_i || reservation; //Ya rezervasyon'a gerek yok, ya da zaten var
 
    assign data_cache_address_o = alu_out_i[31:2];
-   assign data_cache_enabled_o = is_load_instruction_i | is_store_instruction_i;
+   assign data_cache_enabled_o = !exception_detected_i && is_memory_instruction && is_successful;
+
+   wire [4:0] rd_label = !exception_detected_i ? rd_label_i : 5'b00000; //Eğer exception varsa, yazmayı durdur
  
-   wire [31:0] load_val_next;
+   wire [31:0] load_val;
+   wire [31:0] store_val = {{31{1'b0}}, ~is_successful};
+
+   wire [31:0] mem_data = is_store_instruction_i ? store_val : load_val;
    
    memory_access_unit mau(
       .clk_i(clk_i),
@@ -69,7 +84,7 @@ module memory_stage(
       .funct3_i(funct3_i),
       .write_en_o(data_cache_write_en_o),
       .core_normalized_data_o(data_cache_data_o),
-      .cache_normalized_data_o(load_val_next)
+      .cache_normalized_data_o(load_val)
    );
    
    always @(posedge clk_i) begin
@@ -80,18 +95,20 @@ module memory_stage(
          imm_o <= 32'b0;
          pc_o <= 32'b0;
          rs2_data_o <= 32'b0;
-         load_val_o <= 0;
+         mem_data_o <= 0;
          is_load_instruction_o <= 0;
+         reservation <= 0;
       end else begin
          if(!busywait_i) begin
-            rd_label_o <= rd_label_i;
+            rd_label_o <= rd_label;
             alu_out_o <= alu_out_i;
             wb_sel_o <= wb_sel_i;
             imm_o <= imm_i;
             pc_o <= pc_i;
             rs2_data_o <= rs2_data_i;     
-            load_val_o <= load_val_next;  
-            is_load_instruction_o <= is_load_instruction_i;       
+            mem_data_o <= mem_data;  
+            is_load_instruction_o <= is_load_instruction_i;
+            reservation <= reservation_next;
          end
       end
    end

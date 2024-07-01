@@ -51,6 +51,48 @@ async def load_code(dut, file_path):
     await Timer(1, units='ns')
 
 @cocotb.test()
+async def lr_sc(dut):
+    filename = "lr_sc.txt"
+    dut.rst_i.value = 1
+    await run_clock(dut, 10, 2)
+    dut.rst_i.value = 0
+    await load_code(dut, filepath + filename)
+
+    regs = get_register_file(dut)
+    mem = MemoryAdapter(dut)
+
+    num_cycles = 200
+    await run_clock(dut, num_cycles, period_ns)
+    
+    x1 = regs[1].value
+    x2 = regs[2].value
+    x3 = regs[3].value
+    x10 = regs[10].value
+
+    addr = 0x80001000
+    memval0 = mem[addr]
+    memval1 = mem[addr + 1]
+    memval2 = mem[addr + 2]
+    memval3 = mem[addr + 3]
+
+    dut._log.info(f"x1 = {hex(x1)}")
+    dut._log.info(f"x2 = {hex(x2)}")
+    dut._log.info(f"x3 = {hex(x3)}")
+    dut._log.info(f"x10 = {hex(x10)}")
+
+    dut._log.info(f"Memory[0x{addr:x}] = 0x{memval3:02x}{memval2:02x}{memval1:02x}{memval0:02x}")
+
+    assert x1 == 1
+    assert x2 == 0
+    assert x3 == 1
+    assert x10 == 0
+
+    assert memval0 == 0x00
+    assert memval1 == 0x10
+    assert memval2 == 0x00
+    assert memval3 == 0x80
+
+@cocotb.test()
 async def exception_test(dut):
     filename = "exception_test.txt"
     dut.rst_i.value = 1

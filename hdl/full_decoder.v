@@ -27,8 +27,8 @@ module full_decoder(
    output is_load_instr_o,
    output is_store_instr_o,
 
-   output set_reservation_o,
-   output use_reservation_o
+   output sets_reservation_o,
+   output uses_reservation_o
 );
 
    wire [6:2] opcode = instr_i[6:2];
@@ -252,8 +252,8 @@ module full_decoder(
    // op2_sel_o,
    // is_load_instr_o,
    // is_store_instr_o,
-   // set_reservation_o,
-   // use_reservation_o
+   // sets_reservation_o,
+   // uses_reservation_o
    
    always @(*) begin 
       control_signals = ILLEGAL;
@@ -483,11 +483,11 @@ module full_decoder(
                case (funct5a)
                   LR_FUNCT5A: begin
                      if (rs2_label == 5'b00000) begin
-                        control_signals = 36'b0_0100_0_00_0_XX_X_0000_0_XXX_XXXXX_0_0_1_01_0_1_1_0_1_0;
+                        control_signals = 36'b0_0100_0_00_0_XX_X_1101_0_XXX_XXXXX_0_0_1_01_0_X_1_0_1_0;
                      end
                   end
                   SC_FUNCT5A: begin
-                     control_signals = 36'b0_0110_0_00_0_XX_X_0000_0_XXX_XXXXX_0_0_0_XX_0_1_0_1_0_1;
+                     control_signals = 36'b0_0110_0_00_0_XX_X_1101_0_XXX_XXXXX_0_0_1_01_0_X_0_1_0_1;
                   end
                   AMOADD_FUNCT5A,
                   AMOAND_FUNCT5A,
@@ -524,8 +524,8 @@ module full_decoder(
       op2_sel_o,
       is_load_instr_o,
       is_store_instr_o,
-      set_reservation_o,
-      use_reservation_o
+      sets_reservation_o,
+      uses_reservation_o
    } = control_signals;
 
 endmodule

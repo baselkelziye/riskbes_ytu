@@ -60,9 +60,9 @@ module alu (input [31:0]alu1_i,
                 result_r = alu1_i & alu2_i;
                 4'b1011:  //XNOR
                 result_r = ~xor_result;
-                4'b1100: // LUI
+                4'b1100: // read input 2 (LUI)
                 result_r = alu2_i;
-                4'b1101: // LR/SC
+                4'b1101: // read input 1 (AMO)
                 result_r = alu1_i;
                 endcase
               end else begin

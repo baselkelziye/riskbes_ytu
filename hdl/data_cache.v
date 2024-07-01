@@ -183,7 +183,7 @@ module data_cache #(
             tag_last <= tag;
             index_last <= index;
             offset_last <= offset;
-            write_en_last <= write_en_i;
+            write_en_last <= en_i ? write_en_i : 4'b0000;
             data_w_last <= data_i;
             en_last <= en_i;
          end
@@ -195,7 +195,7 @@ module data_cache #(
          localparam SUB_COUNT = 4;
       
          wire [QWORD_PER_BLOCK_COUNT - 1 : 0] fn = flush_index == I ? qword_flushing_n : {QWORD_PER_BLOCK_COUNT{1'b1}};
-         wire [3:0] wen = ((index_last == I) && delayed_access_valid && en_last) ? write_en_last : 4'b0;
+         wire [3:0] wen = ((index_last == I) && delayed_access_valid) ? write_en_last : 4'b0;
          
          wire [31:0] data [0 : SUB_COUNT - 1];
          
@@ -231,7 +231,7 @@ module data_cache #(
    endgenerate 
    
    wire [31:0] data_r = block_data[index];
-   wire forward = index == index_last && offset == offset_last;
+   wire forward = (index == index_last) && (offset == offset_last);
    
    //Okuma
    always @(negedge clk_i) begin

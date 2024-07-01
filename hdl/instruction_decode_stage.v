@@ -35,6 +35,12 @@ module instruction_decode_stage(
 
    input [31:2] pc_i,
    input stall_id_i,
+
+   //Uzantı destek bitleri (Forwarded)
+   input is_a_supported_i,
+   input is_b_supported_i,
+   input is_f_supported_i,
+   input is_m_supported_i,
    
    output load_stall_o,
    
@@ -71,11 +77,8 @@ module instruction_decode_stage(
    output reg rs1_shift_sel_o,
    output reg rs2_negate_sel_o,
 
-   //Uzantı destek bitleri (Forwarded)
-   input is_a_supported_i,
-   input is_b_supported_i,
-   input is_f_supported_i,
-   input is_m_supported_i
+   output reg sets_reservation_o,
+   output reg uses_reservation_o
 );
    wire [6:2] opcode = instr_i[6:2];
    wire [2:0] funct3 = instr_i[14:12];
@@ -104,6 +107,8 @@ module instruction_decode_stage(
    wire reg_wr_en;
    wire is_load_instruction;
 
+   wire sets_reservation, uses_reservation;
+
    full_decoder u_full_decoder(
       .instr_i(instr_i),
 
@@ -130,7 +135,9 @@ module instruction_decode_stage(
       .op2_sel_o(op2_sel),
       .is_load_instr_o(is_load_instr),
       .is_store_instr_o(is_store_instr),
-      .is_mret_o(is_mret)
+      .is_mret_o(is_mret),
+      .sets_reservation_o(sets_reservation),
+      .uses_reservation_o(uses_reservation)
    );      
 
    wire [31:0] rs1_value, rs2_value;
@@ -211,6 +218,8 @@ module instruction_decode_stage(
                rs1_shift_sel_o <= rs1_shift_sel;
                rs2_negate_sel_o <= rs2_negate_sel;
                is_mret_o <= is_mret;
+               sets_reservation_o <= sets_reservation;
+               uses_reservation_o <= uses_reservation;
             end else if(load_stall_o) begin
                pc_o                     <= 0;
                rs1_value_o              <= 0;
@@ -239,6 +248,8 @@ module instruction_decode_stage(
                rs1_shift_sel_o          <= 0;
                rs2_negate_sel_o         <= 0;
                is_mret_o                <= 0;
+               sets_reservation_o       <= 0;
+               uses_reservation_o       <= 0;
             end
           end
       end else begin
@@ -269,6 +280,8 @@ module instruction_decode_stage(
          rs1_shift_sel_o          <= 0;
          rs2_negate_sel_o         <= 0;
          is_mret_o                <= 0;
+         sets_reservation_o       <= 0;
+         uses_reservation_o       <= 0;
       end
    end
 endmodule

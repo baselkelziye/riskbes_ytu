@@ -82,6 +82,9 @@ module core(
    wire [1:0] chip_select_id_ex_o;
    wire rs1_shift_sel_id_ex_o;
    wire rs2_negate_sel_id_ex_o;
+
+   wire sets_reservation_id_ex_o;
+   wire uses_reservation_id_ex_o;
    
    //*****************EX-MEM******************
    wire [31:2] branch_target;
@@ -94,13 +97,13 @@ module core(
    wire [4:0] rs2_label_ex_mem_o;   
    wire [31:0] rs2_ex_mem_o;
    wire branching;
-   
-   // forwarding unit                   
 
+   wire exception_detected_ex_mem_o;
 
+   wire sets_reservation_ex_mem_o;
+   wire uses_reservation_ex_mem_o;
    
    wire [2:0] funct3_ex_mem_o;
-   wire [6:0] funct7_ex_mem_o;
    wire is_load_instr_ex_mem_o;
    wire is_store_instr_ex_mem_o;
    
@@ -202,7 +205,10 @@ module core(
       .is_a_supported_i(is_a_supported),
       .is_b_supported_i(is_b_supported),
       .is_f_supported_i(is_f_supported),
-      .is_m_supported_i(is_m_supported)
+      .is_m_supported_i(is_m_supported),
+
+      .sets_reservation_o(sets_reservation_id_ex_o),
+      .uses_reservation_o(uses_reservation_id_ex_o)
    );
 
    instruction_execution_stage u_ex(
@@ -236,7 +242,6 @@ module core(
       .funct3_ex_mem_o(funct3_ex_mem_o),
       
       .funct7_ex_mem_i(funct7_id_ex_o),
-      .funct7_ex_mem_o(funct7_ex_mem_o),
       
       .is_load_instr_ex_mem_i(is_load_instr_id_ex_o),
       .is_load_instr_ex_mem_o(is_load_instr_ex_mem_o),
@@ -277,7 +282,15 @@ module core(
       .is_a_supported_o(is_a_supported),
       .is_b_supported_o(is_b_supported),
       .is_f_supported_o(is_f_supported),
-      .is_m_supported_o(is_m_supported)
+      .is_m_supported_o(is_m_supported),
+
+      .exception_detected_o(exception_detected_ex_mem_o),
+
+      .sets_reservation_i(sets_reservation_id_ex_o),
+      .sets_reservation_o(sets_reservation_ex_mem_o),
+
+      .uses_reservation_i(uses_reservation_id_ex_o),
+      .uses_reservation_o(uses_reservation_ex_mem_o)
    );
       
 
@@ -303,7 +316,7 @@ module core(
       .data_cache_write_en_o(data_cache_write_en_o),
       .data_cache_address_o(data_cache_address_o),
       .data_cache_enabled_o(data_cache_enabled_o),
-      .load_val_o(rd_data_mem_wb_o),
+      .mem_data_o(rd_data_mem_wb_o),
 
       .rd_label_o(rd_mem_wb_o),
       .alu_out_o(alu_out_mem_wb_o),
@@ -311,7 +324,12 @@ module core(
       .imm_o(imm_mem_wb_o),
       .pc_o(pc_mem_wb_o),
       .is_load_instruction_o(is_load_instr_mem_wb_o),
-      .rs2_data_o(rs2_mem_wb_o)
+      .rs2_data_o(rs2_mem_wb_o),
+
+      .exception_detected_i(exception_detected_ex_mem_o),
+
+      .sets_reservation_i(sets_reservation_ex_mem_o),
+      .uses_reservation_i(uses_reservation_ex_mem_o)
    );
 
    pc_adder u_pc_adder1(
@@ -331,13 +349,23 @@ module core(
    );
 
    `ifdef DEBUG
-      wire [31:0] INSTRUCTION_ID = {instruction_if_id_o, 2'b11};
+      localparam [31:0] NOP = 32'h13;
+   
+      wire [31:0] INSTRUCTION_IF = {instr_cache_instr_i, 2'b11};
+      reg [31:0] INSTRUCTION_ID;
       reg [31:0] INSTRUCTION_EX;
       reg [31:0] INSTRUCTION_MEM;
       
       always @(posedge clk_i) begin
-         INSTRUCTION_EX <= INSTRUCTION_ID;
-         INSTRUCTION_MEM <= INSTRUCTION_EX;
+         if(branching) begin
+            INSTRUCTION_ID <= NOP;
+            INSTRUCTION_EX <= NOP;
+            INSTRUCTION_MEM <= NOP;
+         end else begin
+            INSTRUCTION_ID <= INSTRUCTION_IF;
+            INSTRUCTION_EX <= INSTRUCTION_ID;
+            INSTRUCTION_MEM <= INSTRUCTION_EX;
+         end
       end
    `endif
 endmodule

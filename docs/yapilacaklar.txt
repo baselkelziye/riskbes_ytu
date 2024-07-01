@@ -1,6 +1,8 @@
 ZORUNLU:
 Instruction Access Fault
 Load/Store/AMO Access Fault (istenirse)
+FENCE yapıldı mı?
+core'daki gereksiz _o lardan kurtul
 
 KIRMIZI:
 CPOP
