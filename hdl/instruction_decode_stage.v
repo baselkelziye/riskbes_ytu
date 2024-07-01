@@ -76,7 +76,7 @@ module instruction_decode_stage(
    output reg [1:0] chip_select_o,
    output reg rs1_shift_sel_o,
    output reg rs2_negate_sel_o,
-
+   output reg [1:0] mem_data_sel_o,
    output reg sets_reservation_o,
    output reg uses_reservation_o
 );
@@ -107,6 +107,7 @@ module instruction_decode_stage(
    wire reg_wr_en;
    wire is_load_instruction;
 
+   wire [1:0] mem_data_sel;
    wire sets_reservation, uses_reservation;
 
    full_decoder u_full_decoder(
@@ -136,6 +137,7 @@ module instruction_decode_stage(
       .is_load_instr_o(is_load_instr),
       .is_store_instr_o(is_store_instr),
       .is_mret_o(is_mret),
+      .mem_data_sel_o(mem_data_sel),
       .sets_reservation_o(sets_reservation),
       .uses_reservation_o(uses_reservation)
    );      
@@ -218,6 +220,7 @@ module instruction_decode_stage(
                rs1_shift_sel_o <= rs1_shift_sel;
                rs2_negate_sel_o <= rs2_negate_sel;
                is_mret_o <= is_mret;
+               mem_data_sel_o <= mem_data_sel;
                sets_reservation_o <= sets_reservation;
                uses_reservation_o <= uses_reservation;
             end else if(load_stall_o) begin
@@ -248,6 +251,7 @@ module instruction_decode_stage(
                rs1_shift_sel_o          <= 0;
                rs2_negate_sel_o         <= 0;
                is_mret_o                <= 0;
+               mem_data_sel_o           <= 0;
                sets_reservation_o       <= 0;
                uses_reservation_o       <= 0;
             end
@@ -280,6 +284,7 @@ module instruction_decode_stage(
          rs1_shift_sel_o          <= 0;
          rs2_negate_sel_o         <= 0;
          is_mret_o                <= 0;
+         mem_data_sel_o           <= 0;
          sets_reservation_o       <= 0;
          uses_reservation_o       <= 0;
       end

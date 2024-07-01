@@ -38,7 +38,8 @@ module memory_stage(
    input [31:0] rs2_data_i,
 
    input exception_detected_i,
-
+   
+   input [1:0] mem_data_sel_i,
    input sets_reservation_i,
    input uses_reservation_i,
     
@@ -70,9 +71,20 @@ module memory_stage(
    wire [4:0] rd_label = !exception_detected_i ? rd_label_i : 5'b00000; //Eğer exception varsa, yazmayı durdur
  
    wire [31:0] load_val;
-   wire [31:0] store_val = {{31{1'b0}}, ~is_successful};
+   wire [31:0] cond_val = {{31{1'b0}}, ~reservation};
 
-   wire [31:0] mem_data = is_store_instruction_i ? store_val : load_val;
+   wire [31:0] mem_data;
+
+   mux_4x1 #(
+      .DATA_WIDTH(32)
+   ) u_mem_data_sel (
+      .in0(mem_data_o),
+      .in1(load_val),
+      .in2(cond_val),
+      .in3(32'hBADC0DE),
+      .select(mem_data_sel_i),
+      .out(mem_data)
+   );
    
    memory_access_unit mau(
       .clk_i(clk_i),

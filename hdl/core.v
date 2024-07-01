@@ -83,6 +83,7 @@ module core(
    wire rs1_shift_sel_id_ex_o;
    wire rs2_negate_sel_id_ex_o;
 
+   wire [1:0] mem_data_sel_id_ex_o;
    wire sets_reservation_id_ex_o;
    wire uses_reservation_id_ex_o;
    
@@ -100,6 +101,7 @@ module core(
 
    wire exception_detected_ex_mem_o;
 
+   wire [1:0] mem_data_sel_ex_mem_o;
    wire sets_reservation_ex_mem_o;
    wire uses_reservation_ex_mem_o;
    
@@ -207,6 +209,7 @@ module core(
       .is_f_supported_i(is_f_supported),
       .is_m_supported_i(is_m_supported),
 
+      .mem_data_sel_o(mem_data_sel_id_ex_o),
       .sets_reservation_o(sets_reservation_id_ex_o),
       .uses_reservation_o(uses_reservation_id_ex_o)
    );
@@ -286,6 +289,9 @@ module core(
 
       .exception_detected_o(exception_detected_ex_mem_o),
 
+      .mem_data_sel_i(mem_data_sel_id_ex_o),
+      .mem_data_sel_o(mem_data_sel_ex_mem_o),
+
       .sets_reservation_i(sets_reservation_id_ex_o),
       .sets_reservation_o(sets_reservation_ex_mem_o),
 
@@ -328,6 +334,7 @@ module core(
 
       .exception_detected_i(exception_detected_ex_mem_o),
 
+      .mem_data_sel_i(mem_data_sel_ex_mem_o),
       .sets_reservation_i(sets_reservation_ex_mem_o),
       .uses_reservation_i(uses_reservation_ex_mem_o)
    );

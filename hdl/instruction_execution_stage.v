@@ -52,6 +52,8 @@ module instruction_execution_stage(
    input rs1_shift_sel_i,
    input rs2_negate_sel_i,
 
+   input [1:0] mem_data_sel_i,
+
    input sets_reservation_i,
    input uses_reservation_i,
 
@@ -92,6 +94,8 @@ module instruction_execution_stage(
    output is_m_supported_o,
 
    output reg exception_detected_o,
+
+   output reg [1:0] mem_data_sel_o,
 
    output reg sets_reservation_o,
    output reg uses_reservation_o
@@ -324,6 +328,7 @@ module instruction_execution_stage(
          is_store_instr_ex_mem_o <= 1'b0;
          exception_detected_o <= 1'b0;
          exception_last <= 0;
+         mem_data_sel_o <= 0;
          sets_reservation_o <= 0;
          uses_reservation_o <= 0;
       end else if(!busywait) begin
@@ -344,6 +349,7 @@ module instruction_execution_stage(
                is_store_instr_ex_mem_o <= 1'b0;
                exception_detected_o <= 1'b0;
                exception_last <= 0;
+               mem_data_sel_o <= 0;
                sets_reservation_o <= 0;
                uses_reservation_o <= 0;
             end else begin
@@ -362,6 +368,7 @@ module instruction_execution_stage(
                is_store_instr_ex_mem_o <= is_store_instr_ex_mem_i;
                exception_detected_o <= exception_detected;
                exception_last <= exception_i;
+               mem_data_sel_o <= mem_data_sel_i;
                sets_reservation_o <= sets_reservation_i;
                uses_reservation_o <= uses_reservation_i;
             end
