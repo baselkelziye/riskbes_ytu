@@ -359,18 +359,16 @@ module core(
       localparam [31:0] NOP = 32'h13;
    
       wire [31:0] INSTRUCTION_IF = {instr_cache_instr_i, 2'b11};
-      reg [31:0] INSTRUCTION_ID;
+      wire [31:0] INSTRUCTION_ID = {instruction_if_id_o, 2'b11};
       reg [31:0] INSTRUCTION_EX;
       reg [31:0] INSTRUCTION_MEM;
       
       always @(posedge clk_i) begin
          if(branching) begin
-            INSTRUCTION_ID <= NOP;
             INSTRUCTION_EX <= NOP;
             INSTRUCTION_MEM <= NOP;
-         end else begin
-            INSTRUCTION_ID <= instr_cache_blocking_n_i ? INSTRUCTION_IF : NOP;
-            INSTRUCTION_EX <= INSTRUCTION_ID;
+         end else if (!busy_w) begin
+            INSTRUCTION_EX <= id_stall ? INSTRUCTION_ID : NOP;
             INSTRUCTION_MEM <= INSTRUCTION_EX;
          end
       end

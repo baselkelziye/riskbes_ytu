@@ -85,7 +85,7 @@ async def amo_test(dut):
     memval2 = mem[addr + 2]
     memval3 = mem[addr + 3]
 
-    dut._log.info(f"x2 = {hex(x2)}")
+    dut._log.info(f"x2 = {int(x2)}")
 
     dut._log.info(f"Memory[0x{addr:x}] = 0x{memval3:02x}{memval2:02x}{memval1:02x}{memval0:02x}")
 

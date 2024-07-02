@@ -85,8 +85,7 @@ initial begin
 
 // AMO Test
 
-    wrapper.ram.data[0] = 128'h00110133_0011a12f_03c00093_800011b7;  
-    wrapper.ram.data[1] = 128'h0000006f_0021a11f; 
+    wrapper.ram.data[0] = 128'h0000006f_0011a12f_03c00093_800011b7; 
     
     wrapper.ram.data[256] = 128'd30;
 
