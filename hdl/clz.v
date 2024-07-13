@@ -26,7 +26,7 @@ always @(rs1) begin
         result[1] = (half4[3:2] == 2'b0);
         result[0] = result[1] ? ~half4[1] : ~half4[3];
     end
-    assign rd = result;
+    rd = result;
 end
 
 endmodule
