@@ -29,9 +29,9 @@ module cpu #(
   
    localparam BUS_DATA_WIDTH = (2 ** BUS_DATA_WIDTH_SHIFT) * 8;
 
-   wire [31:2] icache_address;
-   wire [31:2] icache_instr;
-   wire icache_blocking_n;
+   wire [30:2] icache_address;
+   wire [31:0] icache_instr;
+   wire icache_blocking_n = 1;
 
    wire [31:2] dcache_address;
    wire [31:0] dcache_data_r, dcache_data_w;
@@ -55,7 +55,8 @@ module cpu #(
       .data_cache_enabled_o(dcache_en)
    );
    
-   wire icache_flushing_n, dcache_flushing_n;
+   wire icache_flushing_n = 1;
+   wire dcache_flushing_n;
    
    wire [BUS_ADDRESS_WIDTH - 1 : BUS_DATA_WIDTH_SHIFT] icache_bus_addr_o;
    wire [BUS_ADDRESS_WIDTH - 1 : BUS_DATA_WIDTH_SHIFT] dcache_bus_addr_o;
@@ -63,7 +64,8 @@ module cpu #(
    wire icache_bus_valid_i;
    wire dcache_bus_valid_i;
    
-   wire icache_bus_valid_o, dcache_bus_valid_o;
+   wire icache_bus_valid_o = 0;
+   wire dcache_bus_valid_o;
    
    wire dcache_bus_we;
    
@@ -88,22 +90,6 @@ module cpu #(
       .icache_bus_valid_o(icache_bus_valid_i),
       .dcache_bus_valid_o(dcache_bus_valid_i),
       .bus_valid_i(bus_valid_i)
-   );
-   
-   instr_cache icache(
-      .clk_i(clk_i),
-      .rst_i(rst_i),
-   
-      .address_i(icache_address[BUS_ADDRESS_WIDTH - 1 : 2]),
-      .instr_o(icache_instr),
-      
-      .bus_addr_o(icache_bus_addr_o),
-      .bus_data_i(bus_data_i),     
-      .bus_valid_i(icache_bus_valid_i),
-      .bus_valid_o(icache_bus_valid_o),
-      
-      .blocking_n_o(icache_blocking_n),
-      .flushing_n_o(icache_flushing_n)
    );
    
    data_cache dcache(

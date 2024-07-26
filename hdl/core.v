@@ -17,10 +17,10 @@ module core(
    input instr_cache_blocking_n_i,
    input data_cache_blocking_n_i,
    
-   input [31:2] instr_cache_instr_i,
+   input [31:0] instr_cache_instr_i,
    input [31:0] data_cache_data_i,
    
-   output [31:2] instr_cache_address_o,
+   output [30:2] instr_cache_address_o,
    output [31:2] data_cache_address_o,
    output [3:0] data_cache_write_en_o,
    output [31:0] data_cache_data_o,
@@ -140,7 +140,6 @@ module core(
       .clk_i(clk_i),
       .rst_i(rst_i),
       .cache_blocking_n_i(instr_cache_blocking_n_i),
-      .cache_data_i(instr_cache_instr_i),
       .cache_address_o(instr_cache_address_o),
 
       .stall_i(if_stall),
@@ -159,7 +158,7 @@ module core(
       .clk_i(clk_i),
       .rst_i(rst_i),
       
-      .instr_i(instruction_if_id_o),
+      .instr_i(instr_cache_instr_i),
       .branch_jump_op_i(branch_jump_op_if_id_o),
       .imm_src_i(imm_src_if_id_o),
       .busywait_i(busy_w),

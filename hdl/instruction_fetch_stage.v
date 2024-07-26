@@ -24,8 +24,7 @@ module instruction_fetch_stage(
    input clk_i,
    input rst_i,
    
-   input [31:2] cache_data_i,
-   output [31:2] cache_address_o,
+   output [30:2] cache_address_o,
    input cache_blocking_n_i,
 
    input stall_i,
@@ -33,7 +32,6 @@ module instruction_fetch_stage(
    input branching_i,
    input [31:2] branch_target_i,
    
-   output reg [31:2] instr_o,
    output reg [31:2] pc_o,
 
    output reg [1:0] branch_jump_op_o,
@@ -43,14 +41,14 @@ module instruction_fetch_stage(
    localparam [1:0] BRANCH_JUMP_NOP = 2'b00;
    localparam [2:0] IMM_SRC_NOP = 3'bXXX;
    
-   reg [31:2] pc;
+   reg [30:2] pc;
 
    assign cache_address_o = pc;
 
-   wire [31:2] pc_increment;
+   wire [30:2] pc_increment;
    wire pc_carry;
    
-   increment #(.DATA_WIDTH(30)) u_pc_increment
+   increment #(.DATA_WIDTH(29)) u_pc_increment
    (
        .value_i(pc),
        .value_o(pc_increment),
@@ -74,25 +72,21 @@ module instruction_fetch_stage(
             if(branching_i) begin
                pc <= branch_target_i;
 
-               instr_o <= INSTR_NOP;
                branch_jump_op_o <= BRANCH_JUMP_NOP;
                imm_src_o <= IMM_SRC_NOP;
             end else if(cache_blocking_n_i) begin
                pc <= pc_increment;
 
-               instr_o <= cache_data_i;
                branch_jump_op_o <= branch_jump_op;
                imm_src_o <= imm_src;
             end else begin
-               instr_o <= INSTR_NOP;
                branch_jump_op_o <= BRANCH_JUMP_NOP;
                imm_src_o <= IMM_SRC_NOP;
             end
          end
       end else begin
-         pc <= 30'b10000_00000_00000_00000_00000_00000;
+         pc <= 29'b0000_00000_00000_00000_00000_00000;
 
-         instr_o <= INSTR_NOP;
          branch_jump_op_o <= BRANCH_JUMP_NOP;
          imm_src_o <= IMM_SRC_NOP;
       end
