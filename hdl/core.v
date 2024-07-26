@@ -139,15 +139,11 @@ module core(
    instruction_fetch_stage u_if(
       .clk_i(clk_i),
       .rst_i(rst_i),
-      .cache_blocking_n_i(instr_cache_blocking_n_i),
       .cache_address_o(instr_cache_address_o),
 
       .stall_i(if_stall),
       .branching_i(branching),
       .branch_target_i(branch_target),
-      .instr_o(instruction_if_id_o),
-      .branch_jump_op_o(branch_jump_op_if_id_o),
-      .imm_src_o(imm_src_if_id_o),
       .pc_o(pc_if_id_o)
    );
 
