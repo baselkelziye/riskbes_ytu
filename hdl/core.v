@@ -155,8 +155,6 @@ module core(
       .rst_i(rst_i),
       
       .instr_i(instr_cache_instr_i),
-      .branch_jump_op_i(branch_jump_op_if_id_o),
-      .imm_src_i(imm_src_if_id_o),
       .busywait_i(busy_w),
       .branching_i(branching),
       .stall_id_i(id_stall),

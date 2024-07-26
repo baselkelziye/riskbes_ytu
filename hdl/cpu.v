@@ -55,6 +55,13 @@ module cpu #(
       .data_cache_enabled_o(dcache_en)
    );
    
+   instr_rom_new u_instr_rom_new(
+      .clk_i(clk_i),
+
+      .addr_i(icache_address),
+      .instr_o(icache_instr)
+   );
+
    wire icache_flushing_n = 1;
    wire dcache_flushing_n;
    

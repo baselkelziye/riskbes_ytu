@@ -112,7 +112,7 @@ module instruction_decode_stage(
    );
 
    full_decoder u_full_decoder(
-      .instr_i(instr_i),
+      .instr_i(instr_i[31:2]),
 
       .is_a_supported_i(is_a_supported_i),
       .is_b_supported_i(is_b_supported_i),

@@ -54,12 +54,12 @@ module instruction_fetch_stage(
    always @(posedge clk_i) begin
       if(!rst_i) begin
          if(!stall_i) begin
-            pc_o <= pc;
+            pc_o <= {1'b1, pc};
 
             if(branching_i) begin
                pc <= branch_target_i[30:2];
             end else begin
-               pc <= pc_next;
+               pc <= pc_increment;
             end
          end
       end else begin

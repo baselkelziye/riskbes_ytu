@@ -31,22 +31,9 @@ async def load_code(dut, file_path):
     with open(file_path, "r") as file:
         lines = file.readlines()
 
-        i = 0
-        j = 0
-        qword = 0
-
-        for _, line in enumerate(lines):
+        for i, line in enumerate(lines):
             word = int(line.strip(), 16)
-            if(i < 4):
-                qword |= word << (i * 32)
-                i += 1
-            else:
-                dut.ram.data[j].value = qword
-                qword = word
-                i = 1
-                j += 1
-        
-        dut.ram.data[j].value = qword
+            dut.cpu.u_instr_rom_new.rom[i] = word
 
     await Timer(1, units='ns')
 
