@@ -37,7 +37,8 @@ module instruction_fetch_stage(
    localparam [1:0] BRANCH_JUMP_NOP = 2'b00;
    localparam [2:0] IMM_SRC_NOP = 3'bXXX;
    
-   reg [30:2] pc;
+   reg [30:2] pc_reg;
+   wire [30:2] pc = branching_i ? branch_target_i[30:2] : pc_reg;
 
    assign cache_address_o = pc;
 
@@ -55,15 +56,10 @@ module instruction_fetch_stage(
       if(!rst_i) begin
          if(!stall_i) begin
             pc_o <= {1'b1, pc};
-
-            if(branching_i) begin
-               pc <= branch_target_i[30:2];
-            end else begin
-               pc <= pc_increment;
-            end
+            pc_reg <= pc_increment;
          end
       end else begin
-         pc <= 29'b0000_00000_00000_00000_00000_00000;
+         pc_reg <= 29'b0000_00000_00000_00000_00000_00000;
       end
    end
 
