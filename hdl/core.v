@@ -324,7 +324,7 @@ module core(
    );
 
    `ifdef DEBUG
-      wire [31:0] INSTRUCTION_ID = {instruction_if_id_o, 2'b11};
+      wire [31:0] INSTRUCTION_ID = instr_cache_instr_i;
       reg [31:0] INSTRUCTION_EX;
       reg [31:0] INSTRUCTION_MEM;
       
